@@ -1,7 +1,7 @@
 {
   "site": {
     "name": "Indian Roasted Coffee",
-    "tagline": "Café indio de origen único, tostado a pedido"
+    "tagline": "Café India de origen único, tostado a pedido"
   },
   "banner": {
     "headerText": "Envío gratis en pedidos superiores a ₹1.500",
@@ -21,7 +21,7 @@
     "close": "Cerrar"
   },
   "home": {
-    "heroHeading": "Café indio premium,",
+    "heroHeading": "Café India,",
     "heroHeadingAlt": "tostado a pedido",
     "heroSubheading": "Granos de origen único de Coorg, Chikmagalur, Wayanad y los Nilgiris — tostados frescos y enviados en 48 horas.",
     "heroCta": "Ver productos",

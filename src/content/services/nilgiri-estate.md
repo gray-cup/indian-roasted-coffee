@@ -1,7 +1,7 @@
 ---
 title: Nilgiri Estate Dark
 shortTitle: Nilgiri Dark
-description: Premium dark-roasted beans from the cool, misty Nilgiri hills of Tamil Nadu. Rich and velvety with complex notes of dark fruit, cedar, and bittersweet chocolate.
+description: Dark-roasted beans from the cool, misty Nilgiri hills of Tamil Nadu. Rich and velvety with complex notes of dark fruit, cedar, and bittersweet chocolate.
 summary: Dark roast from the Nilgiri hills of Tamil Nadu — prized for its velvety texture and complex notes of dark fruit, cedar, and bittersweet chocolate.
 applySlug: nilgiri-estate
 image: /images/IMG_9814.webp

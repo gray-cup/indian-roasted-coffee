@@ -2,7 +2,7 @@
 question: What makes Indian coffee special?
 tags: [general]
 order: 1
-esQuestion: ¿Qué hace especial al café indio?
+esQuestion: ¿Qué hace especial al café India?
 ---
 
 India is one of the few countries where coffee is grown entirely under shade — a practice that slows bean development, deepens flavour complexity, and protects local biodiversity.

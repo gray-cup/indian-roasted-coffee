@@ -32,7 +32,7 @@ export default defineConfig({
     }),
     astroLLMsGenerator({
       title: 'Indian Roasted Coffee',
-      description: 'Premium single-origin Indian coffee beans from Coorg, Chikmagalur, Wayanad, and the Nilgiris — roasted to order and shipped within 48 hours. A brand of Gray Cup Enterprises Private Limited.',
+      description: 'Single-origin Indian coffee beans from Coorg, Chikmagalur, Wayanad, and the Nilgiris — roasted to order and shipped within 48 hours. A brand of Gray Cup Enterprises Private Limited.',
       excludePatterns: ['**/internal/**', '**/cart*'],
     }),
   ],

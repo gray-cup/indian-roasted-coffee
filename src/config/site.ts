@@ -2,7 +2,7 @@ export const siteConfig = {
   name: 'Indian Roasted Coffee',
   shortName: 'IRC',
   domain: 'indianroastedcoffee.com',
-  description: 'Premium single-origin Indian coffee beans, roasted to order and shipped within 48 hours. Sourced from Coorg, Chikmagalur, Wayanad, and the Nilgiris.',
+  description: 'Single-origin Indian coffee beans, roasted to order and shipped within 48 hours. Sourced from Coorg, Chikmagalur, Wayanad, the Nilgiris, Koraput (Odisha), Haflong & Chirang (Assam), Tirap (Arunachal Pradesh), and Nagaland.',
   locale: 'en-IN',
 
   links: {

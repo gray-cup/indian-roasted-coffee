@@ -1,7 +1,7 @@
 {
   "site": {
     "name": "Indian Roasted Coffee",
-    "tagline": "Premium single-origin Indian coffee, roasted to order"
+    "tagline": "Single-origin Indian coffee, roasted to order"
   },
   "banner": {
     "headerText": "MOQ Starts at 1kg & 250gm Samples Available",
@@ -21,7 +21,7 @@
     "close": "Close"
   },
   "home": {
-    "heroHeading": "Premium Indian coffee,",
+    "heroHeading": "Indian coffee,",
     "heroHeadingAlt": "roasted to order",
     "heroSubheading": "Single-origin beans from Coorg, Chikmagalur, Wayanad, and the Nilgiris — roasted fresh and shipped within 48 hours.",
     "heroCta": "Shop products",
