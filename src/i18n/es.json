@@ -1,0 +1,77 @@
+{
+  "site": {
+    "name": "Indian Roasted Coffee",
+    "tagline": "Café indio de origen único, tostado a pedido"
+  },
+  "banner": {
+    "headerText": "Envío gratis en pedidos superiores a ₹1.500",
+    "headerAction": "Venta minorista y mayorista",
+    "buttonText": "Venta minorista y mayorista",
+    "dotGovTitle": "Pedidos minoristas",
+    "dotGovBody": "Compra bolsas individuales de {strong}250 g, 500 g o 1 kg{/strong} a precios minoristas. Envío gratis en pedidos superiores a ₹1.500.",
+    "httpsTitle": "Mayorista y suministro masivo",
+    "httpsBody": "MOQ desde {strong}1 kg por SKU{/strong}. Muestras de 250 g disponibles. Suministramos cafeterías, tostadores, hoteles y empresas de regalos.",
+    "lockTitle": "Candado",
+    "lockDesc": "Ícono de candado cerrado"
+  },
+  "nav": {
+    "skipToMain": "Saltar al contenido principal",
+    "primary": "Navegación principal",
+    "menu": "Menú",
+    "close": "Cerrar"
+  },
+  "home": {
+    "heroHeading": "Café indio premium,",
+    "heroHeadingAlt": "tostado a pedido",
+    "heroSubheading": "Granos de origen único de Coorg, Chikmagalur, Wayanad y los Nilgiris — tostados frescos y enviados en 48 horas.",
+    "heroCta": "Ver productos",
+    "servicesHeading": "Productos destacados",
+    "servicesSubheading": "Seleccionados a mano de las mejores regiones cafeteras de India, cada lote se tuesta a pedido.",
+    "learnMore": "Más información",
+    "applyNow": "Ordenar ahora"
+  },
+  "identifier": {
+    "logoAlt": "Logotipo de Indian Roasted Coffee",
+    "disclaimer": "La tienda en línea oficial de",
+    "linksLabel": "Enlaces útiles",
+    "about": "Acerca de Indian Roasted Coffee",
+    "accessibility": "Declaración de accesibilidad",
+    "foia": "Política de envíos",
+    "noFear": "Devoluciones y reembolsos",
+    "oig": "Sostenibilidad",
+    "privacy": "Política de privacidad",
+    "budget": "Certificaciones",
+    "usagovDescription": "¿Busca la autoridad cafetera de India?",
+    "usagovLink": "Visitar Coffee Board of India"
+  },
+  "footer": {
+    "contactUs": "Contáctenos",
+    "phone": "+91‑80‑4567‑8900",
+    "email": "hello@indianroastedcoffee.com",
+    "hours": "Lunes a sábado, 9 a.m.–6 p.m. IST",
+    "returnToTop": "Volver arriba"
+  },
+  "pagination": {
+    "label": "Paginación",
+    "previous": "Anterior",
+    "previousPage": "Página anterior",
+    "next": "Siguiente",
+    "nextPage": "Página siguiente",
+    "page": "Página"
+  },
+  "serviceCard": {
+    "notAccepting": "No disponible actualmente"
+  },
+  "a11y": {
+    "requiredFields": "Los campos requeridos están marcados con un asterisco (*)",
+    "loading": "Cargando...",
+    "error": "Error",
+    "success": "Éxito"
+  },
+  "404": {
+    "heading": "Página no encontrada",
+    "body": "No podemos encontrar la página que busca. Es posible que se haya movido o ya no exista.",
+    "homeCta": "Volver a la página principal",
+    "helpCta": "Visitar nuestro centro de ayuda"
+  }
+}

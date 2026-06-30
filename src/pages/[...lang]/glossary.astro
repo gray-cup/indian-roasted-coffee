@@ -1,0 +1,209 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumb from '../../components/uswds/Breadcrumb.astro';
+import { localeStaticPaths, withBase } from '../../i18n/utils';
+import type { Locale } from '../../i18n/utils';
+
+export function getStaticPaths() {
+  return localeStaticPaths();
+}
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const isEs = locale === 'es';
+const prefix = isEs ? '/es' : '';
+
+interface Term {
+  term: string;
+  phonetic?: string;
+  definition: string;
+}
+
+const terms: Term[] = [
+  { term: 'Arabica', phonetic: '/əˈræbɪkə/', definition: 'The most widely grown coffee species (Coffea arabica), prized for its nuanced flavours, lower caffeine, and the clean, complex cup profiles found in Indian estate coffees from Coorg and Wayanad.' },
+  { term: 'Altitude', phonetic: '/ˈæltɪtjuːd/', definition: 'The elevation at which coffee is grown. Higher altitudes slow bean development, increasing density and producing brighter acidity and more complex flavours — a key quality indicator for Indian specialty lots.' },
+  { term: 'Aroma', phonetic: '/əˈroʊmə/', definition: 'The smell of brewed coffee, distinct from fragrance (dry grounds). Aroma compounds are volatile and develop during roasting; they are one of the primary sensory descriptors used in cupping.' },
+  { term: 'Bloom', phonetic: '/bluːm/', definition: 'The brief pre-infusion step in filter brewing where hot water saturates the grounds, releasing CO₂. Fresh, recently roasted coffee produces a more dramatic bloom.' },
+  { term: 'Body', phonetic: '/ˈbɒdi/', definition: 'The perceived weight or texture of coffee in the mouth — ranging from tea-like and delicate to full and syrupy. Robusta and dark roasts typically yield heavier body than light-roasted Arabica.' },
+  { term: 'Blend', phonetic: '/blɛnd/', definition: 'A coffee made by combining beans from two or more origins or roast levels to achieve a consistent, balanced flavour profile across seasons.' },
+  { term: 'Cherry', phonetic: '/ˈtʃɛri/', definition: 'The fruit of the coffee plant. Each cherry typically contains two seeds (beans). The processing method determines how the cherry\'s pulp and mucilage are removed before drying.' },
+  { term: 'Chikmagalur', phonetic: '/tʃɪkməˈɡɑːlʊər/', definition: 'A hill district in Karnataka widely credited as the birthplace of Indian coffee cultivation. Known for producing bold, earthy Robusta and clean, aromatic Arabica at 900–1,700 m.' },
+  { term: 'Coorg', phonetic: '/kʊərɡ/', definition: 'Also known as Kodagu, a district in Karnataka producing India\'s most celebrated Arabica. Coorg coffees are known for their wine-like acidity, full body, and floral-citrus notes.' },
+  { term: 'Crema', phonetic: '/ˈkrɛmə/', definition: 'The golden-brown emulsified layer that forms on the surface of a well-pulled espresso shot. It indicates proper pressure, grind, and freshness; Robusta beans contribute to a thicker, longer-lasting crema.' },
+  { term: 'Cupping', phonetic: '/ˈkʌpɪŋ/', definition: 'The standardised method used by coffee professionals to evaluate flavour, aroma, body, acidity, and defects. Grounds are steeped in water and slurped from a spoon across the palate.' },
+  { term: 'Cold Brew', phonetic: '/koʊld bruː/', definition: 'Coffee extracted by steeping coarse grounds in cold or room-temperature water for 12–24 hours. Produces a low-acid, naturally sweet concentrate well-suited to Indian Robusta.' },
+  { term: 'Defect', phonetic: '/ˈdiːfɛkt/', definition: 'A physical flaw in green or roasted beans — including blacks, sours, insect damage, and shells — graded on the SCA scale. Specialty-grade coffee must have zero category-one defects.' },
+  { term: 'Dry Process', phonetic: '/draɪ ˈprɒsɛs/', definition: 'Also called natural process. Whole coffee cherries are dried in the sun before hulling. The method imparts fruity, wine-like flavours and is used for some Indian specialty lots.' },
+  { term: 'Estate', phonetic: '/ɪˈsteɪt/', definition: 'A single farm or plantation from which all the coffee in a lot originates. Estate coffees offer full traceability and are a core pillar of the Indian Roasted Coffee range.' },
+  { term: 'Espresso', phonetic: '/ɛˈsprɛsoʊ/', definition: 'A concentrated brewing method where pressurised hot water (9 bar) is forced through finely ground coffee in 25–30 seconds. The base for lattes, cappuccinos, and flat whites.' },
+  { term: 'Extraction', phonetic: '/ɪkˈstrækʃən/', definition: 'The process of dissolving soluble compounds from coffee grounds into water. Under-extraction yields sourness; over-extraction produces bitterness. Ideal extraction is 18–22% of the coffee mass.' },
+  { term: 'Filter Coffee', phonetic: '/ˈfɪltər ˈkɒfi/', definition: 'A brewing method passing hot water through a paper or metal filter. In South India, traditional filter coffee (kaapi) is brewed in a two-piece brass or stainless-steel percolator and served with chicory and milk.' },
+  { term: 'Flat White', phonetic: '/flæt waɪt/', definition: 'An espresso-based drink with a small amount of steamed, microfoamed milk. Originated in Australia and New Zealand; popular in Indian specialty cafes.' },
+  { term: 'Green Bean', phonetic: '/ɡriːn biːn/', definition: 'Unroasted coffee seed. Green beans retain their flavour potential for 12–24 months if stored properly. Roasting transforms the bean\'s starches, proteins, and acids into hundreds of flavour compounds.' },
+  { term: 'Honey Process', phonetic: '/ˈhʌni ˈprɒsɛs/', definition: 'A processing method where the skin is removed but some or all of the mucilage (the "honey") is left on the bean during drying. Produces a sweet, fruity cup between washed and natural.' },
+  { term: 'Indian Coffee', phonetic: '/ˈɪndiən ˈkɒfi/', definition: 'Coffee grown in the southern states of Karnataka, Kerala, and Tamil Nadu. India is one of the few countries where coffee grows under shade, producing beans with distinctive low-acid, full-body profiles.' },
+  { term: 'Kaapi', phonetic: '/ˈkɑːpi/', definition: 'The Tamil and Kannada word for coffee, and the name for the iconic South Indian filter coffee drink — a strong decoction blended with hot milk and sugar, traditionally poured between two tumblers to create froth.' },
+  { term: 'Lot', phonetic: '/lɒt/', definition: 'A discrete batch of coffee from a specific harvest, processing run, or section of a farm. Lot traceability allows buyers to link a cup\'s taste directly to its growing and processing conditions.' },
+  { term: 'Malabar', phonetic: '/ˈmæləbɑːr/', definition: 'A coastal region of Kerala and Karnataka; also the name of India\'s famous Monsooned Malabar coffee, where green beans are exposed to monsoon winds to produce a distinctively low-acid, earthy cup.' },
+  { term: 'Monsooned Malabar', phonetic: '/ˈmɒnsuːnd ˈmæləbɑːr/', definition: 'An Indian specialty processing technique where dried green beans are exposed to the warm, humid monsoon winds of the Malabar coast for 12–16 weeks, swelling the bean and creating an intensely earthy, low-acid flavour.' },
+  { term: 'Natural Process', phonetic: '/ˈnætʃrəl ˈprɒsɛs/', definition: 'See Dry Process. The oldest coffee processing method — whole cherries are dried intact, allowing the fruit\'s sugars to ferment into the bean.' },
+  { term: 'Nilgiris', phonetic: '/ˈnɪlɡɪrɪz/', definition: 'The "Blue Mountains" — a range spanning Tamil Nadu, Kerala, and Karnataka where coffee is grown at 900–2,100 m alongside tea. Nilgiri coffees are noted for their bright acidity and floral character.' },
+  { term: 'Origin', phonetic: '/ˈɒrɪdʒɪn/', definition: 'The country, region, or farm from which a coffee is sourced. Single-origin coffees are traceable to one specific source, preserving the unique flavour characteristics of that place.' },
+  { term: 'Peaberry', phonetic: '/ˈpiːbɛri/', definition: 'A naturally occurring mutation where a coffee cherry contains one oval bean instead of two flat-sided beans. Peaberries are often sweeter and more concentrated in flavour; Indian peaberries are a sought-after specialty.' },
+  { term: 'Pour Over', phonetic: '/pɔːr ˈoʊvər/', definition: 'A manual filter brewing method where hot water is poured in a controlled stream over grounds in a dripper (e.g. V60, Chemex). Produces a clean, bright cup that highlights single-origin character.' },
+  { term: 'Pulped Natural', phonetic: '/pʌlpt ˈnætʃrəl/', definition: 'Also called semi-washed or honey process. The cherry skin is removed but the mucilage remains on the bean during drying, producing a cup between washed clarity and natural sweetness.' },
+  { term: 'Robusta', phonetic: '/roʊˈbʌstə/', definition: 'Coffea canephora — a species containing roughly twice the caffeine of Arabica. Chikmagalur is one of India\'s premier Robusta regions; fine Robusta adds crema, body, and intensity to espresso blends.' },
+  { term: 'Roast Profile', phonetic: '/roʊst ˈproʊfaɪl/', definition: 'The time-and-temperature curve a roaster follows to develop a coffee\'s flavour. Light roasts preserve origin character; dark roasts develop bittersweet, chocolatey notes.' },
+  { term: 'Ristretto', phonetic: '/rɪˈstrɛtoʊ/', definition: 'Italian for "restricted" — a shorter, more concentrated espresso shot pulled with the same dose but half the water. Produces a sweeter, less bitter result than a standard espresso.' },
+  { term: 'Single Origin', phonetic: '/ˈsɪŋɡəl ˈɒrɪdʒɪn/', definition: 'Coffee sourced from one identifiable location — a country, region, or single estate. Every product in the Indian Roasted Coffee range is single-origin and estate-traceable.' },
+  { term: 'Specialty Coffee', phonetic: '/ˈspɛʃəlti ˈkɒfi/', definition: 'Coffee scoring 80 or above on the 100-point SCA (Specialty Coffee Association) scale, with zero primary defects. Specialty grade is the minimum quality standard for the Indian Roasted Coffee range.' },
+  { term: 'Terroir', phonetic: '/tɛˈrwɑːr/', definition: 'A French term adopted by the coffee world to describe how geography, climate, soil, altitude, and shade interact to shape a coffee\'s flavour. India\'s diverse growing regions each express a distinct terroir.' },
+  { term: 'Third Wave', phonetic: '/θɜːrd weɪv/', definition: 'A movement treating coffee as an artisanal product rather than a commodity — emphasising traceability, light roasting, skilled brewing, and direct farmer relationships. Indian Roasted Coffee is part of India\'s third-wave scene.' },
+  { term: 'Washed Process', phonetic: '/wɒʃt ˈprɒsɛs/', definition: 'Also called wet process. The cherry skin and mucilage are removed with water before drying. Produces a clean, bright, origin-forward cup — the most common processing method for Indian Arabica.' },
+  { term: 'Wayanad', phonetic: '/ˈwaɪənɑːd/', definition: 'A high-altitude district in Kerala bordering Karnataka and Tamil Nadu. Wayanad produces both Arabica and Robusta under dense shade canopy, with flavours ranging from nutty and chocolatey to bright and citrusy.' },
+];
+
+// Sort alphabetically
+terms.sort((a, b) => a.term.localeCompare(b.term));
+
+// Group by first letter
+const grouped = terms.reduce<Record<string, Term[]>>((acc, term) => {
+  const letter = term.term[0].toUpperCase();
+  (acc[letter] ??= []).push(term);
+  return acc;
+}, {});
+
+const letters = Object.keys(grouped).sort();
+
+const title = isEs ? 'Glosario del Café' : 'Coffee Glossary';
+const description = isEs
+  ? 'Términos esenciales del café explicados: desde Arabica hasta terroir.'
+  : 'Essential coffee terms explained — from Arabica to terroir, cupping to processing methods.';
+---
+
+<BaseLayout title={title} description={description} locale={locale}>
+  <div class="grid-container usa-section">
+    <Breadcrumb items={[
+      { label: isEs ? 'Inicio' : 'Home', href: isEs ? '/es/' : '/' },
+      { label: title, href: `${prefix}/glossary/` },
+    ]} />
+
+    <h1>{title}</h1>
+    <p class="usa-intro">
+      {isEs
+        ? 'Una guía de referencia de los términos más importantes del café, desde el origen hasta la taza.'
+        : 'A reference guide to the most important coffee terms, from origin to cup.'}
+    </p>
+
+    <!-- Alphabet jump nav -->
+    <nav aria-label={isEs ? 'Navegar por letra' : 'Jump to letter'} class="glossary-alpha-nav">
+      {letters.map((letter) => (
+        <a href={`#letter-${letter}`} class="glossary-alpha-nav__link">{letter}</a>
+      ))}
+    </nav>
+
+    <!-- Term sections -->
+    {letters.map((letter) => (
+      <section id={`letter-${letter}`} class="glossary-section">
+        <h2 class="glossary-section__letter" aria-label={`${isEs ? 'Letra' : 'Letter'} ${letter}`}>
+          {letter}
+        </h2>
+        <div class="glossary-terms">
+          {grouped[letter].map((item) => (
+            <article class="glossary-term">
+              <h3 class="glossary-term__name">{item.term}</h3>
+              {item.phonetic && (
+                <p class="glossary-term__phonetic">{item.phonetic} · <em>noun</em></p>
+              )}
+              <p class="glossary-term__definition">{item.definition}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+    ))}
+
+    <div class="margin-top-6">
+      <p>
+        {isEs ? 'Explorar nuestros ' : 'Explore our '}
+        <a href={withBase(`${prefix}/services/`)} class="usa-link">
+          {isEs ? 'productos de café de origen único' : 'single-origin coffee products'}
+        </a>.
+      </p>
+    </div>
+  </div>
+</BaseLayout>
+
+<style>
+  .glossary-alpha-nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+    margin-block: 1.5rem 2.5rem;
+    padding: 0.75rem 1rem;
+    background: #f0f0f0;
+    border-radius: 4px;
+  }
+  .glossary-alpha-nav__link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #005ea2;
+    text-decoration: none;
+    border-radius: 3px;
+    transition: background 0.1s;
+  }
+  .glossary-alpha-nav__link:hover {
+    background: #dfe1e2;
+    color: #1a4480;
+  }
+
+  .glossary-section {
+    margin-block: 2.5rem;
+    scroll-margin-top: 5rem;
+  }
+  .glossary-section__letter {
+    font-size: 1.75rem;
+    font-weight: 900;
+    color: #005ea2;
+    border-bottom: 2px solid #005ea2;
+    padding-bottom: 0.35rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .glossary-terms {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr));
+    gap: 1rem;
+  }
+
+  .glossary-term {
+    background: #fff;
+    border: 1px solid #dfe1e2;
+    border-radius: 6px;
+    padding: 1.1rem 1.25rem;
+  }
+  .glossary-term__name {
+    font-size: 1.05rem;
+    font-weight: 700;
+    margin: 0 0 0.2rem;
+    color: #1b1b1b;
+  }
+  .glossary-term__phonetic {
+    font-size: 0.8rem;
+    color: #71767a;
+    margin: 0 0 0.6rem;
+  }
+  .glossary-term__definition {
+    font-size: 0.9rem;
+    line-height: 1.55;
+    color: #3d4551;
+    margin: 0;
+  }
+</style>

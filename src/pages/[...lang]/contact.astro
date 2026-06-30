@@ -1,0 +1,227 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import SummaryBox from '../../components/uswds/SummaryBox.astro';
+import type { Locale } from '../../i18n/utils';
+import { localeStaticPaths, useTranslations } from '../../i18n/utils';
+
+export function getStaticPaths() {
+  return localeStaticPaths();
+}
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const t = useTranslations(locale);
+
+const idSuffix = locale === 'es' ? '-es' : '';
+
+const copy = {
+  en: {
+    title: 'Contact us',
+    description: "Reach our team by phone, email, or our online form. We're here to help.",
+    heading: 'Contact us',
+    intro: "We're here to help. Reach us by phone, our contact form, or visit us in Bengaluru.",
+    formHeading: 'Send a message',
+    formLabel: 'Contact form',
+    required: 'required',
+    name: 'Full name',
+    email: 'Email address',
+    emailHint: "We'll use this to respond to your message.",
+    phone: 'Phone number',
+    optional: '(optional)',
+    topicLegend: 'What is your message about?',
+    topics: ['Coorg Arabica', 'Chikmagalur Robusta', 'Wayanad Specialty Blend', 'Nilgiri Estate Dark', 'My order', 'Wholesale enquiry', 'Other'],
+    message: 'Message',
+    messageHint: 'Please do not include payment details in your message.',
+    submit: 'Send message',
+    sidebarHeading: 'Other ways to reach us',
+    phoneHeading: 'Phone',
+    hours: 'Monday–Saturday, 9 a.m.–6 p.m. IST',
+    inPersonHeading: 'Visit us',
+    inPersonLink: 'Find us on Google Maps',
+    inPersonNote: 'Showroom visits by appointment.',
+    mailHeading: 'Address',
+    responseHeading: 'Response time',
+    responseBody: 'We respond to messages within 1 business day.',
+  },
+  es: {
+    title: 'Contáctenos',
+    description: 'Comuníquese con nuestro equipo por teléfono, correo electrónico o formulario en línea.',
+    heading: 'Contáctenos',
+    intro: 'Estamos aquí para ayudar. Comuníquese con nosotros por teléfono, formulario de contacto o visítenos en Bengaluru.',
+    formHeading: 'Enviar un mensaje',
+    formLabel: 'Formulario de contacto',
+    required: 'requerido',
+    name: 'Nombre completo',
+    email: 'Correo electrónico',
+    emailHint: 'Lo usaremos para responder a su mensaje.',
+    phone: 'Número de teléfono',
+    optional: '(opcional)',
+    topicLegend: '¿Su mensaje es sobre?',
+    topics: ['Coorg Arabica', 'Chikmagalur Robusta', 'Wayanad Specialty Blend', 'Nilgiri Estate Dark', 'Mi pedido', 'Consulta mayorista', 'Otro'],
+    message: 'Mensaje',
+    messageHint: 'Por favor no incluya datos de pago en su mensaje.',
+    submit: 'Enviar mensaje',
+    sidebarHeading: 'Otras formas de contactarnos',
+    phoneHeading: 'Teléfono',
+    hours: 'Lunes a sábado, 9 a.m.–6 p.m. IST',
+    inPersonHeading: 'Visítenos',
+    inPersonLink: 'Encuéntrenos en Google Maps',
+    inPersonNote: 'Visitas al showroom con cita previa.',
+    mailHeading: 'Dirección',
+    responseHeading: 'Tiempo de respuesta',
+    responseBody: 'Respondemos a los mensajes en 1 día hábil.',
+  },
+}[locale];
+---
+
+<BaseLayout title={copy.title} description={copy.description} locale={locale}>
+  <div class="grid-container usa-section">
+    <h1>{copy.heading}</h1>
+    <p class="usa-intro">{copy.intro}</p>
+
+    <div class="grid-row grid-gap">
+      <!-- Contact form -->
+      <div class="grid-col-12 tablet:grid-col-7">
+        <h2>{copy.formHeading}</h2>
+
+        <form
+          class="usa-form usa-form--large"
+          method="post"
+          action="#"
+          aria-label={copy.formLabel}
+          novalidate
+          lang={locale === 'es' ? 'es' : undefined}
+        >
+          <p class="usa-hint">{t('a11y.requiredFields')}.</p>
+
+          <div class="usa-form-group">
+            <label class="usa-label" for={`contact-name${idSuffix}`}>
+              {copy.name} <abbr title={copy.required}>*</abbr>
+            </label>
+            <input
+              class="usa-input"
+              id={`contact-name${idSuffix}`}
+              name="name"
+              type="text"
+              autocomplete="name"
+              required
+              aria-required="true"
+            />
+          </div>
+
+          <div class="usa-form-group">
+            <label class="usa-label" for={`contact-email${idSuffix}`}>
+              {copy.email} <abbr title={copy.required}>*</abbr>
+            </label>
+            <span class="usa-hint" id={`contact-email-hint${idSuffix}`}>
+              {copy.emailHint}
+            </span>
+            <input
+              class="usa-input"
+              id={`contact-email${idSuffix}`}
+              name="email"
+              type="email"
+              autocomplete="email"
+              required
+              aria-required="true"
+              aria-describedby={`contact-email-hint${idSuffix}`}
+            />
+          </div>
+
+          <div class="usa-form-group">
+            <label class="usa-label" for={`contact-phone${idSuffix}`}>
+              {copy.phone} <span class="usa-hint">{copy.optional}</span>
+            </label>
+            <input
+              class="usa-input"
+              id={`contact-phone${idSuffix}`}
+              name="phone"
+              type="tel"
+              autocomplete="tel"
+            />
+          </div>
+
+          <fieldset class="usa-fieldset">
+            <legend class="usa-legend">
+              {copy.topicLegend} <abbr title={copy.required}>*</abbr>
+            </legend>
+            {copy.topics.map((topic) => (
+              <div class="usa-radio">
+                <input
+                  class="usa-radio__input"
+                  id={`topic${idSuffix}-${topic.replace(/\s+/g, '-').toLowerCase()}`}
+                  type="radio"
+                  name="topic"
+                  value={topic}
+                  required
+                />
+                <label
+                  class="usa-radio__label"
+                  for={`topic${idSuffix}-${topic.replace(/\s+/g, '-').toLowerCase()}`}
+                >
+                  {topic}
+                </label>
+              </div>
+            ))}
+          </fieldset>
+
+          <div class="usa-form-group">
+            <label class="usa-label" for={`contact-message${idSuffix}`}>
+              {copy.message} <abbr title={copy.required}>*</abbr>
+            </label>
+            <span class="usa-hint" id={`contact-message-hint${idSuffix}`}>
+              {copy.messageHint}
+            </span>
+            <textarea
+              class="usa-textarea"
+              id={`contact-message${idSuffix}`}
+              name="message"
+              rows={6}
+              required
+              aria-required="true"
+              aria-describedby={`contact-message-hint${idSuffix}`}
+            ></textarea>
+          </div>
+
+          <button type="submit" class="usa-button usa-button--big">
+            {copy.submit}
+          </button>
+        </form>
+      </div>
+
+      <!-- Contact details sidebar -->
+      <div class="grid-col-12 tablet:grid-col-5">
+        <SummaryBox heading={copy.sidebarHeading} label={copy.sidebarHeading}>
+          <h3 class="font-heading-sm margin-bottom-0">{copy.phoneHeading}</h3>
+          <p>
+            <a href="tel:+918045678900" class="usa-link">+91‑80‑4567‑8900</a>
+            <br />
+            <span class="text-base-dark font-sans-sm">{copy.hours}</span>
+          </p>
+
+          <h3 class="font-heading-sm margin-bottom-0">{copy.inPersonHeading}</h3>
+          <p>
+            <a href="https://maps.google.com" class="usa-link" rel="noreferrer">
+              {copy.inPersonLink}
+            </a>
+            <br />
+            <span class="text-base-dark font-sans-sm">{copy.inPersonNote}</span>
+          </p>
+
+          <h3 class="font-heading-sm margin-bottom-0">{copy.mailHeading}</h3>
+          <address class="usa-prose">
+            Indian Roasted Coffee<br />
+            12 Estate Road, Coffee Board Area<br />
+            Bengaluru, Karnataka 560001
+          </address>
+
+          <h3 class="font-heading-sm margin-bottom-0">{copy.responseHeading}</h3>
+          <p>{copy.responseBody}</p>
+        </SummaryBox>
+      </div>
+    </div>
+  </div>
+</BaseLayout>

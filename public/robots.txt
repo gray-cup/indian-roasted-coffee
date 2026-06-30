@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+Disallow: /internal/
+Disallow: /cart
+
+Sitemap: https://indianroastedcoffee.com/sitemap-index.xml
+
+# LLM-friendly content index
+# See /llms.txt for a structured index of this site

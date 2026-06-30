@@ -1,0 +1,11 @@
+/* TEAM */
+Company: Gray Cup Enterprises Private Limited
+Site: graycup.org
+Location: Bengaluru, Karnataka, India
+
+/* SITE */
+Name: Indian Roasted Coffee
+URL: https://indianroastedcoffee.com
+Description: Premium single-origin Indian coffee beans from Coorg, Chikmagalur, Wayanad, and the Nilgiris — roasted to order, shipped within 48 hours.
+Built with: Astro, USWDS, Tailwind CSS
+Language: English, Español

@@ -1,0 +1,99 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import Hero from '../../../components/uswds/Hero.astro';
+import ServiceCard from '../../../components/uswds/ServiceCard.astro';
+import { idToSlug } from '../../../utils/content';
+import type { Locale } from '../../../i18n/utils';
+import { localeStaticPaths, useTranslations, withBase } from '../../../i18n/utils';
+
+export function getStaticPaths() {
+  return localeStaticPaths();
+}
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const t = useTranslations(locale);
+const prefix = locale === 'es' ? '/es' : '';
+
+const copy = {
+  en: {
+    title: 'Products',
+    description: 'Browse our single-origin Indian coffee beans, roasted to order.',
+    heroHeading: 'Our products',
+    heroSubheading: 'Single-origin lots from India\'s finest coffee estates — roasted fresh to order and shipped within 48 hours.',
+    heroLabel: 'Products',
+    showing: (n: number) => `Showing ${n} products`,
+    notFoundLead: "Don't see what you need?",
+    notFoundHelp: 'help center',
+    notFoundOr: 'or',
+    notFoundContact: 'contact us',
+    benefitsBefore: 'You can also visit the',
+    benefitsAfter: 'to learn about Indian coffee growing regions.',
+    benefitsUrl: 'https://coffeeboard.gov.in/',
+    benefitsLabel: 'Coffee Board of India',
+  },
+  es: {
+    title: 'Productos',
+    description: 'Explora nuestros granos de café indio de origen único, tostados a pedido.',
+    heroHeading: 'Nuestros productos',
+    heroSubheading: 'Lotes de origen único de las mejores fincas cafeteras de India — tostados frescos a pedido y enviados en 48 horas.',
+    heroLabel: 'Productos',
+    showing: (n: number) => `Mostrando ${n} productos`,
+    notFoundLead: '¿No encuentras lo que necesitas?',
+    notFoundHelp: 'centro de ayuda',
+    notFoundOr: 'o',
+    notFoundContact: 'contáctenos',
+    benefitsBefore: 'También puedes visitar el',
+    benefitsAfter: 'para conocer las regiones cafeteras de India.',
+    benefitsUrl: 'https://coffeeboard.gov.in/',
+    benefitsLabel: 'Coffee Board of India',
+  },
+}[locale];
+
+const services = (await getCollection('services', ({ data }) => !data.draft))
+  .sort((a, b) => a.data.order - b.data.order);
+---
+
+<BaseLayout title={copy.title} description={copy.description} locale={locale}>
+  <Hero
+    heading={copy.heroHeading}
+    subheading={copy.heroSubheading}
+    label={copy.heroLabel}
+    small
+  />
+
+  <div class="grid-container usa-section">
+    <p class="text-base font-sans-sm">{copy.showing(services.length)}</p>
+
+    <ul class="usa-card-group">
+      {services.map((service) => (
+        <ServiceCard
+          title={service.data.title}
+          summary={service.data.summary}
+          href={`${prefix}/services/${idToSlug(service.id)}/`}
+          ctaText={t('home.learnMore')}
+          acceptingApplications={service.data.acceptingApplications}
+          locale={locale}
+          class="tablet:grid-col-6 desktop:grid-col-4"
+        />
+      ))}
+    </ul>
+
+    <div class="usa-prose margin-top-6">
+      <p>
+        <strong>{copy.notFoundLead}</strong> {locale === 'es' ? 'Visita nuestro' : 'Visit our'}{' '}
+        <a href={withBase(`${prefix}/help/`)} class="usa-link">{copy.notFoundHelp}</a> {copy.notFoundOr}{' '}
+        <a href={withBase(`${prefix}/contact/`)} class="usa-link">{copy.notFoundContact}</a>.
+      </p>
+      <p>
+        {copy.benefitsBefore}{' '}
+        <a href={copy.benefitsUrl} class="usa-link" rel="noreferrer">{copy.benefitsLabel}</a>{' '}
+        {copy.benefitsAfter}
+      </p>
+    </div>
+  </div>
+</BaseLayout>

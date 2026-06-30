@@ -1,0 +1,77 @@
+{
+  "site": {
+    "name": "Indian Roasted Coffee",
+    "tagline": "Premium single-origin Indian coffee, roasted to order"
+  },
+  "banner": {
+    "headerText": "MOQ Starts at 1kg & 250gm Samples Available",
+    "headerAction": "Retail & wholesale available",
+    "buttonText": "Retail & wholesale available",
+    "dotGovTitle": "Retail orders",
+    "dotGovBody": "Shop single bags of {strong}250 g, 500 g, or 1 kg{/strong} at retail prices. Free shipping on orders above ₹1,500.",
+    "httpsTitle": "Wholesale & bulk supply",
+    "httpsBody": "MOQ starts at {strong}1 kg per SKU{/strong}. 250 g samples available. We supply cafes, roasters, hotels, and gifting companies.",
+    "lockTitle": "Lock",
+    "lockDesc": "Locked padlock icon"
+  },
+  "nav": {
+    "skipToMain": "Skip to main content",
+    "primary": "Primary navigation",
+    "menu": "Menu",
+    "close": "Close"
+  },
+  "home": {
+    "heroHeading": "Premium Indian coffee,",
+    "heroHeadingAlt": "roasted to order",
+    "heroSubheading": "Single-origin beans from Coorg, Chikmagalur, Wayanad, and the Nilgiris — roasted fresh and shipped within 48 hours.",
+    "heroCta": "Shop products",
+    "servicesHeading": "Featured products",
+    "servicesSubheading": "Hand-picked from India's finest coffee-growing regions, each lot is roasted to order.",
+    "learnMore": "Learn more",
+    "applyNow": "Order now"
+  },
+  "identifier": {
+    "logoAlt": "Indian Roasted Coffee logo",
+    "disclaimer": "The official online store of",
+    "linksLabel": "Helpful links",
+    "about": "About Indian Roasted Coffee",
+    "accessibility": "Accessibility statement",
+    "foia": "Shipping policy",
+    "noFear": "Returns & refunds",
+    "oig": "Sustainability",
+    "privacy": "Privacy policy",
+    "budget": "Certifications",
+    "usagovDescription": "Looking for India's coffee authority?",
+    "usagovLink": "Visit Coffee Board of India"
+  },
+  "footer": {
+    "contactUs": "Contact us",
+    "phone": "+91‑80‑4567‑8900",
+    "email": "hello@indianroastedcoffee.com",
+    "hours": "Monday–Saturday, 9 a.m.–6 p.m. IST",
+    "returnToTop": "Return to top"
+  },
+  "pagination": {
+    "label": "Pagination",
+    "previous": "Previous",
+    "previousPage": "Previous page",
+    "next": "Next",
+    "nextPage": "Next page",
+    "page": "Page"
+  },
+  "serviceCard": {
+    "notAccepting": "Currently unavailable"
+  },
+  "a11y": {
+    "requiredFields": "Required fields are marked with an asterisk (*)",
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success"
+  },
+  "404": {
+    "heading": "Page not found",
+    "body": "We can't find the page you're looking for. It may have moved or no longer exists.",
+    "homeCta": "Return to homepage",
+    "helpCta": "Visit our help center"
+  }
+}

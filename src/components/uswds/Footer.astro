@@ -1,0 +1,170 @@
+---
+/**
+ * Footer — usa-footer
+ * https://designsystem.digital.gov/components/footer/
+ */
+
+import type { Locale } from '../../i18n/utils';
+import { useTranslations, telHref, withBase } from '../../i18n/utils';
+import { siteConfig } from '../../config/site';
+
+interface FooterLink {
+  label: string;
+  href: string;
+}
+
+interface FooterColumn {
+  heading: string;
+  links: FooterLink[];
+}
+
+interface Props {
+  locale?: Locale;
+  variant?: 'slim' | 'medium' | 'big';
+  columns?: FooterColumn[];
+  class?: string;
+}
+
+const {
+  locale = 'en',
+  variant = 'medium',
+  columns,
+  class: className,
+} = Astro.props;
+
+const t = useTranslations(locale);
+
+const defaultColumns: FooterColumn[] =
+  locale === 'es'
+    ? [
+        {
+          heading: 'Productos',
+          links: [
+            { label: 'Coorg Arabica', href: '/es/services/coorg-arabica/' },
+            { label: 'Chikmagalur Robusta', href: '/es/services/chikmagalur-robusta/' },
+            { label: 'Wayanad Specialty Blend', href: '/es/services/wayanad-specialty/' },
+            { label: 'Nilgiri Estate Dark', href: '/es/services/nilgiri-estate/' },
+          ],
+        },
+        {
+          heading: 'Mayorista',
+          links: [
+            { label: 'Información mayorista', href: '/es/wholesale/' },
+            { label: 'Solicitar una muestra', href: '/es/contact/' },
+            { label: 'Contáctenos', href: '/es/contact/' },
+          ],
+        },
+        {
+          heading: 'Aprender',
+          links: [
+            { label: 'Glosario del Café', href: '/es/glossary/' },
+            { label: 'Acerca de nosotros', href: '/es/about/' },
+          ],
+        },
+      ]
+    : [
+        {
+          heading: 'Products',
+          links: [
+            { label: 'Coorg Arabica', href: '/services/coorg-arabica/' },
+            { label: 'Chikmagalur Robusta', href: '/services/chikmagalur-robusta/' },
+            { label: 'Wayanad Specialty Blend', href: '/services/wayanad-specialty/' },
+            { label: 'Nilgiri Estate Dark', href: '/services/nilgiri-estate/' },
+          ],
+        },
+        {
+          heading: 'Wholesale',
+          links: [
+            { label: 'Wholesale overview', href: '/wholesale/' },
+            { label: 'Request a sample', href: '/contact/' },
+            { label: 'Contact us', href: '/contact/' },
+          ],
+        },
+        {
+          heading: 'Learn',
+          links: [
+            { label: 'Coffee Glossary', href: '/glossary/' },
+            { label: 'About us', href: '/about/' },
+          ],
+        },
+      ];
+
+const resolvedColumns = columns ?? defaultColumns;
+---
+
+<footer class:list={['usa-footer', `usa-footer--${variant}`, className]}>
+  {variant !== 'slim' && (
+    <div class="grid-container usa-footer__return-to-top">
+      <a href="#">{t('footer.returnToTop')}</a>
+    </div>
+  )}
+
+  {resolvedColumns.length > 0 && (
+    <div class="usa-footer__primary-section">
+      <div class="grid-container padding-y-4">
+        <div class="grid-row grid-gap">
+          {resolvedColumns.map((col) => (
+            <div class="mobile-lg:grid-col-6 desktop:grid-col-3">
+              <section class="usa-footer__primary-content usa-footer__primary-content--collapsible">
+                <h2 class="usa-footer__primary-link">{col.heading}</h2>
+                <ul class="usa-list usa-list--unstyled">
+                  {col.links.map((link) => (
+                    <li class="usa-footer__secondary-link">
+                      <a href={withBase(link.href)}>{link.label}</a>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  )}
+
+  <div class="usa-footer__secondary-section">
+    <div class="grid-container">
+      <div class="grid-row grid-gap">
+        <div class="usa-footer__logo grid-row mobile-lg:grid-col-6 mobile-lg:grid-gap-2">
+          <div class="mobile-lg:grid-col-auto">
+            <p class="usa-footer__logo-heading">{siteConfig.name}</p>
+            <p class="usa-footer__logo-tagline">
+              Powered by{' '}
+              <a href="https://graycup.com" rel="dofollow" target="_blank" class="usa-link">
+                Gray Cup
+              </a>
+            </p>
+          </div>
+        </div>
+        <div class="usa-footer__contact-links mobile-lg:grid-col-6">
+          <h2 class="usa-footer__contact-heading">
+            {t('footer.contactUs')}
+          </h2>
+          <address class="usa-footer__address">
+            <div class="usa-footer__contact-info grid-row grid-gap">
+              <div class="grid-col-auto">
+                <a href={telHref(t('footer.phone'))}>
+                  {t('footer.phone')}
+                </a>
+              </div>
+              <div class="grid-col-auto">
+                <a href={`mailto:${t('footer.email')}`}>
+                  {t('footer.email')}
+                </a>
+              </div>
+            </div>
+          </address>
+        </div>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<style>
+  .usa-footer__logo-tagline {
+    font-size: 0.8rem;
+    margin-top: 0.25rem;
+    color: inherit;
+    opacity: 0.75;
+  }
+</style>

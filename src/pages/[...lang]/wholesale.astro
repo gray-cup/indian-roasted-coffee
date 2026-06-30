@@ -1,0 +1,223 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Hero from '../../components/uswds/Hero.astro';
+import ProcessList from '../../components/uswds/ProcessList.astro';
+import ProcessListItem from '../../components/uswds/ProcessListItem.astro';
+import SummaryBox from '../../components/uswds/SummaryBox.astro';
+import CallToAction from '../../components/uswds/CallToAction.astro';
+import type { Locale } from '../../i18n/utils';
+import { localeStaticPaths, withBase } from '../../i18n/utils';
+
+export function getStaticPaths() {
+  return localeStaticPaths();
+}
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const prefix = locale === 'es' ? '/es' : '';
+
+const copy = {
+  en: {
+    title: 'Wholesale',
+    description: 'Buy Indian roasted coffee in bulk. MOQ starts at 1 kg. 250 g samples available. We supply cafes, roasters, retailers, hotels, and gifting companies across India.',
+    heroHeading: 'Bulk Indian coffee,',
+    heroHeadingAlt: 'direct from the estate',
+    heroSubheading: 'We supply cafes, specialty roasters, retailers, hotels, and corporate gifting companies. MOQ starts at 1 kg — 250 g samples available before you commit.',
+    heroLabel: 'Wholesale',
+    heroCta: 'Request a sample',
+    heroHref: '/contact/',
+
+    whoHeading: 'Who we supply',
+    who: [
+      { heading: 'Cafes & coffee shops', body: 'House blends, rotating single-origins, and South Indian filter coffee for your menu. We can work with your roast profile or recommend one.' },
+      { heading: 'Specialty roasters', body: 'Green or roasted lots for your own line. Sourced directly from named estates with full traceability documentation.' },
+      { heading: 'Retailers & e-commerce', body: 'White-label or co-branded bags for retail shelves and online stores. Custom packaging and roast schedules available.' },
+      { heading: 'Hotels, restaurants & QSR', body: 'Consistent bulk supply with flexible delivery cadences. We\'ll match your grind spec for filter machines, bean-to-cup, or espresso.' },
+      { heading: 'Corporate gifting', body: 'Curated tasting sets and branded gift boxes for corporate clients. Minimum 50 units per order for gifting packages.' },
+    ],
+
+    moqHeading: 'Pricing & minimum orders',
+    moqIntro: 'All prices are per kg, roasted and packed. Contact us for a formal quote — we\'ll confirm availability, roast date, and delivery lead time.',
+    tiers: [
+      { tier: 'Sample', qty: '250 g', note: 'One-time sample fee, refunded on first bulk order' },
+      { tier: 'Small wholesale', qty: '1–9 kg per SKU', note: 'Standard wholesale rate' },
+      { tier: 'Medium wholesale', qty: '10–49 kg per SKU', note: 'Volume discount applied' },
+      { tier: 'Large wholesale', qty: '50 kg+ per SKU', note: 'Best rate + priority roast scheduling' },
+    ],
+
+    processHeading: 'How to get started',
+    steps: [
+      { heading: 'Request a sample', body: 'Fill in the contact form or email us. Tell us which origins interest you, your brew method, and approximate volume. We\'ll send a 250 g sample within 48 hours.' },
+      { heading: 'Taste and confirm', body: 'Brew the sample on your own equipment. If you\'re happy, we\'ll send a formal quote with pricing, lead times, and payment terms.' },
+      { heading: 'Place your first order', body: 'Pay by bank transfer or UPI. We roast to your schedule and dispatch within 48 hours of roasting.' },
+      { heading: 'Ongoing supply', body: 'Set a regular cadence — weekly, fortnightly, or monthly. We\'ll lock in your roast slot and notify you before each dispatch.' },
+    ],
+
+    ctaHeading: 'Ready to talk wholesale?',
+    ctaPrimary: 'Request a sample',
+    ctaSecondary: 'Call us',
+
+    sidebarHeading: 'Wholesale quick facts',
+    facts: [
+      { label: 'Sample size', value: '250 g (fee refunded on first order)' },
+      { label: 'MOQ', value: '1 kg per SKU' },
+      { label: 'Roast-to-dispatch', value: '48 hours' },
+      { label: 'Payment terms', value: 'Prepaid (bank transfer / UPI); net-30 for established accounts' },
+      { label: 'Packaging', value: 'Kraft valve bags, 250 g / 500 g / 1 kg; custom label available' },
+      { label: 'Certifications', value: 'FSSAI, Coffee Board of India' },
+    ],
+  },
+  es: {
+    title: 'Mayorista',
+    description: 'Compra café indio tostado al por mayor. MOQ desde 1 kg. Muestras de 250 g disponibles. Suministramos cafeterías, tostadores, minoristas y empresas de regalos corporativos.',
+    heroHeading: 'Café indio al por mayor,',
+    heroHeadingAlt: 'directo de la finca',
+    heroSubheading: 'Suministramos cafeterías, tostadores especializados, minoristas, hoteles y empresas de regalos corporativos. MOQ desde 1 kg — muestras de 250 g disponibles.',
+    heroLabel: 'Mayorista',
+    heroCta: 'Solicitar una muestra',
+    heroHref: '/es/contact/',
+
+    whoHeading: 'A quién suministramos',
+    who: [
+      { heading: 'Cafeterías y cafés', body: 'Mezclas propias, orígenes únicos rotativos y café filtro al estilo del sur de India para su menú.' },
+      { heading: 'Tostadores especializados', body: 'Lotes verdes o tostados para su propia línea. Origen directo de fincas nombradas con documentación de trazabilidad completa.' },
+      { heading: 'Minoristas y e-commerce', body: 'Bolsas de marca blanca o co-branded para tiendas físicas y en línea. Embalaje personalizado disponible.' },
+      { heading: 'Hoteles, restaurantes y cadenas', body: 'Suministro masivo consistente con cadencias de entrega flexibles.' },
+      { heading: 'Regalos corporativos', body: 'Sets de cata y cajas de regalo de marca para clientes corporativos. Mínimo 50 unidades por pedido.' },
+    ],
+
+    moqHeading: 'Precios y pedidos mínimos',
+    moqIntro: 'Todos los precios son por kg, tostado y envasado. Contáctenos para un presupuesto formal.',
+    tiers: [
+      { tier: 'Muestra', qty: '250 g', note: 'Tarifa única de muestra, reembolsada en el primer pedido masivo' },
+      { tier: 'Mayorista pequeño', qty: '1–9 kg por SKU', note: 'Tarifa mayorista estándar' },
+      { tier: 'Mayorista mediano', qty: '10–49 kg por SKU', note: 'Descuento por volumen aplicado' },
+      { tier: 'Mayorista grande', qty: '50 kg+ por SKU', note: 'Mejor tarifa + programación de tueste prioritaria' },
+    ],
+
+    processHeading: 'Cómo empezar',
+    steps: [
+      { heading: 'Solicitar una muestra', body: 'Complete el formulario de contacto o envíenos un correo. Díganos qué orígenes le interesan y su volumen aproximado.' },
+      { heading: 'Probar y confirmar', body: 'Prepare la muestra en su propio equipo. Si está satisfecho, le enviaremos una cotización formal.' },
+      { heading: 'Realizar su primer pedido', body: 'Pague por transferencia bancaria o UPI. Tostamos según su calendario y despachamos en 48 horas.' },
+      { heading: 'Suministro continuo', body: 'Establezca una cadencia regular — semanal, quincenal o mensual.' },
+    ],
+
+    ctaHeading: '¿Listo para hablar de mayoreo?',
+    ctaPrimary: 'Solicitar una muestra',
+    ctaSecondary: 'Llámenos',
+
+    sidebarHeading: 'Datos rápidos de mayoreo',
+    facts: [
+      { label: 'Tamaño de muestra', value: '250 g (tarifa reembolsada en el primer pedido)' },
+      { label: 'MOQ', value: '1 kg por SKU' },
+      { label: 'Tueste a despacho', value: '48 horas' },
+      { label: 'Condiciones de pago', value: 'Prepago (transferencia / UPI); neto-30 para cuentas establecidas' },
+      { label: 'Embalaje', value: 'Bolsas kraft con válvula, 250 g / 500 g / 1 kg; etiqueta personalizada disponible' },
+      { label: 'Certificaciones', value: 'FSSAI, Coffee Board of India' },
+    ],
+  },
+}[locale];
+---
+
+<BaseLayout title={copy.title} description={copy.description} locale={locale}>
+  <Hero
+    heading={copy.heroHeading}
+    headingSuffix={copy.heroHeadingAlt}
+    subheading={copy.heroSubheading}
+    ctaText={copy.heroCta}
+    ctaHref={copy.heroHref}
+    label={copy.heroLabel}
+  />
+
+  <!-- Who we supply -->
+  <section class="usa-section" aria-labelledby="wholesale-who-heading">
+    <div class="grid-container">
+      <h2 id="wholesale-who-heading" class="font-heading-xl">{copy.whoHeading}</h2>
+      <ul class="usa-card-group">
+        {copy.who.map((item) => (
+          <li class="usa-card tablet:grid-col-6 desktop:grid-col-4">
+            <div class="usa-card__container">
+              <div class="usa-card__header">
+                <h3 class="usa-card__heading">{item.heading}</h3>
+              </div>
+              <div class="usa-card__body">
+                <p>{item.body}</p>
+              </div>
+            </div>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </section>
+
+  <!-- MOQ & pricing tiers + sidebar -->
+  <section class="usa-section bg-base-lightest" aria-labelledby="wholesale-moq-heading">
+    <div class="grid-container">
+      <div class="grid-row grid-gap">
+        <div class="grid-col-12 tablet:grid-col-8">
+          <h2 id="wholesale-moq-heading" class="font-heading-xl">{copy.moqHeading}</h2>
+          <p class="usa-intro">{copy.moqIntro}</p>
+
+          <table class="usa-table usa-table--borderless width-full">
+            <thead>
+              <tr>
+                <th scope="col">{locale === 'es' ? 'Nivel' : 'Tier'}</th>
+                <th scope="col">{locale === 'es' ? 'Cantidad' : 'Quantity'}</th>
+                <th scope="col">{locale === 'es' ? 'Nota' : 'Note'}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {copy.tiers.map((row) => (
+                <tr>
+                  <td><strong>{row.tier}</strong></td>
+                  <td>{row.qty}</td>
+                  <td class="text-base-dark font-sans-sm">{row.note}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+
+          <p class="margin-top-4">
+            <a href={withBase(`${prefix}/contact/`)} class="usa-button usa-button--big">
+              {copy.ctaPrimary}
+            </a>
+          </p>
+        </div>
+
+        <div class="grid-col-12 tablet:grid-col-4">
+          <SummaryBox heading={copy.sidebarHeading} label={copy.sidebarHeading}>
+            <dl>
+              {copy.facts.map((fact) => (
+                <>
+                  <dt class="text-bold">{fact.label}</dt>
+                  <dd class="margin-left-0 margin-bottom-2">{fact.value}</dd>
+                </>
+              ))}
+            </dl>
+          </SummaryBox>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- How to get started -->
+  <CallToAction
+    heading={copy.processHeading}
+    bg="base-lightest"
+    textColor="ink"
+    primaryCta={{ label: copy.ctaPrimary, href: `${prefix}/contact/` }}
+    secondaryCta={{ label: `${copy.ctaSecondary}: +91‑80‑4567‑8900`, href: 'tel:+918045678900' }}
+  >
+    <ProcessList>
+      {copy.steps.map((step) => (
+        <ProcessListItem heading={step.heading}>
+          <p>{step.body}</p>
+        </ProcessListItem>
+      ))}
+    </ProcessList>
+  </CallToAction>
+</BaseLayout>

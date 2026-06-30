@@ -1,0 +1,114 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumb from '../../components/uswds/Breadcrumb.astro';
+import { siteConfig } from '../../config/site';
+import type { Locale } from '../../i18n/utils';
+import { localeStaticPaths, withBase } from '../../i18n/utils';
+
+export function getStaticPaths() {
+  return localeStaticPaths();
+}
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const prefix = locale === 'es' ? '/es' : '';
+
+const copy = {
+  en: {
+    title: 'About',
+    description: `About ${siteConfig.name} — our story, sourcing philosophy, and how to reach us.`,
+    breadcrumbs: [
+      { label: 'Home', href: '/' },
+      { label: 'About', href: '/about/' },
+    ],
+    heading: `About ${siteConfig.name}`,
+    intro: 'We are a Bengaluru-based specialty coffee company dedicated to bringing India\'s finest single-origin beans directly to your cup.',
+    storyHeading: 'Our story',
+    story: 'Indian Roasted Coffee was founded by a small team of coffee farmers, roasters, and enthusiasts who believed that the exceptional quality of Indian estate coffee deserved wider recognition. We partner directly with growers in Coorg, Chikmagalur, Wayanad, and the Nilgiris — paying above Fair Trade rates and roasting every order fresh within 48 hours of dispatch.',
+    productsHeading: 'Our products',
+    products: 'Every lot we offer is single-origin and traceable to a specific estate. We roast in small batches to order, which means no coffee sits on a shelf going stale before it reaches you.',
+    productsLink: 'Browse all products',
+    ownershipHeading: 'Owned & operated by Gray Cup Enterprises',
+    ownershipBody: 'Indian Roasted Coffee is a brand of Gray Cup Enterprises Private Limited, a Bengaluru-based company building products and platforms across India\'s food, beverage, and retail landscape.',
+    graycupLinks: [
+      { label: 'Gray Cup company information', href: 'https://graycup.org' },
+      { label: 'Gray Cup homepage', href: 'https://graycup.com' },
+      { label: 'Gray Cup retail store (graycup.in)', href: 'https://graycup.in' },
+    ],
+    contactHeading: 'Get in touch',
+    contactLink: 'Contact us',
+    contactBody: 'by phone, email, or via our online form. We\'re happy to help with product questions, wholesale enquiries, and anything else coffee-related.',
+  },
+  es: {
+    title: 'Acerca de',
+    description: `Acerca de ${siteConfig.name} — nuestra historia, filosofía de abastecimiento y cómo contactarnos.`,
+    breadcrumbs: [
+      { label: 'Inicio', href: '/es/' },
+      { label: 'Acerca de', href: '/es/about/' },
+    ],
+    heading: `Acerca de ${siteConfig.name}`,
+    intro: 'Somos una empresa de café de especialidad con sede en Bengaluru, dedicada a llevar los mejores granos de origen único de India directamente a tu taza.',
+    storyHeading: 'Nuestra historia',
+    story: 'Indian Roasted Coffee fue fundada por un pequeño equipo de agricultores cafeteros, tostadores y entusiastas que creían que la excepcional calidad del café indio merecía mayor reconocimiento. Nos asociamos directamente con productores en Coorg, Chikmagalur, Wayanad y los Nilgiris — pagando por encima de las tarifas de Comercio Justo y tostando cada pedido fresco en 48 horas.',
+    productsHeading: 'Nuestros productos',
+    products: 'Cada lote que ofrecemos es de origen único y trazable a una finca específica. Tostamos en lotes pequeños a pedido, lo que significa que ningún café se queda en un estante perdiendo frescura antes de llegar a ti.',
+    productsLink: 'Ver todos los productos',
+    ownershipHeading: 'Propiedad y operación de Gray Cup Enterprises',
+    ownershipBody: 'Indian Roasted Coffee es una marca de Gray Cup Enterprises Private Limited, una empresa con sede en Bengaluru que desarrolla productos y plataformas en el sector de alimentos, bebidas y comercio minorista de India.',
+    graycupLinks: [
+      { label: 'Información corporativa de Gray Cup', href: 'https://graycup.org' },
+      { label: 'Sitio principal de Gray Cup', href: 'https://graycup.com' },
+      { label: 'Tienda minorista de Gray Cup (graycup.in)', href: 'https://graycup.in' },
+    ],
+    contactHeading: 'Contáctanos',
+    contactLink: 'Contáctenos',
+    contactBody: 'por teléfono, correo electrónico o mediante nuestro formulario en línea. Estamos felices de ayudar con preguntas sobre productos, consultas al por mayor y todo lo relacionado con el café.',
+  },
+}[locale];
+---
+
+<BaseLayout title={copy.title} description={copy.description} locale={locale}>
+  <div class="grid-container usa-section">
+    <div class="grid-row">
+      <div class="grid-col-12 tablet:grid-col-8">
+        <Breadcrumb items={copy.breadcrumbs} />
+
+        <h1>{copy.heading}</h1>
+
+        <div class="usa-prose">
+          <p class="usa-intro">{copy.intro}</p>
+
+          <h2>{copy.storyHeading}</h2>
+          <p>{copy.story}</p>
+
+          <h2>{copy.productsHeading}</h2>
+          <p>
+            {copy.products}{' '}
+            <a href={withBase(`${prefix}/services/`)} class="usa-link">{copy.productsLink}</a>.
+          </p>
+
+          <h2>{copy.ownershipHeading}</h2>
+          <p>{copy.ownershipBody}</p>
+          <ul>
+            {copy.graycupLinks.map((link) => (
+              <li>
+                <a href={link.href} class="usa-link" target="_blank" rel="noopener noreferrer">
+                  {link.label}
+                </a>
+              </li>
+            ))}
+          </ul>
+
+          <h2>{copy.contactHeading}</h2>
+          <p>
+            <a href={withBase(`${prefix}/contact/`)} class="usa-link">{copy.contactLink}</a>{' '}
+            {copy.contactBody}
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</BaseLayout>

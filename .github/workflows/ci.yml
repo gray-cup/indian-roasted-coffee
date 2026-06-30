@@ -1,0 +1,232 @@
+name: CI
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: '22'
+  PNPM_VERSION: '9'
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
+
+jobs:
+  # ── 1. TypeScript & Build ──────────────────────────────────────────────────
+  build:
+    name: TypeScript & Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Copy USWDS assets
+        run: node scripts/setup-uswds.mjs
+
+      - name: TypeScript check
+        run: pnpm check
+
+      - name: Build site
+        run: pnpm build
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+          retention-days: 1
+
+  # ── 2. HTML Validation ─────────────────────────────────────────────────────
+  html-validate:
+    name: HTML Validation
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Download build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+      # The dev-only /internal/ component preview intentionally renders
+      # components out of document context (multiple <h1> Heroes, etc.)
+      # and is excluded — same as in the axe-core job below.
+      - name: HTML Validation
+        run: find dist -name '*.html' -not -path 'dist/internal/*' -print0 | xargs -0 npx html-validate
+
+  # ── 3. Accessibility (axe-core) ────────────────────────────────────────────
+  a11y:
+    name: Accessibility (axe-core)
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Download build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+      # @axe-core/cli bundles the latest ChromeDriver, which is typically one
+      # version ahead of the Chrome pre-installed on the runner. Fix by using
+      # browser-driver-manager (the tool axe-core itself recommends) to install
+      # a ChromeDriver that exactly matches the runner's installed Chrome version.
+      # After install, browser-driver-manager writes paths to
+      # ~/.browser-driver-manager/.env (CHROMEDRIVER_TEST_PATH, CHROME_TEST_PATH).
+      - name: Install ChromeDriver matching runner Chrome
+        run: |
+          CHROME_VER=$(google-chrome --version | grep -oP '\d+\.\d+\.\d+\.\d+')
+          echo "Runner Chrome: $CHROME_VER"
+          npx -y browser-driver-manager install chrome@${CHROME_VER}
+          source "$HOME/.browser-driver-manager/.env"
+          # Paths in .env are relative to $HOME when they don't start with /
+          DRIVER="$CHROMEDRIVER_TEST_PATH"
+          [[ "$DRIVER" != /* ]] && DRIVER="$HOME/$DRIVER"
+          if [ ! -f "$DRIVER" ]; then
+            echo "::error::ChromeDriver not found at $DRIVER" && exit 1
+          fi
+          echo "CHROMEDRIVER_PATH=$DRIVER" >> "$GITHUB_ENV"
+          echo "Ready: $($DRIVER --version)"
+
+      - name: Start static server
+        run: npx -y serve dist --listen 4000 &
+
+      - name: Wait for server
+        run: sleep 3
+
+      # Test every built page (English and Spanish, including 404) by deriving
+      # the URL list from the dist output. The dev-only /internal/ preview is
+      # excluded.
+      - name: Accessibility check (axe-core)
+        run: |
+          URLS=$(cd dist && find . \( -name index.html -o -name 404.html \) -not -path './internal/*' \
+            | sed 's|^\.||; s|index\.html$||; s|^|http://localhost:4000|' \
+            | sort | tr '\n' ' ')
+          echo "Testing URLs: $URLS"
+          npx -y @axe-core/cli \
+            $URLS \
+            --chromedriver-path "$CHROMEDRIVER_PATH" \
+            --exit \
+            --timeout 60000
+
+  # ── 4. Lighthouse CI ───────────────────────────────────────────────────────
+  lighthouse:
+    name: Lighthouse CI
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+      - name: Lighthouse CI
+        uses: treosh/lighthouse-ci-action@v11
+        with:
+          configPath: ./lighthouserc.json
+          uploadArtifacts: true
+          temporaryPublicStorage: true
+
+  # ── 5. Link Check (linkinator) ─────────────────────────────────────────────
+  links:
+    name: Link Check
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Download build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+      - name: Start static server
+        run: npx -y serve dist --listen 4001 &
+
+      - name: Wait for server
+        run: sleep 3
+
+      - name: Check internal links
+        run: |
+          npx -y linkinator http://localhost:4001/ \
+            --recurse \
+            --skip "^(?!http://localhost)" \
+            --skip "tel:" \
+            --verbosity error
+
+  # ── 6. Plain Language ──────────────────────────────────────────────────────
+  plain-language:
+    name: Plain Language (avg grade ≤ 8)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Plain language check
+        run: node scripts/plain-language.mjs --verbose
+
+  # ── 7. USWDS Compliance ────────────────────────────────────────────────────
+  uswds-compliance:
+    name: USWDS Compliance
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Download build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+      - name: USWDS compliance check
+        run: node scripts/compliance-check.mjs --verbose

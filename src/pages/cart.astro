@@ -1,0 +1,233 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout
+  title="Your Cart"
+  description="Review your Indian Roasted Coffee order before checkout."
+  noindex={true}
+>
+  <div class="grid-container usa-section">
+    <h1>Your cart</h1>
+
+    <!-- Empty state (shown until JS runs) -->
+    <div id="cart-loading" class="usa-prose">
+      <p class="text-base">Loading your cart…</p>
+    </div>
+
+    <!-- Empty cart -->
+    <div id="cart-empty" hidden>
+      <div class="usa-prose margin-bottom-4">
+        <p>Your cart is empty.</p>
+        <a href="/services/" class="usa-button">Browse products</a>
+      </div>
+    </div>
+
+    <!-- Cart with items -->
+    <div id="cart-has-items" hidden>
+      <div class="grid-row grid-gap">
+        <div class="grid-col-12 tablet:grid-col-8">
+          <table class="usa-table usa-table--borderless width-full" id="cart-table">
+            <thead>
+              <tr>
+                <th scope="col">Product</th>
+                <th scope="col">Size</th>
+                <th scope="col">Grind</th>
+                <th scope="col">Qty</th>
+                <th scope="col" class="text-right">Price</th>
+                <th scope="col"><span class="usa-sr-only">Remove</span></th>
+              </tr>
+            </thead>
+            <tbody id="cart-tbody"></tbody>
+            <tfoot>
+              <tr>
+                <td colspan="4" class="text-right text-bold">Subtotal</td>
+                <td class="text-right text-bold" id="cart-subtotal">₹0</td>
+                <td></td>
+              </tr>
+              <tr>
+                <td colspan="4" class="text-right text-base-dark font-sans-sm">
+                  Shipping calculated at checkout. Free on orders above ₹1,500.
+                </td>
+                <td colspan="2"></td>
+              </tr>
+            </tfoot>
+          </table>
+
+          <div class="margin-top-2">
+            <button
+              type="button"
+              class="usa-button usa-button--unstyled text-base-dark font-sans-sm"
+              id="cart-clear-btn"
+            >
+              Clear cart
+            </button>
+          </div>
+        </div>
+
+        <div class="grid-col-12 tablet:grid-col-4">
+          <div class="usa-summary-box" role="complementary" aria-labelledby="cart-summary-heading">
+            <div class="usa-summary-box__body">
+              <h2 class="usa-summary-box__heading" id="cart-summary-heading">Order summary</h2>
+              <div class="usa-summary-box__text">
+                <p>
+                  <strong>Subtotal:</strong>
+                  <span id="cart-summary-subtotal">₹0</span>
+                </p>
+                <p class="font-sans-sm text-base-dark">
+                  All orders are roasted fresh and dispatched within 48 hours.
+                  Standard delivery: 4–6 business days.
+                </p>
+                <a href="/contact/" class="usa-button usa-button--big width-full text-center">
+                  Proceed to checkout
+                </a>
+                <a href="/services/" class="usa-button usa-button--unstyled margin-top-2 display-block text-center">
+                  Continue shopping
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  const CART_KEY = 'irc_cart';
+
+  interface CartItem {
+    id: string;
+    title: string;
+    size: string;
+    grind: string;
+    quantity: number;
+    pricePerUnit: number;
+  }
+
+  function getCart(): CartItem[] {
+    try {
+      return JSON.parse(localStorage.getItem(CART_KEY) || '[]');
+    } catch {
+      return [];
+    }
+  }
+
+  function saveCart(cart: CartItem[]) {
+    localStorage.setItem(CART_KEY, JSON.stringify(cart));
+    window.dispatchEvent(new CustomEvent('cart:updated', { detail: cart }));
+  }
+
+  function formatPrice(n: number) {
+    return `₹${n.toLocaleString('en-IN')}`;
+  }
+
+  function render() {
+    const cart = getCart();
+    const loading = document.getElementById('cart-loading');
+    const empty = document.getElementById('cart-empty');
+    const hasItems = document.getElementById('cart-has-items');
+    const tbody = document.getElementById('cart-tbody');
+    const subtotalEl = document.getElementById('cart-subtotal');
+    const summarySubtotal = document.getElementById('cart-summary-subtotal');
+
+    if (loading) loading.setAttribute('hidden', '');
+
+    if (cart.length === 0) {
+      empty?.removeAttribute('hidden');
+      hasItems?.setAttribute('hidden', '');
+      return;
+    }
+
+    empty?.setAttribute('hidden', '');
+    hasItems?.removeAttribute('hidden');
+
+    if (tbody) {
+      tbody.innerHTML = cart
+        .map(
+          (item) => `
+          <tr data-id="${item.id}" data-size="${item.size}" data-grind="${item.grind}">
+            <td><strong>${item.title}</strong></td>
+            <td>${item.size}</td>
+            <td class="font-sans-sm">${item.grind}</td>
+            <td>
+              <div style="display:flex;align-items:center;gap:0.5rem">
+                <button
+                  type="button"
+                  class="usa-button usa-button--unstyled qty-dec"
+                  aria-label="Decrease quantity"
+                  style="font-size:1.2rem;line-height:1;padding:0 0.25rem"
+                >−</button>
+                <span class="qty-display">${item.quantity}</span>
+                <button
+                  type="button"
+                  class="usa-button usa-button--unstyled qty-inc"
+                  aria-label="Increase quantity"
+                  style="font-size:1.2rem;line-height:1;padding:0 0.25rem"
+                >+</button>
+              </div>
+            </td>
+            <td class="text-right">${formatPrice(item.pricePerUnit * item.quantity)}</td>
+            <td>
+              <button
+                type="button"
+                class="usa-button usa-button--unstyled text-base-dark remove-item"
+                aria-label="Remove ${item.title} (${item.size}, ${item.grind}) from cart"
+                style="font-size:0.85rem;text-decoration:underline"
+              >Remove</button>
+            </td>
+          </tr>
+        `
+        )
+        .join('');
+
+      // Qty dec/inc
+      tbody.querySelectorAll<HTMLButtonElement>('.qty-dec').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const row = btn.closest('tr') as HTMLTableRowElement;
+          mutate(row, -1);
+        });
+      });
+      tbody.querySelectorAll<HTMLButtonElement>('.qty-inc').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const row = btn.closest('tr') as HTMLTableRowElement;
+          mutate(row, 1);
+        });
+      });
+
+      // Remove
+      tbody.querySelectorAll<HTMLButtonElement>('.remove-item').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const row = btn.closest('tr') as HTMLTableRowElement;
+          const { id, size, grind } = row.dataset as { id: string; size: string; grind: string };
+          saveCart(getCart().filter((i) => !(i.id === id && i.size === size && i.grind === grind)));
+          render();
+        });
+      });
+    }
+
+    const total = cart.reduce((s, i) => s + i.pricePerUnit * i.quantity, 0);
+    if (subtotalEl) subtotalEl.textContent = formatPrice(total);
+    if (summarySubtotal) summarySubtotal.textContent = formatPrice(total);
+  }
+
+  function mutate(row: HTMLTableRowElement, delta: number) {
+    const { id, size, grind } = row.dataset as { id: string; size: string; grind: string };
+    const cart = getCart().map((i) =>
+      i.id === id && i.size === size && i.grind === grind
+        ? { ...i, quantity: Math.max(0, i.quantity + delta) }
+        : i
+    ).filter((i) => i.quantity > 0);
+    saveCart(cart);
+    render();
+  }
+
+  document.getElementById('cart-clear-btn')?.addEventListener('click', () => {
+    localStorage.removeItem(CART_KEY);
+    window.dispatchEvent(new CustomEvent('cart:updated', { detail: [] }));
+    render();
+  });
+
+  render();
+  window.addEventListener('cart:updated', render);
+</script>

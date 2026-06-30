@@ -1,0 +1,164 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Hero from '../../components/uswds/Hero.astro';
+import ServiceCard from '../../components/uswds/ServiceCard.astro';
+import ProcessList from '../../components/uswds/ProcessList.astro';
+import ProcessListItem from '../../components/uswds/ProcessListItem.astro';
+import CallToAction from '../../components/uswds/CallToAction.astro';
+import SiteAlert from '../../components/uswds/SiteAlert.astro';
+import { siteConfig } from '../../config/site';
+import type { Locale } from '../../i18n/utils';
+import { localeStaticPaths, useTranslations, withBase } from '../../i18n/utils';
+import { idToSlug } from '../../utils/content';
+
+export function getStaticPaths() {
+  return localeStaticPaths();
+}
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const t = useTranslations(locale);
+const prefix = locale === 'es' ? '/es' : '';
+
+const copy = {
+  en: {
+    heroLabel: 'Welcome',
+    viewAll: 'View all products →',
+    ctaHeading: 'How it works',
+    steps: [
+      {
+        heading: 'Choose your beans',
+        body: 'Browse our single-origin lots from Coorg, Chikmagalur, Wayanad, and the Nilgiris. Each product page shows full tasting notes, origin details, and recommended brew methods.',
+      },
+      {
+        heading: 'Select your roast and grind',
+        body: 'Pick your preferred roast level and grind size — whole bean, coarse, medium, fine, or espresso-fine. We roast every order fresh on the morning of dispatch.',
+      },
+      {
+        heading: 'Receive freshly roasted coffee',
+        body: 'Your beans are roasted and shipped within 48 hours. Standard delivery takes 4–6 business days; express options are available at checkout.',
+      },
+    ],
+    wholesaleHeading: 'Buying in bulk?',
+    wholesaleBody: 'We supply cafes, roasters, retailers, hotels, and corporate gifting companies across India. MOQ starts at 1 kg — 250 g samples available before you commit.',
+    wholesaleCta: 'Explore wholesale',
+    wholesaleSecondary: 'Request a sample',
+  },
+  es: {
+    heroLabel: 'Bienvenido',
+    viewAll: 'Ver todos los productos →',
+    ctaHeading: 'Cómo funciona',
+    steps: [
+      {
+        heading: 'Elige tus granos',
+        body: 'Explora nuestros lotes de origen único de Coorg, Chikmagalur, Wayanad y los Nilgiris. Cada página de producto muestra notas de cata, detalles de origen y métodos de preparación recomendados.',
+      },
+      {
+        heading: 'Selecciona tu tueste y molienda',
+        body: 'Elige tu nivel de tueste y tamaño de molienda — grano entero, gruesa, media, fina o espresso. Tostamos cada pedido fresco la mañana del despacho.',
+      },
+      {
+        heading: 'Recibe café recién tostado',
+        body: 'Tus granos se tuestan y envían en 48 horas. La entrega estándar tarda 4–6 días hábiles; hay opciones express disponibles al momento del pago.',
+      },
+    ],
+    wholesaleHeading: '¿Comprando al por mayor?',
+    wholesaleBody: 'Suministramos cafeterías, tostadores, minoristas, hoteles y empresas de regalos corporativos en toda India. MOQ desde 1 kg — muestras de 250 g disponibles.',
+    wholesaleCta: 'Ver mayorista',
+    wholesaleSecondary: 'Solicitar una muestra',
+  },
+}[locale];
+
+const headingId = locale === 'es' ? 'products-heading-es' : 'products-heading';
+
+const services = (await getCollection('services', ({ data }) => !data.draft))
+  .sort((a, b) => a.data.order - b.data.order)
+  .slice(0, 3);
+
+const now = new Date();
+const activeAnnouncements = await getCollection('announcements', ({ data }) => {
+  if (data.draft) return false;
+  if (locale === 'es' && !data.showInEs) return false;
+  if (data.endDate && data.endDate < now) return false;
+  return data.startDate <= now;
+});
+---
+
+<BaseLayout
+  title={locale === 'es' ? t('site.name') : siteConfig.name}
+  description={siteConfig.description}
+  locale={locale}
+>
+  {activeAnnouncements.map((ann) => (
+    <SiteAlert
+      type={ann.data.severity === 'warning' ? 'emergency' : 'info'}
+      heading={ann.data.title}
+    >
+      {ann.data.linkText && ann.data.linkUrl && (
+        <a href={ann.data.linkUrl} class="usa-link">{ann.data.linkText}</a>
+      )}
+    </SiteAlert>
+  ))}
+
+  <Hero
+    heading={t('home.heroHeading')}
+    headingSuffix={t('home.heroHeadingAlt')}
+    subheading={t('home.heroSubheading')}
+    ctaText={t('home.heroCta')}
+    ctaHref={`${prefix}/services/`}
+    label={copy.heroLabel}
+  />
+
+  <section class="usa-section" aria-labelledby={headingId}>
+    <div class="grid-container">
+      <h2 id={headingId} class="font-heading-xl">{t('home.servicesHeading')}</h2>
+      <p class="usa-intro">{t('home.servicesSubheading')}</p>
+
+      <ul class="usa-card-group">
+        {services.map((service) => (
+          <ServiceCard
+            title={service.data.title}
+            summary={service.data.summary}
+            href={`${prefix}/services/${idToSlug(service.id)}/`}
+            ctaText={t('home.learnMore')}
+            acceptingApplications={service.data.acceptingApplications}
+            locale={locale}
+            class="tablet:grid-col-4"
+          />
+        ))}
+      </ul>
+
+      <p class="margin-top-4">
+        <a href={withBase(`${prefix}/services/`)} class="usa-link">{copy.viewAll}</a>
+      </p>
+    </div>
+  </section>
+
+  <CallToAction
+    heading={copy.ctaHeading}
+    bg="base-lightest"
+    textColor="ink"
+    primaryCta={{ label: t('home.applyNow'), href: `${prefix}/services/` }}
+  >
+    <ProcessList>
+      {copy.steps.map((step) => (
+        <ProcessListItem heading={step.heading}>
+          <p>{step.body}</p>
+        </ProcessListItem>
+      ))}
+    </ProcessList>
+  </CallToAction>
+
+  <CallToAction
+    heading={copy.wholesaleHeading}
+    body={copy.wholesaleBody}
+    bg="primary-darker"
+    textColor="white"
+    primaryCta={{ label: copy.wholesaleCta, href: `${prefix}/wholesale/` }}
+    secondaryCta={{ label: copy.wholesaleSecondary, href: `${prefix}/contact/` }}
+  />
+</BaseLayout>

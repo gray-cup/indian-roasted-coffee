@@ -1,0 +1,145 @@
+---
+import type { Locale } from '../../i18n/utils';
+import { useTranslations, withBase } from '../../i18n/utils';
+
+interface Props {
+  locale?: Locale;
+  id?: string;
+  currentPath?: string;
+}
+
+const { locale = 'en', id = 'default', currentPath = '/' } = Astro.props;
+const t = useTranslations(locale);
+const bannerId = `promo-banner-${id}`;
+
+const currentLabel = locale === 'en' ? 'English' : 'Español';
+
+const enPath = withBase(currentPath.replace(/^\/es/, '') || '/');
+const esPath = withBase(`/es${currentPath.startsWith('/es') ? currentPath.replace(/^\/es/, '') : currentPath}`);
+---
+
+<section
+  class="usa-banner"
+  aria-label={t('site.tagline')}
+>
+  <div class="usa-accordion">
+    <header class="usa-banner__header">
+      <div class="usa-banner__inner">
+        <div class="grid-col-fill tablet:grid-col-auto" aria-hidden="true">
+          <p class="usa-banner__header-text">{t('banner.headerText')}</p>
+          <p class="usa-banner__header-action">{t('banner.headerAction')}</p>
+        </div>
+
+        <button
+          type="button"
+          class="usa-accordion__button usa-banner__button"
+          aria-expanded="false"
+          aria-controls={bannerId}
+        >
+          <span class="usa-banner__button-text">{t('banner.buttonText')}</span>
+        </button>
+
+        <details class="lang-dropdown">
+          <summary class="lang-dropdown__trigger" aria-haspopup="listbox">
+            <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true" width="13" height="13">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm-1.93-9H6.19A5.02 5.02 0 016 10c0-.34.07-.68.19-1h1.88A9.2 9.2 0 008 10c0 .34.03.67.07 1zm.28 1c.18.9.47 1.7.84 2.34A5.02 5.02 0 018.07 11h.28zm1.3 0h.28A5.02 5.02 0 019.93 13.34 7.17 7.17 0 0110.65 11zm.28-1H10.07A9.2 9.2 0 0010 10c0-.34.03-.67.07-1h.86A9.2 9.2 0 0111 10c0 .34-.03.67-.07 1zm-.72-4.34C9.84 6.3 9.55 7.1 9.35 8H8.07a5.02 5.02 0 011.86-2.34zM11.93 8h-1.28c-.18-.9-.47-1.7-.84-2.34A5.02 5.02 0 0111.93 8zM6.19 9H8.07A9.2 9.2 0 008 10c0-.34.03-.67.07-1zm5.74 0h1.88c.12.32.19.66.19 1s-.07.68-.19 1h-1.88c.04-.33.07-.66.07-1s-.03-.67-.07-1zM8.07 12h1.28c.18.9.47 1.7.84 2.34A5.02 5.02 0 018.07 12zm3.86 0A5.02 5.02 0 0110.07 14.34c.37-.64.66-1.44.84-2.34h1.02z" clip-rule="evenodd"/>
+            </svg>
+            {currentLabel}
+            <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true" width="11" height="11">
+              <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.17l3.71-3.94a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd"/>
+            </svg>
+          </summary>
+          <ul class="lang-dropdown__menu" role="listbox">
+            <li role="option" aria-selected={locale === 'en'}>
+              <a href={enPath} hreflang="en" lang="en">English</a>
+            </li>
+            <li role="option" aria-selected={locale === 'es'}>
+              <a href={esPath} hreflang="es" lang="es">Español</a>
+            </li>
+          </ul>
+        </details>
+      </div>
+    </header>
+    <div class="usa-banner__content usa-accordion__content" id={bannerId} hidden>
+      <div class="grid-row grid-gap-lg">
+        <div class="usa-banner__guidance tablet:grid-col-6">
+          <div class="usa-media-block__body">
+            <p>
+              <strong>{t('banner.dotGovTitle')}</strong>
+              <br />
+              {t('banner.dotGovBody').replace(/\{strong\}(.*?)\{\/strong\}/g, '$1')}
+            </p>
+          </div>
+        </div>
+        <div class="usa-banner__guidance tablet:grid-col-6">
+          <div class="usa-media-block__body">
+            <p>
+              <strong>{t('banner.httpsTitle')}</strong>
+              <br />
+              {t('banner.httpsBody').replace(/\{strong\}(.*?)\{\/strong\}/g, '$1')}
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .lang-dropdown {
+    position: relative;
+    margin-left: auto;
+    flex-shrink: 0;
+  }
+
+  .lang-dropdown__trigger {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    list-style: none;
+    cursor: pointer;
+    color: #1b1b1b;
+    font-size: 0.8rem;
+    font-family: inherit;
+    padding: 0.15rem 0.35rem;
+    border-radius: 3px;
+    user-select: none;
+    white-space: nowrap;
+  }
+  .lang-dropdown__trigger::-webkit-details-marker { display: none; }
+  .lang-dropdown__trigger::marker { display: none; }
+  .lang-dropdown__trigger:hover {
+    background: rgba(0,0,0,0.07);
+  }
+
+  .lang-dropdown__menu {
+    position: absolute;
+    right: 0;
+    top: calc(100% + 4px);
+    background: #fff;
+    border: 1px solid #d9d9d9;
+    border-radius: 4px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    list-style: none;
+    margin: 0;
+    padding: 0.25rem 0;
+    min-width: 110px;
+    z-index: 999;
+  }
+
+  .lang-dropdown__menu li a {
+    display: block;
+    padding: 0.4rem 0.9rem;
+    font-size: 0.85rem;
+    color: #1b1b1b;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+  .lang-dropdown__menu li[aria-selected="true"] a {
+    font-weight: 700;
+    color: #005ea2;
+  }
+  .lang-dropdown__menu li a:hover {
+    background: #f0f0f0;
+  }
+</style>
