@@ -13,4 +13,4 @@ Because coffee is a perishable food product, we cannot accept returns of opened 
 
 Sealed, unopened bags may be returned within 14 days of delivery for a full refund.
 
-To start a return or raise a concern, contact us by email at hello@indianroastedcoffee.com or use the contact form on our site.
+To start a return or raise a concern, contact us by email at office@graycup.org or use the contact form on our site.
