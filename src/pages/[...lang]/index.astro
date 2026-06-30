@@ -111,6 +111,7 @@ const activeAnnouncements = await getCollection('announcements', ({ data }) => {
     ctaText={t('home.heroCta')}
     ctaHref={`${prefix}/services/`}
     label={copy.heroLabel}
+    backgroundSrc="/images/IMG_0908.webp"
   />
 
   <section class="usa-section" aria-labelledby={headingId}>
@@ -126,6 +127,8 @@ const activeAnnouncements = await getCollection('announcements', ({ data }) => {
             href={`${prefix}/services/${idToSlug(service.id)}/`}
             ctaText={t('home.learnMore')}
             acceptingApplications={service.data.acceptingApplications}
+            imageSrc={service.data.image}
+            imageAlt={service.data.imageAlt}
             locale={locale}
             class="tablet:grid-col-4"
           />

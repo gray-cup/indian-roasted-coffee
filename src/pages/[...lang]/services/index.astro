@@ -77,6 +77,8 @@ const services = (await getCollection('services', ({ data }) => !data.draft))
           href={`${prefix}/services/${idToSlug(service.id)}/`}
           ctaText={t('home.learnMore')}
           acceptingApplications={service.data.acceptingApplications}
+          imageSrc={service.data.image}
+          imageAlt={service.data.imageAlt}
           locale={locale}
           class="tablet:grid-col-6 desktop:grid-col-4"
         />

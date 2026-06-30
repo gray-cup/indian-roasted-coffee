@@ -4,6 +4,8 @@ shortTitle: Robusta
 description: Bold, full-bodied Robusta beans from the fertile volcanic soils of Chikmagalur, Karnataka. Dark roast with deep chocolatey undertones and a smoky, earthy finish.
 summary: Dark roast with bold, full-bodied flavour and deep chocolatey notes. Grown in the rich volcanic soils of Chikmagalur, Karnataka.
 applySlug: chikmagalur-robusta
+image: /images/IMG_9748.webp
+imageAlt: Chikmagalur Robusta coffee beans from Karnataka's volcanic hills
 acceptingApplications: true
 order: 2
 esSlug: chikmagalur-robusta

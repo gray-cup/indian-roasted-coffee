@@ -17,6 +17,8 @@ const services = defineCollection({
     keyFacts: z.array(
       z.object({ label: z.string(), value: z.string() })
     ).default([]),
+    image: z.string().optional(),
+    imageAlt: z.string().optional(),
     acceptingApplications: z.boolean().default(true),
     order: z.number().default(0),
     draft: z.boolean().default(false),

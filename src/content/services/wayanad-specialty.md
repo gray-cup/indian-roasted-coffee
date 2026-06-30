@@ -4,6 +4,8 @@ shortTitle: Wayanad Blend
 description: A carefully curated blend of Arabica and Robusta from the lush highlands of Wayanad, Kerala. Medium roast with a smooth, balanced flavour and a caramel sweetness.
 summary: Medium roast blend combining Arabica brightness with Robusta body. Sourced from the verdant highlands of Wayanad, Kerala.
 applySlug: wayanad-specialty
+image: /images/IMG_9795.webp
+imageAlt: Wayanad Specialty Blend coffee from the highlands of Kerala
 acceptingApplications: true
 order: 3
 esSlug: wayanad-specialty

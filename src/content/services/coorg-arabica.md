@@ -4,6 +4,8 @@ shortTitle: Arabica
 description: Single-origin Arabica beans from the misty high-altitude estates of Kodagu (Coorg), Karnataka. Light-medium roast with bright floral notes and a citrus finish.
 summary: Light-medium roast with bright floral notes and a citrus finish. Hand-picked from high-altitude estates in Kodagu, Karnataka.
 applySlug: coorg-arabica
+image: /images/IMG_9772.webp
+imageAlt: Coorg Arabica coffee beans from the misty estates of Kodagu
 acceptingApplications: true
 order: 1
 esSlug: coorg-arabica
