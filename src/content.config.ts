@@ -3,7 +3,7 @@ import { glob } from 'astro/loaders';
 
 // ── Services ──────────────────────────────────────────────────────────────────
 const services = defineCollection({
-  loader: glob({ pattern: '**/*.{md,mdx}', base: './src/content/products' }),
+  loader: glob({ pattern: '**/*.{md,mdx}', base: './src/content/services' }),
   schema: z.object({
     title: z.string(),
     shortTitle: z.string().optional(),
