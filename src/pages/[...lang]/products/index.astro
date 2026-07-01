@@ -74,7 +74,7 @@ const services = (await getCollection('services', ({ data }) => !data.draft))
         <ServiceCard
           title={service.data.title}
           summary={service.data.summary}
-          href={`${prefix}/services/${idToSlug(service.id)}/`}
+          href={`${prefix}/products/${idToSlug(service.id)}/`}
           ctaText={t('home.learnMore')}
           acceptingApplications={service.data.acceptingApplications}
           imageSrc={service.data.image}

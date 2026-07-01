@@ -22,8 +22,8 @@ const base = import.meta.env.BASE_URL;
 const navLinks: NavLink[] = [
   {
     label: locale === 'es' ? 'Productos' : 'Products',
-    href: localizeUrl('/services/', locale),
-    current: currentPath.startsWith('/services') || currentPath.startsWith('/es/services'),
+    href: localizeUrl('/products/', locale),
+    current: currentPath.startsWith('/products') || currentPath.startsWith('/es/products'),
   },
   {
     label: locale === 'es' ? 'Mayorista' : 'Wholesale',

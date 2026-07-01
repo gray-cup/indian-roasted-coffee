@@ -109,7 +109,7 @@ const activeAnnouncements = await getCollection('announcements', ({ data }) => {
     headingSuffix={t('home.heroHeadingAlt')}
     subheading={t('home.heroSubheading')}
     ctaText={t('home.heroCta')}
-    ctaHref={`${prefix}/services/`}
+    ctaHref={`${prefix}/products/`}
     label={copy.heroLabel}
   />
 
@@ -123,7 +123,7 @@ const activeAnnouncements = await getCollection('announcements', ({ data }) => {
           <ServiceCard
             title={service.data.title}
             summary={service.data.summary}
-            href={`${prefix}/services/${idToSlug(service.id)}/`}
+            href={`${prefix}/products/${idToSlug(service.id)}/`}
             ctaText={t('home.learnMore')}
             acceptingApplications={service.data.acceptingApplications}
             imageSrc={service.data.image}
@@ -135,7 +135,7 @@ const activeAnnouncements = await getCollection('announcements', ({ data }) => {
       </ul>
 
       <p class="margin-top-4">
-        <a href={withBase(`${prefix}/services/`)} class="usa-link">{copy.viewAll}</a>
+        <a href={withBase(`${prefix}/products/`)} class="usa-link">{copy.viewAll}</a>
       </p>
     </div>
   </section>
@@ -144,7 +144,7 @@ const activeAnnouncements = await getCollection('announcements', ({ data }) => {
     heading={copy.ctaHeading}
     bg="base-lightest"
     textColor="ink"
-    primaryCta={{ label: t('home.applyNow'), href: `${prefix}/services/` }}
+    primaryCta={{ label: t('home.applyNow'), href: `${prefix}/products/` }}
   >
     <ProcessList>
       {copy.steps.map((step) => (

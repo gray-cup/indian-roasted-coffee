@@ -4,7 +4,7 @@ startDate: 2025-10-01
 endDate: 2026-09-30
 severity: info
 linkText: Shop now
-linkUrl: /services/
+linkUrl: /products/
 showInEs: true
 draft: false
 ---

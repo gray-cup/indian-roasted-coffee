@@ -33,7 +33,7 @@ body:
       description: Minimal steps to reproduce the issue.
       placeholder: |
         1. Run `pnpm dev`
-        2. Navigate to /services/
+        2. Navigate to /products/
         3. See error in console
     validations:
       required: true

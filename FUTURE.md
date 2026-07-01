@@ -67,11 +67,11 @@ The remaining interactive endpoints are accessible scaffolding with no backend:
 ## 4. Translated content collections
 
 The Spanish routes reuse the English markdown bodies from
-`src/content/services/` and `src/content/faqs/` (the schema has `esSlug` /
+`src/content/products/` and `src/content/faqs/` (the schema has `esSlug` /
 `esQuestion` hooks, but no Spanish bodies exist). This is now most visible in
 the apply pages' "Requisitos generales" alert, which renders English
 `eligibility` values on the Spanish page. Decide on a convention — e.g.
-`src/content/services/es/snap.md` or per-locale frontmatter — and render the
+`src/content/products/es/snap.md` or per-locale frontmatter — and render the
 localized body on `/es/` routes with the English version as an explicit,
 labeled fallback.
 

@@ -79,8 +79,8 @@ const components = [
       <h2 id="breadcrumb-heading" class="border-bottom border-base-light padding-bottom-1">Breadcrumb</h2>
       <Breadcrumb items={[
         { label: 'Home', href: '/' },
-        { label: 'Services', href: '/services/' },
-        { label: 'SNAP Benefits', href: '/services/snap/' },
+        { label: 'Services', href: '/products/' },
+        { label: 'SNAP Benefits', href: '/products/snap/' },
       ]} />
     </section>
 
@@ -188,7 +188,7 @@ const components = [
         <ServiceCard
           title="SNAP Benefits"
           summary="Monthly funds for purchasing groceries for eligible low-income households."
-          href="/services/snap/"
+          href="/products/snap/"
           ctaText="Learn more"
           acceptingApplications={true}
           class="tablet:grid-col-4"
@@ -196,7 +196,7 @@ const components = [
         <ServiceCard
           title="Medicaid"
           summary="Low- or no-cost health coverage for eligible individuals and families."
-          href="/services/medicaid/"
+          href="/products/medicaid/"
           ctaText="Learn more"
           acceptingApplications={true}
           class="tablet:grid-col-4"
@@ -204,7 +204,7 @@ const components = [
         <ServiceCard
           title="WIC"
           summary="Nutrition support program — currently not accepting new applications."
-          href="/services/wic/"
+          href="/products/wic/"
           ctaText="Learn more"
           acceptingApplications={false}
           class="tablet:grid-col-4"
@@ -230,7 +230,7 @@ const components = [
         headingSuffix="for you."
         subheading="Find food, health, and childcare support programs you may qualify for."
         ctaText="Check eligibility"
-        ctaHref="/services/"
+        ctaHref="/products/"
         label="Homepage"
       />
     </section>
@@ -240,7 +240,7 @@ const components = [
       <h2 id="cta-section-heading" class="border-bottom border-base-light padding-bottom-1">CallToAction</h2>
       <CallToAction
         heading="Ready to apply?"
-        primaryCta={{ label: 'Start application', href: '/services/' }}
+        primaryCta={{ label: 'Start application', href: '/products/' }}
         secondaryCta={{ label: 'Learn more', href: '/help/' }}
       >
         <p>The process takes about 20 minutes. You'll get a decision within 30 days.</p>

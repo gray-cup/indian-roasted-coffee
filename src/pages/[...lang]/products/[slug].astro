@@ -40,7 +40,7 @@ const copy = {
   title={service.data.title}
   description={service.data.description}
   locale={locale}
-  breadcrumbs={[{ label: service.data.title, href: `${prefix}/services/${slug}/` }]}
+  breadcrumbs={[{ label: service.data.title, href: `${prefix}/products/${slug}/` }]}
   acceptingApplications={service.data.acceptingApplications}
   applyHref={applyHref}
   imageSrc={service.data.image}
@@ -81,7 +81,7 @@ const copy = {
         <ul class="usa-list">
           {service.data.related.map((relSlug) => (
             <li>
-              <a href={withBase(`${prefix}/services/${relSlug}/`)} class="usa-link">{relSlug.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())}</a>
+              <a href={withBase(`${prefix}/products/${relSlug}/`)} class="usa-link">{relSlug.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())}</a>
             </li>
           ))}
         </ul>
