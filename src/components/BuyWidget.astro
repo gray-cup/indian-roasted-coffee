@@ -1,0 +1,154 @@
+---
+import { WEIGHT_OPTIONS } from '../utils/pricing';
+
+interface Props {
+  productSlug: string;
+  productName: string;
+}
+
+const { productSlug, productName } = Astro.props;
+---
+
+<div class="buy-widget">
+  <h2 class="buy-widget__heading">Order this coffee</h2>
+  <p class="buy-widget__note">Roasted to order · shipped within 48 h</p>
+
+  <form method="POST" action="/api/payment/create-order" class="buy-form">
+    <input type="hidden" name="productSlug" value={productSlug} />
+    <input type="hidden" name="productName" value={productName} />
+
+    <div class="field">
+      <label for="bw-weight" class="field__label">Weight</label>
+      <select id="bw-weight" name="weightGrams" class="field__select" required>
+        {WEIGHT_OPTIONS.map((opt, i) => (
+          <option value={opt.grams} selected={i === 0}>
+            {opt.label} — ₹{opt.priceInr.toLocaleString('en-IN')}
+          </option>
+        ))}
+      </select>
+    </div>
+
+    <div class="field">
+      <label for="bw-name" class="field__label">Full name</label>
+      <input type="text" id="bw-name" name="customerName" required autocomplete="name" placeholder="Arjun Sharma" class="field__input" />
+    </div>
+
+    <div class="field">
+      <label for="bw-email" class="field__label">Email</label>
+      <input type="email" id="bw-email" name="customerEmail" required autocomplete="email" placeholder="you@example.com" class="field__input" />
+    </div>
+
+    <div class="field">
+      <label for="bw-phone" class="field__label">Phone</label>
+      <input type="tel" id="bw-phone" name="customerPhone" required autocomplete="tel" placeholder="+91 98765 43210" class="field__input" />
+    </div>
+
+    <div class="field">
+      <label for="bw-address" class="field__label">Delivery address</label>
+      <textarea id="bw-address" name="customerAddress" required rows="3" placeholder="Flat 4, Green View Apartments&#10;Bengaluru, Karnataka 560001" class="field__textarea"></textarea>
+    </div>
+
+    <button type="submit" class="buy-btn">
+      Pay securely →
+    </button>
+
+    <p class="buy-widget__secure">
+      <svg width="12" height="14" viewBox="0 0 12 14" fill="none" aria-hidden="true">
+        <path d="M6 0L0 2.5V7c0 3.31 2.57 6.41 6 7 3.43-.59 6-3.69 6-7V2.5L6 0z" fill="currentColor" opacity=".5"/>
+      </svg>
+      Secured by Cashfree Payments
+    </p>
+  </form>
+</div>
+
+<style>
+  .buy-widget {
+    background: #fff;
+    border: 1.5px solid #e4e4e4;
+    border-radius: 10px;
+    padding: 1.4rem 1.25rem 1.25rem;
+    margin-top: 1.5rem;
+  }
+
+  .buy-widget__heading {
+    font-size: 1.05rem;
+    font-weight: 700;
+    margin: 0 0 0.2rem;
+    color: #111;
+  }
+
+  .buy-widget__note {
+    font-size: 0.78rem;
+    color: #777;
+    margin: 0 0 1.1rem;
+  }
+
+  .field {
+    margin-bottom: 0.85rem;
+  }
+
+  .field__label {
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #444;
+    margin-bottom: 0.3rem;
+  }
+
+  .field__select,
+  .field__input,
+  .field__textarea {
+    width: 100%;
+    padding: 0.55rem 0.7rem;
+    border: 1.5px solid #ccc;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    color: #111;
+    font-family: inherit;
+    background: #fff;
+    transition: border-color 0.15s;
+    box-sizing: border-box;
+  }
+
+  .field__select:focus,
+  .field__input:focus,
+  .field__textarea:focus {
+    outline: none;
+    border-color: #2e6e37;
+    box-shadow: 0 0 0 3px rgba(46, 110, 55, 0.15);
+  }
+
+  .field__textarea {
+    resize: vertical;
+    min-height: 72px;
+  }
+
+  .buy-btn {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    background: #2e6e37;
+    color: #fff;
+    border: none;
+    border-radius: 7px;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    margin-top: 0.25rem;
+    transition: background 0.15s;
+    letter-spacing: 0.01em;
+  }
+
+  .buy-btn:hover {
+    background: #255c2e;
+  }
+
+  .buy-widget__secure {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.72rem;
+    color: #999;
+    margin-top: 0.7rem;
+    justify-content: center;
+  }
+</style>

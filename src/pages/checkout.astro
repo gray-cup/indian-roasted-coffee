@@ -1,0 +1,74 @@
+---
+export const prerender = false;
+
+const sid = Astro.url.searchParams.get('sid');
+const oid = Astro.url.searchParams.get('oid');
+
+if (!sid || !oid) return Astro.redirect('/');
+
+const cashfreeMode = process.env.CASHFREE_ENV === 'production' ? 'production' : 'sandbox';
+const returnUrl    = `${process.env.SITE ?? Astro.url.origin}/payment-result?order_id=${oid}`;
+---
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Completing your order — Indian Roasted Coffee</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background: #f4f6f9;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .card {
+      background: #fff;
+      border-radius: 10px;
+      padding: 2.5rem 2rem;
+      text-align: center;
+      max-width: 380px;
+      width: 90%;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.1);
+    }
+    .logo { font-size: 1rem; font-weight: 700; color: #2e6e37; margin-bottom: 1.5rem; letter-spacing: 0.02em; }
+    .spinner {
+      width: 44px; height: 44px;
+      border: 3px solid #e0e0e0;
+      border-top-color: #2e6e37;
+      border-radius: 50%;
+      animation: spin 0.75s linear infinite;
+      margin: 0 auto 1.25rem;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    h1 { font-size: 1.1rem; font-weight: 600; margin-bottom: 0.5rem; }
+    p  { font-size: 0.875rem; color: #666; line-height: 1.5; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="logo">Indian Roasted Coffee</div>
+    <div class="spinner"></div>
+    <h1>Opening payment page…</h1>
+    <p>You'll be redirected to Cashfree to complete your order securely.</p>
+  </div>
+
+  <script src="https://sdk.cashfree.com/js/v3/cashfree.js"></script>
+  <script define:vars={{ sid, cashfreeMode, returnUrl }}>
+    window.addEventListener('load', function () {
+      try {
+        const cashfree = Cashfree({ mode: cashfreeMode });
+        cashfree.checkout({ paymentSessionId: sid, returnUrl, redirectTarget: '_self' });
+      } catch (e) {
+        document.querySelector('h1').textContent = 'Could not open payment page.';
+        document.querySelector('p').textContent  = 'Please go back and try again.';
+        document.querySelector('.spinner').style.display = 'none';
+      }
+    });
+  </script>
+</body>
+</html>

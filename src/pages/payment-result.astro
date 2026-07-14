@@ -1,0 +1,137 @@
+---
+export const prerender = false;
+
+import { db } from '../db/index';
+import { orders } from '../db/schema';
+import { eq } from 'drizzle-orm';
+import type { Order } from '../db/schema';
+
+const orderId = Astro.url.searchParams.get('order_id');
+
+let order: Order | null = null;
+let pageError: string | null = null;
+
+if (!orderId) {
+  pageError = 'No order ID provided.';
+} else {
+  try {
+    const [row] = await db.select().from(orders).where(eq(orders.orderId, orderId));
+    if (!row) {
+      pageError = 'Order not found.';
+    } else {
+      // Sync status with Cashfree for the most up-to-date result
+      const base = process.env.CASHFREE_ENV === 'production'
+        ? 'https://api.cashfree.com/pg'
+        : 'https://sandbox.cashfree.com/pg';
+
+      try {
+        const res = await fetch(`${base}/orders/${orderId}`, {
+          headers: {
+            'x-api-version': '2025-01-01',
+            'x-client-id': process.env.CASHFREE_APP_ID!,
+            'x-client-secret': process.env.CASHFREE_SECRET_KEY!,
+          },
+        });
+        if (res.ok) {
+          const { order_status } = await res.json() as { order_status: string };
+          const newStatus =
+            order_status === 'PAID'    ? 'PAID' :
+            order_status === 'EXPIRED' ? 'EXPIRED' : row.status;
+
+          if (newStatus !== row.status) {
+            await db.update(orders)
+              .set({ status: newStatus, updatedAt: new Date() })
+              .where(eq(orders.orderId, orderId));
+            row.status = newStatus as Order['status'];
+          }
+        }
+      } catch { /* webhook will correct it if the fetch fails */ }
+
+      order = row;
+    }
+  } catch (err) {
+    console.error('payment-result error:', err);
+    pageError = 'Could not retrieve order status. Please contact us.';
+  }
+}
+
+const isPaid    = order?.status === 'PAID';
+const isFailed  = order?.status === 'FAILED' || order?.status === 'EXPIRED';
+---
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{isPaid ? 'Order Confirmed' : 'Payment Status'} — Indian Roasted Coffee</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: system-ui, -apple-system, sans-serif; background: #f4f6f9; min-height: 100vh; padding: 2rem 1rem; }
+    .card { background: #fff; border-radius: 10px; padding: 2rem; max-width: 520px; margin: 2rem auto; box-shadow: 0 4px 24px rgba(0,0,0,0.08); }
+    .logo { font-size: 0.875rem; font-weight: 700; color: #2e6e37; margin-bottom: 1.5rem; }
+    .icon { font-size: 2.5rem; margin-bottom: 1rem; }
+    h1   { font-size: 1.4rem; font-weight: 700; margin-bottom: 0.5rem; }
+    .sub { color: #555; font-size: 0.9rem; line-height: 1.55; margin-bottom: 1.5rem; }
+    .details { border-top: 1px solid #eee; margin-top: 1.25rem; }
+    .row { display: flex; justify-content: space-between; padding: 0.65rem 0; border-bottom: 1px solid #f0f0f0; font-size: 0.9rem; }
+    .row:last-child { border-bottom: none; }
+    .label { color: #666; }
+    .val   { font-weight: 500; }
+    .btn   { display: inline-block; margin-top: 1.75rem; padding: 0.75rem 1.5rem; background: #2e6e37; color: #fff; border-radius: 6px; text-decoration: none; font-weight: 600; font-size: 0.95rem; }
+    .btn:hover { background: #255c2e; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="logo">Indian Roasted Coffee</div>
+
+    {pageError && (
+      <>
+        <div class="icon">⚠️</div>
+        <h1>Something went wrong</h1>
+        <p class="sub">{pageError}</p>
+        <a href="/" class="btn">Return home</a>
+      </>
+    )}
+
+    {!pageError && isPaid && (
+      <>
+        <div class="icon">✅</div>
+        <h1>Order confirmed!</h1>
+        <p class="sub">Thank you, {order!.customerName}. We'll start roasting your order shortly and send a confirmation to {order!.customerEmail}.</p>
+        <div class="details">
+          <div class="row"><span class="label">Order ID</span><span class="val" style="font-size:0.8rem;font-family:monospace">{order!.orderId}</span></div>
+          <div class="row"><span class="label">Product</span><span class="val">{order!.productName}</span></div>
+          <div class="row"><span class="label">Weight</span><span class="val">{order!.weightLabel}</span></div>
+          <div class="row"><span class="label">Amount paid</span><span class="val">₹{order!.amountInr.toLocaleString('en-IN')}</span></div>
+          <div class="row"><span class="label">Delivery to</span><span class="val" style="max-width:60%;text-align:right">{order!.customerAddress}</span></div>
+        </div>
+        <a href="/products/" class="btn">Continue shopping</a>
+      </>
+    )}
+
+    {!pageError && isFailed && (
+      <>
+        <div class="icon">❌</div>
+        <h1>Payment unsuccessful</h1>
+        <p class="sub">Your payment could not be completed. No amount has been charged. Please try again or contact us if the issue persists.</p>
+        <a href="/products/" class="btn">Try again</a>
+      </>
+    )}
+
+    {!pageError && !isPaid && !isFailed && (
+      <>
+        <div class="icon">⏳</div>
+        <h1>Payment pending</h1>
+        <p class="sub">Your payment is being processed. We'll confirm your order by email once it clears.</p>
+        <div class="details">
+          <div class="row"><span class="label">Order ID</span><span class="val" style="font-size:0.8rem;font-family:monospace">{order?.orderId}</span></div>
+          <div class="row"><span class="label">Amount</span><span class="val">₹{order?.amountInr?.toLocaleString('en-IN')}</span></div>
+        </div>
+        <a href="/products/" class="btn">Return to products</a>
+      </>
+    )}
+  </div>
+</body>
+</html>

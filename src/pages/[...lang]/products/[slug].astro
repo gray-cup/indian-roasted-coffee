@@ -2,6 +2,7 @@
 import { getCollection, render } from 'astro:content';
 import ServiceLayout from '../../../layouts/ServiceLayout.astro';
 import SummaryBox from '../../../components/uswds/SummaryBox.astro';
+import BuyWidget from '../../../components/BuyWidget.astro';
 import { idToSlug } from '../../../utils/content';
 import type { Locale } from '../../../i18n/utils';
 import { locales, localeParam, withBase } from '../../../i18n/utils';
@@ -49,6 +50,8 @@ const copy = {
   <Content />
 
   <Fragment slot="sidebar">
+    <BuyWidget productSlug={slug} productName={service.data.title} />
+
     {service.data.eligibility.length > 0 && (
       <SummaryBox heading={copy.details} label={copy.details}>
         <dl>

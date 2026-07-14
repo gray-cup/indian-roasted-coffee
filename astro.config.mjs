@@ -3,6 +3,7 @@ import mdx from '@astrojs/mdx';
 import sitemap from '@astrojs/sitemap';
 import astroLLMsGenerator from 'astro-llms-generate';
 import tailwindcss from '@tailwindcss/vite';
+import node from '@astrojs/node';
 import { fileURLToPath } from 'url';
 import { resolve } from 'path';
 
@@ -38,6 +39,8 @@ export default defineConfig({
   ],
 
   output: 'static',
+
+  adapter: node({ mode: 'standalone' }),
 
   // i18n: English at /, Spanish at /es/
   i18n: {
@@ -118,10 +121,8 @@ export default defineConfig({
         // USWDS fonts are self-hosted at /uswds/fonts/ — no external font CDN needed.
         "font-src 'self'",
 
-        // No fetch / XHR to third-party origins.
-        // Extend this if your site calls an external API:
-        //   "connect-src 'self' https://api.agency.gov"
-        "connect-src 'self'",
+        // Cashfree Payments SDK connects to sandbox and production APIs.
+        "connect-src 'self' https://sandbox.cashfree.com https://api.cashfree.com",
 
         // Forms must submit to the same origin.
         // Extend if you send form data to a third-party service (e.g. a DKAN endpoint).
@@ -148,7 +149,7 @@ export default defineConfig({
       // To allow the Digital Analytics Program (DAP) or another approved script CDN:
       //   resources: ["'self'", "https://dap.digitalgov.gov"]
       scriptDirective: {
-        resources: ["'self'", "'wasm-unsafe-eval'"],
+        resources: ["'self'", "'wasm-unsafe-eval'", "https://sdk.cashfree.com"],
       },
 
       // style-src: Astro auto-hashes the inline <style> blocks it generates.

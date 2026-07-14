@@ -1,0 +1,30 @@
+import { sqliteTable, text, integer, real } from 'drizzle-orm/sqlite-core';
+
+export const orders = sqliteTable('orders', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  orderId: text('order_id').notNull().unique(),
+  cashfreeOrderId: text('cashfree_order_id').unique(),
+  paymentSessionId: text('payment_session_id'),
+  customerName: text('customer_name').notNull(),
+  customerEmail: text('customer_email').notNull(),
+  customerPhone: text('customer_phone').notNull(),
+  customerAddress: text('customer_address').notNull(),
+  productSlug: text('product_slug').notNull(),
+  productName: text('product_name').notNull(),
+  weightGrams: integer('weight_grams').notNull(),
+  weightLabel: text('weight_label').notNull(),
+  amountInr: real('amount_inr').notNull(),
+  status: text('status', { enum: ['PENDING', 'PAID', 'FAILED', 'EXPIRED'] })
+    .notNull()
+    .default('PENDING'),
+  webhookData: text('webhook_data'),
+  createdAt: integer('created_at', { mode: 'timestamp' })
+    .notNull()
+    .$defaultFn(() => new Date()),
+  updatedAt: integer('updated_at', { mode: 'timestamp' })
+    .notNull()
+    .$defaultFn(() => new Date()),
+});
+
+export type Order = typeof orders.$inferSelect;
+export type NewOrder = typeof orders.$inferInsert;

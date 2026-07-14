@@ -1,0 +1,179 @@
+---
+export const prerender = false;
+
+import { db } from '../../db/index';
+import { orders } from '../../db/schema';
+import { desc } from 'drizzle-orm';
+
+const allOrders = await db.select().from(orders).orderBy(desc(orders.createdAt)).limit(500);
+
+const totalRevenue = allOrders
+  .filter(o => o.status === 'PAID')
+  .reduce((sum, o) => sum + o.amountInr, 0);
+
+const STATUS_COLORS: Record<string, string> = {
+  PAID:    '#dcfce7',
+  FAILED:  '#fee2e2',
+  EXPIRED: '#fef9c3',
+  PENDING: '#dbeafe',
+};
+const STATUS_TEXT: Record<string, string> = {
+  PAID:    '#166534',
+  FAILED:  '#991b1b',
+  EXPIRED: '#854d0e',
+  PENDING: '#1e40af',
+};
+
+function fmt(d: Date | null) {
+  if (!d) return '—';
+  return new Date(d).toLocaleString('en-IN', {
+    timeZone: 'Asia/Kolkata', day: '2-digit', month: 'short',
+    year: 'numeric', hour: '2-digit', minute: '2-digit',
+  });
+}
+---
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Orders — IRC Admin</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: system-ui, -apple-system, sans-serif; background: #f4f6f9; min-height: 100vh; color: #111; }
+
+    header {
+      background: #1a1a2e; color: #fff;
+      padding: 0 1.5rem;
+      height: 56px; display: flex; align-items: center; justify-content: space-between;
+      position: sticky; top: 0; z-index: 10;
+    }
+    .brand { font-size: 0.875rem; font-weight: 700; letter-spacing: 0.02em; }
+    .sign-out {
+      background: transparent; border: 1px solid rgba(255,255,255,0.35);
+      color: #fff; padding: 0.35rem 0.9rem; border-radius: 5px;
+      font-size: 0.8rem; cursor: pointer;
+    }
+    .sign-out:hover { background: rgba(255,255,255,0.1); }
+
+    main { padding: 1.5rem; max-width: 1400px; margin: 0 auto; }
+
+    .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
+    .stat { background: #fff; padding: 1.1rem 1.25rem; border-radius: 8px; box-shadow: 0 1px 4px rgba(0,0,0,0.07); }
+    .stat-label { font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: #888; margin-bottom: 0.35rem; }
+    .stat-value { font-size: 1.75rem; font-weight: 700; line-height: 1; }
+
+    .table-card { background: #fff; border-radius: 8px; box-shadow: 0 1px 4px rgba(0,0,0,0.07); overflow: hidden; }
+    .table-header { padding: 1rem 1.25rem; border-bottom: 1px solid #f0f0f0; }
+    .table-header h2 { font-size: 0.95rem; font-weight: 700; }
+    .table-wrap { overflow-x: auto; }
+
+    table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+    th {
+      padding: 0.65rem 1rem; text-align: left;
+      background: #fafafa; border-bottom: 1.5px solid #eee;
+      font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em;
+      color: #777; white-space: nowrap; font-weight: 600;
+    }
+    td { padding: 0.75rem 1rem; border-bottom: 1px solid #f4f4f4; vertical-align: middle; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: #fafcff; }
+
+    .badge {
+      display: inline-block; padding: 0.2rem 0.65rem; border-radius: 99px;
+      font-size: 0.72rem; font-weight: 700; letter-spacing: 0.04em;
+    }
+    .mono { font-family: monospace; font-size: 0.78rem; }
+    .muted { color: #777; font-size: 0.8rem; }
+    .name  { font-weight: 500; }
+
+    .empty { text-align: center; padding: 3rem; color: #aaa; font-size: 0.9rem; }
+  </style>
+</head>
+<body>
+  <header>
+    <span class="brand">Indian Roasted Coffee — Admin</span>
+    <form method="POST" action="/api/admin/logout" style="margin:0">
+      <button class="sign-out" type="submit">Sign out</button>
+    </form>
+  </header>
+
+  <main>
+    <div class="stats">
+      <div class="stat">
+        <div class="stat-label">Total orders</div>
+        <div class="stat-value">{allOrders.length}</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Paid</div>
+        <div class="stat-value" style="color:#16a34a">{allOrders.filter(o => o.status === 'PAID').length}</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Pending</div>
+        <div class="stat-value" style="color:#1d4ed8">{allOrders.filter(o => o.status === 'PENDING').length}</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Failed / Expired</div>
+        <div class="stat-value" style="color:#dc2626">{allOrders.filter(o => o.status === 'FAILED' || o.status === 'EXPIRED').length}</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Revenue (INR)</div>
+        <div class="stat-value" style="font-size:1.4rem">₹{totalRevenue.toLocaleString('en-IN')}</div>
+      </div>
+    </div>
+
+    <div class="table-card">
+      <div class="table-header">
+        <h2>All orders</h2>
+      </div>
+      <div class="table-wrap">
+        {allOrders.length === 0 ? (
+          <p class="empty">No orders yet. They'll appear here once customers start buying.</p>
+        ) : (
+          <table>
+            <thead>
+              <tr>
+                <th>Order ID</th>
+                <th>Customer</th>
+                <th>Phone</th>
+                <th>Product</th>
+                <th>Weight</th>
+                <th>Amount</th>
+                <th>Status</th>
+                <th>Address</th>
+                <th>Date (IST)</th>
+              </tr>
+            </thead>
+            <tbody>
+              {allOrders.map(o => (
+                <tr>
+                  <td><span class="mono">{o.orderId}</span></td>
+                  <td>
+                    <div class="name">{o.customerName}</div>
+                    <div class="muted">{o.customerEmail}</div>
+                  </td>
+                  <td class="muted">{o.customerPhone}</td>
+                  <td>{o.productName}</td>
+                  <td><strong>{o.weightLabel}</strong></td>
+                  <td><strong>₹{o.amountInr.toLocaleString('en-IN')}</strong></td>
+                  <td>
+                    <span
+                      class="badge"
+                      style={`background:${STATUS_COLORS[o.status] ?? '#eee'};color:${STATUS_TEXT[o.status] ?? '#333'}`}
+                    >
+                      {o.status}
+                    </span>
+                  </td>
+                  <td class="muted" style="max-width:180px;white-space:normal">{o.customerAddress}</td>
+                  <td class="muted" style="white-space:nowrap">{fmt(o.createdAt)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
+    </div>
+  </main>
+</body>
+</html>
