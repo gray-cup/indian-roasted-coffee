@@ -1,0 +1,127 @@
+[
+  {
+    "rank": 1,
+    "state": "Maharashtra",
+    "top_cities": ["Mumbai", "Pune", "Nagpur"]
+  },
+  {
+    "rank": 2,
+    "state": "Tamil Nadu",
+    "top_cities": ["Chennai", "Coimbatore", "Madurai"]
+  },
+  {
+    "rank": 3,
+    "state": "Uttar Pradesh",
+    "top_cities": ["Noida", "Lucknow", "Kanpur"]
+  },
+  {
+    "rank": 4,
+    "state": "Karnataka",
+    "top_cities": ["Bengaluru", "Mysuru", "Mangaluru"]
+  },
+  {
+    "rank": 5,
+    "state": "Gujarat",
+    "top_cities": ["Ahmedabad", "Surat", "Vadodara"]
+  },
+  {
+    "rank": 6,
+    "state": "West Bengal",
+    "top_cities": ["Kolkata", "Howrah", "Durgapur"]
+  },
+  {
+    "rank": 7,
+    "state": "Rajasthan",
+    "top_cities": ["Jaipur", "Udaipur", "Kota"]
+  },
+  {
+    "rank": 8,
+    "state": "Telangana",
+    "top_cities": ["Hyderabad", "Warangal", "Karimnagar"]
+  },
+  {
+    "rank": 9,
+    "state": "Andhra Pradesh",
+    "top_cities": ["Visakhapatnam", "Vijayawada", "Guntur"]
+  },
+  {
+    "rank": 10,
+    "state": "Madhya Pradesh",
+    "top_cities": ["Indore", "Bhopal", "Gwalior"]
+  },
+  {
+    "rank": 11,
+    "state": "Kerala",
+    "top_cities": ["Kochi", "Thiruvananthapuram", "Kozhikode"]
+  },
+  {
+    "rank": 12,
+    "state": "Delhi (NCT)",
+    "top_cities": ["New Delhi", "Gurgaon", "Noida"]
+  },
+  {
+    "rank": 13,
+    "state": "Haryana",
+    "top_cities": ["Gurgaon", "Faridabad", "Panipat"]
+  },
+  {
+    "rank": 14,
+    "state": "Bihar",
+    "top_cities": ["Patna", "Gaya", "Muzaffarpur"]
+  },
+  {
+    "rank": 15,
+    "state": "Punjab",
+    "top_cities": ["Ludhiana", "Amritsar", "Jalandhar"]
+  },
+  {
+    "rank": 16,
+    "state": "Odisha",
+    "top_cities": ["Bhubaneswar", "Cuttack", "Rourkela"]
+  },
+  {
+    "rank": 17,
+    "state": "Assam",
+    "top_cities": ["Guwahati", "Dibrugarh", "Silchar"]
+  },
+  {
+    "rank": 18,
+    "state": "Jharkhand",
+    "top_cities": ["Ranchi", "Jamshedpur", "Dhanbad"]
+  },
+  {
+    "rank": 19,
+    "state": "Chhattisgarh",
+    "top_cities": ["Raipur", "Bhilai", "Bilaspur"]
+  },
+  {
+    "rank": 20,
+    "state": "Uttarakhand",
+    "top_cities": ["Dehradun", "Haridwar", "Rudrapur"]
+  },
+  {
+    "rank": 21,
+    "state": "Himachal Pradesh",
+    "top_cities": ["Shimla", "Baddi", "Solan"]
+  },
+  {
+    "rank": 22,
+    "state": "Goa",
+    "top_cities": ["Panaji", "Margao", "Vasco da Gama"]
+  },
+  {
+    "rank": 23,
+    "state": "Jammu & Kashmir",
+    "top_cities": ["Srinagar", "Jammu", "Anantnag"]
+  },
+  {
+    "rank": 24,
+    "state": "Tripura",
+    "top_cities": ["Agartala", "Udaipur", "Dharmanagar"]
+  },
+  {
+    "rank": 25,
+    "state": "Meghalaya",
+    "top_cities": ["Shillong", "Tura", "Jowai"]
+  }
+]

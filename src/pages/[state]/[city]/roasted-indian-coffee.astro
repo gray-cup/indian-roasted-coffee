@@ -1,0 +1,119 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import { STATES_CITIES, toSlug } from '../../../utils/geo';
+import { siteConfig } from '../../../config/site';
+
+export function getStaticPaths() {
+  return STATES_CITIES.flatMap(entry =>
+    entry.top_cities.map(city => ({
+      params: { state: toSlug(entry.state), city: toSlug(city) },
+      props: { entry, cityName: city },
+    }))
+  );
+}
+
+const { entry, cityName } = Astro.props;
+const { state, top_cities } = entry;
+
+const otherCities = top_cities.filter(c => c !== cityName);
+
+const title = `Roasted Indian Coffee in ${cityName}, ${state}`;
+const description = `Order fresh roasted Indian coffee beans delivered to ${cityName}, ${state}. Single-origin beans from Coorg, Chikmagalur, Wayanad, and Northeast India — roasted fresh, shipped within 48 hours.`;
+const canonicalUrl = `https://${siteConfig.domain}/${toSlug(state)}/${toSlug(cityName)}/roasted-indian-coffee`;
+---
+
+<BaseLayout {title} {description} {canonicalUrl}>
+  <section class="grid-container usa-section">
+    <div class="grid-row grid-gap">
+      <div class="grid-col-12 tablet:grid-col-8">
+        <nav class="usa-breadcrumb" aria-label="Breadcrumbs">
+          <ol class="usa-breadcrumb__list">
+            <li class="usa-breadcrumb__list-item">
+              <a href="/" class="usa-breadcrumb__link">Home</a>
+            </li>
+            <li class="usa-breadcrumb__list-item">
+              <a href={`/${toSlug(state)}/roasted-indian-coffee`} class="usa-breadcrumb__link">{state}</a>
+            </li>
+            <li class="usa-breadcrumb__list-item usa-current" aria-current="page">
+              {cityName}
+            </li>
+          </ol>
+        </nav>
+
+        <h1 class="usa-prose">Roasted Indian Coffee Delivered to {cityName}</h1>
+
+        <div class="usa-prose">
+          <p class="usa-intro">
+            We deliver freshly roasted single-origin Indian coffee beans directly to {cityName}, {state}. Every bag is roasted on the day we dispatch — no old inventory, no compromises on freshness.
+          </p>
+
+          <h2>Coffee for {cityName}</h2>
+          <p>
+            Whether you're looking for a morning Arabica for your home setup in {cityName} or bulk green beans for your roastery, we have options for every need. Our coffees are sourced directly from Indian farmers and roasted to your specification — light, medium, or medium-dark.
+          </p>
+
+          <h2>Delivered to your door in {cityName}</h2>
+          <p>
+            We partner with tracked courier services to deliver to all neighbourhoods in {cityName}. Typical delivery time after dispatch is 2–4 business days. You'll receive a tracking link as soon as your order is roasted and packed.
+          </p>
+
+          <h2>Popular origins among {cityName} customers</h2>
+          <ul>
+            <li>
+              <strong>Coorg Arabica</strong> — consistently our top seller. Balanced, low-bitterness, great for South Indian filter coffee or espresso.
+            </li>
+            <li>
+              <strong>Wayanad Specialty</strong> — bright acidity and floral top notes. Best as pour-over or cold brew.
+            </li>
+            <li>
+              <strong>Chikmagalur Robusta</strong> — earthy, high-caffeine, the backbone of a proper strong cup.
+            </li>
+            <li>
+              <strong>Haflong, Assam</strong> — smooth chocolate body, a conversation starter for anyone who says Indian coffee is just about Karnataka.
+            </li>
+            <li>
+              <strong>Tirap, Arunachal Pradesh</strong> — rare, stone-fruit character, traceable to indigenous farmers.
+            </li>
+          </ul>
+
+          <h2>Minimum order & pricing</h2>
+          <p>
+            Retail starts at just 300 g (₹360). Pricing scales down as quantity goes up — 1 kg orders save 17% versus retail, and 10 kg+ orders unlock our wholesale rate. <a href="/products/" class="usa-link">View all origins and pricing</a>.
+          </p>
+
+          <h2>Wholesale coffee supply in {cityName}</h2>
+          <p>
+            We supply cafés, restaurants, and offices in {cityName} with monthly or on-demand coffee subscriptions. Minimum wholesale order is 5 kg. <a href="/contact/" class="usa-link">Get a custom quote</a>.
+          </p>
+        </div>
+      </div>
+
+      <aside class="grid-col-12 tablet:grid-col-4">
+        <div style="position: sticky; top: 1.5rem;">
+          <div style="background: #f5f5f0; border-radius: 8px; padding: 1.25rem 1rem; margin-bottom: 1rem;">
+            <p style="font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: #555; margin: 0 0 0.5rem;">More in {state}</p>
+            <ul style="list-style: none; padding: 0; margin: 0; font-size: 0.875rem; color: #444;">
+              <li style="padding: 0.3rem 0; border-bottom: 1px solid #e0e0d8;">
+                <a href={`/${toSlug(state)}/roasted-indian-coffee`} class="usa-link">All of {state}</a>
+              </li>
+              <li style="padding: 0.3rem 0; border-bottom: 1px solid #e0e0d8;">
+                <a href={`/${toSlug(state)}/roasted-specialty-coffee`} class="usa-link">Specialty Coffee in {state}</a>
+              </li>
+              {otherCities.map(city => (
+                <li style="padding: 0.3rem 0; border-bottom: 1px solid #e0e0d8;">
+                  <a href={`/${toSlug(state)}/${toSlug(city)}/roasted-indian-coffee`} class="usa-link">{city}</a>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div style="background: #fff; border: 1.5px solid #e4e4e4; border-radius: 8px; padding: 1.25rem 1rem;">
+            <p style="font-size: 0.85rem; font-weight: 700; margin: 0 0 0.75rem;">Order for {cityName}</p>
+            <a href="/products/" class="usa-button" style="width: 100%; text-align: center;">Choose your coffee →</a>
+            <p style="font-size: 0.75rem; color: #777; margin: 0.75rem 0 0; text-align: center;">Roasted to order · delivered to {cityName}</p>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </section>
+</BaseLayout>

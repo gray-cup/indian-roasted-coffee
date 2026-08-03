@@ -27,6 +27,8 @@ keyFacts:
     value: 250 g, 500 g, 1 kg
   - label: Freshness
     value: Best within 45 days of roast date
+  - label: Roasted
+    value: Only after your order is placed — no pre-roasted stock
   - label: Ships In
     value: 48 hours after roasting
 related:

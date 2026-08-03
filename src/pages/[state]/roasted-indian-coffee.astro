@@ -1,0 +1,95 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { STATES_CITIES, toSlug } from '../../utils/geo';
+import { siteConfig } from '../../config/site';
+
+export function getStaticPaths() {
+  return STATES_CITIES.map(entry => ({
+    params: { state: toSlug(entry.state) },
+    props: { entry },
+  }));
+}
+
+const { entry } = Astro.props;
+const { state, top_cities } = entry;
+
+const title = `Roasted Indian Coffee in ${state}`;
+const description = `Order fresh roasted Indian coffee beans delivered to ${state}. Single-origin lots from Coorg, Chikmagalur, Wayanad, Nilgiris, and more — roasted to order, shipped within 48 hours.`;
+const canonicalUrl = `https://${siteConfig.domain}/${toSlug(state)}/roasted-indian-coffee`;
+---
+
+<BaseLayout {title} {description} {canonicalUrl}>
+  <section class="grid-container usa-section">
+    <div class="grid-row grid-gap">
+      <div class="grid-col-12 tablet:grid-col-8">
+        <nav class="usa-breadcrumb" aria-label="Breadcrumbs">
+          <ol class="usa-breadcrumb__list">
+            <li class="usa-breadcrumb__list-item">
+              <a href="/" class="usa-breadcrumb__link">Home</a>
+            </li>
+            <li class="usa-breadcrumb__list-item usa-current" aria-current="page">
+              {state}
+            </li>
+          </ol>
+        </nav>
+
+        <h1 class="usa-prose">Roasted Indian Coffee Delivered to {state}</h1>
+
+        <div class="usa-prose">
+          <p class="usa-intro">
+            Get freshly roasted single-origin Indian coffee beans delivered straight to your door in {state}. We source exclusively from India's finest growing regions and roast every order on demand — never sitting on shelves.
+          </p>
+
+          <h2>Why choose Indian Roasted Coffee in {state}?</h2>
+          <p>
+            Whether you're a home brewer in {top_cities[0] ?? state} or running a café in {top_cities[1] ?? state}, you deserve coffee that hasn't been sitting in a warehouse. Our beans travel directly from Indian estates to your roaster to your cup — typically within 4–6 days of harvest.
+          </p>
+
+          <h2>Our origins</h2>
+          <ul>
+            <li><strong>Coorg Arabica</strong> — delicate, wine-like acidity from the hills of Kodagu</li>
+            <li><strong>Chikmagalur Robusta</strong> — bold, earthy depth from Karnataka's coffee belt</li>
+            <li><strong>Wayanad Specialty</strong> — bright and fruity, grown at high altitude in Kerala</li>
+            <li><strong>Nilgiri Estate</strong> — floral and clean from Tamil Nadu's Blue Mountains</li>
+            <li><strong>Koraput, Odisha</strong> — tribal-grown, forest-shade Arabica with a sweet finish</li>
+            <li><strong>Haflong, Assam</strong> — rare high-altitude beans with a smooth, chocolatey body</li>
+            <li><strong>Chirang, Assam</strong> — forest-edge Robusta with rich, caramel notes</li>
+            <li><strong>Tirap, Arunachal Pradesh</strong> — exotic, stone-fruit character from India's east</li>
+          </ul>
+
+          <h2>Shipping to {state}</h2>
+          <p>
+            We ship to all cities in {state} including {top_cities.join(', ')}. Orders are dispatched within 48 hours of roasting via tracked courier. Minimum order is 300 g; bulk orders (1 kg and above) qualify for tiered pricing.
+          </p>
+
+          <h2>Bulk orders for businesses in {state}</h2>
+          <p>
+            Running a restaurant, café, or office pantry in {state}? We supply coffee in quantities from 1 kg to 100 kg at wholesale rates. <a href="/contact/" class="usa-link">Contact us</a> for a custom quote or place your order directly below.
+          </p>
+        </div>
+      </div>
+
+      <aside class="grid-col-12 tablet:grid-col-4">
+        <div style="position: sticky; top: 1.5rem;">
+          <div style="background: #f5f5f0; border-radius: 8px; padding: 1.25rem 1rem; margin-bottom: 1rem;">
+            <p style="font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: #555; margin: 0 0 0.5rem;">Delivering to</p>
+            <p style="font-size: 1rem; font-weight: 600; margin: 0 0 0.75rem;">{state}</p>
+            <ul style="list-style: none; padding: 0; margin: 0; font-size: 0.875rem; color: #444;">
+              {top_cities.map(city => (
+                <li style="padding: 0.25rem 0; border-bottom: 1px solid #e0e0d8;">
+                  <a href={`/${toSlug(state)}/${toSlug(city)}/roasted-indian-coffee`} class="usa-link">{city}</a>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div style="background: #fff; border: 1.5px solid #e4e4e4; border-radius: 8px; padding: 1.25rem 1rem;">
+            <p style="font-size: 0.85rem; font-weight: 700; margin: 0 0 0.75rem;">Quick order</p>
+            <a href="/products/" class="usa-button" style="width: 100%; text-align: center;">Browse all coffees →</a>
+            <p style="font-size: 0.75rem; color: #777; margin: 0.75rem 0 0; text-align: center;">Roasted to order · shipped in 48 h</p>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </section>
+</BaseLayout>

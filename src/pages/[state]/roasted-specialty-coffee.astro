@@ -1,0 +1,109 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { STATES_CITIES, toSlug } from '../../utils/geo';
+import { siteConfig } from '../../config/site';
+
+export function getStaticPaths() {
+  return STATES_CITIES.map(entry => ({
+    params: { state: toSlug(entry.state) },
+    props: { entry },
+  }));
+}
+
+const { entry } = Astro.props;
+const { state, top_cities } = entry;
+
+const title = `Roasted Specialty Coffee in ${state}`;
+const description = `Specialty-grade Indian coffee roasted to order and delivered to ${state}. Single-origin beans from Coorg, Wayanad, Haflong, and Arunachal Pradesh — traceable, fresh, and ship-ready in 48 hours.`;
+const canonicalUrl = `https://${siteConfig.domain}/${toSlug(state)}/roasted-specialty-coffee`;
+---
+
+<BaseLayout {title} {description} {canonicalUrl}>
+  <section class="grid-container usa-section">
+    <div class="grid-row grid-gap">
+      <div class="grid-col-12 tablet:grid-col-8">
+        <nav class="usa-breadcrumb" aria-label="Breadcrumbs">
+          <ol class="usa-breadcrumb__list">
+            <li class="usa-breadcrumb__list-item">
+              <a href="/" class="usa-breadcrumb__link">Home</a>
+            </li>
+            <li class="usa-breadcrumb__list-item usa-current" aria-current="page">
+              Specialty Coffee — {state}
+            </li>
+          </ol>
+        </nav>
+
+        <h1 class="usa-prose">Roasted Specialty Coffee in {state}</h1>
+
+        <div class="usa-prose">
+          <p class="usa-intro">
+            Specialty coffee means transparency, traceability, and taste. Every bag we sell from {state} carries a story: which estate grew it, what altitude the plants live at, and why the flavour profile is unique. No blends, no fillers — just single-origin lots roasted the moment you order.
+          </p>
+
+          <h2>What makes specialty coffee different?</h2>
+          <p>
+            Specialty-grade coffee scores 80+ points on the SCA scale. It undergoes strict quality control from the farm to the export — only the finest cherries are processed, dried correctly, and cupped before they reach our roaster. When you receive a bag of Wayanad Specialty or Tirap Arabica, you're getting something cafés in {top_cities[0] ?? state} would charge a premium for.
+          </p>
+
+          <h2>Our specialty origins</h2>
+          <ul>
+            <li>
+              <strong>Wayanad Specialty, Kerala</strong><br />
+              High-altitude Arabica with a bright citrus acidity and a lingering floral note. Perfect for filter, pour-over, and Aeropress.
+            </li>
+            <li>
+              <strong>Koraput, Odisha</strong><br />
+              Tribal-grown, shade-processed Arabica from Eastern India — sweet, balanced, with low bitterness. A rare find in {state}.
+            </li>
+            <li>
+              <strong>Haflong, Assam</strong><br />
+              India's rarest origin: high-altitude beans grown in Dima Hasao district with smooth, chocolatey depth and a clean finish.
+            </li>
+            <li>
+              <strong>Tirap, Arunachal Pradesh</strong><br />
+              Stone-fruit character, exotic terroir. Sourced from indigenous farmers in one of India's least-explored coffee belts.
+            </li>
+            <li>
+              <strong>Coorg Arabica, Karnataka</strong><br />
+              Wine-like, delicate — the benchmark single-origin Indian Arabica. Popular with specialty roasters across {state}.
+            </li>
+          </ul>
+
+          <h2>Roast profiles</h2>
+          <p>
+            We offer three roast levels across our specialty range: light (highlights origin character and acidity), medium (balanced, versatile), and medium-dark (fuller body, lower acidity). Choose your preferred roast at checkout. We roast on the day of dispatch so you receive beans at peak flavour.
+          </p>
+
+          <h2>Ordering specialty coffee in {state}</h2>
+          <p>
+            We deliver to {top_cities.join(', ')} and all areas in {state} within 3–5 business days. Orders above 1 kg ship with a cupping notes card. Wholesale accounts (5 kg+) get access to our seasonal micro-lots before general release.
+          </p>
+        </div>
+      </div>
+
+      <aside class="grid-col-12 tablet:grid-col-4">
+        <div style="position: sticky; top: 1.5rem;">
+          <div style="background: #f5f5f0; border-radius: 8px; padding: 1.25rem 1rem; margin-bottom: 1rem;">
+            <p style="font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: #555; margin: 0 0 0.5rem;">Also in {state}</p>
+            <ul style="list-style: none; padding: 0; margin: 0; font-size: 0.875rem; color: #444;">
+              <li style="padding: 0.3rem 0; border-bottom: 1px solid #e0e0d8;">
+                <a href={`/${toSlug(state)}/roasted-indian-coffee`} class="usa-link">Roasted Indian Coffee in {state}</a>
+              </li>
+              {top_cities.map(city => (
+                <li style="padding: 0.3rem 0; border-bottom: 1px solid #e0e0d8;">
+                  <a href={`/${toSlug(state)}/${toSlug(city)}/roasted-indian-coffee`} class="usa-link">{city}</a>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div style="background: #fff; border: 1.5px solid #e4e4e4; border-radius: 8px; padding: 1.25rem 1rem;">
+            <p style="font-size: 0.85rem; font-weight: 700; margin: 0 0 0.75rem;">Order specialty coffee</p>
+            <a href="/products/" class="usa-button" style="width: 100%; text-align: center;">See all origins →</a>
+            <p style="font-size: 0.75rem; color: #777; margin: 0.75rem 0 0; text-align: center;">Roasted to order · shipped in 48 h</p>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </section>
+</BaseLayout>
