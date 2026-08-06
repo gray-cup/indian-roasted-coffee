@@ -17,7 +17,7 @@
   },
   "scripts": {
     "dev": "node scripts/setup-uswds.mjs && astro dev",
-    "build": "node scripts/setup-uswds.mjs && astro build && pagefind --site dist/client",
+    "build": "node scripts/setup-uswds.mjs && astro build && pagefind --site dist/client && node scripts/copy-pagefind-vercel.mjs",
     "preview": "astro preview",
     "check": "astro check",
     "setup": "node scripts/setup-uswds.mjs",
@@ -30,8 +30,8 @@
   },
   "dependencies": {
     "@astrojs/mdx": "^5.0.0",
-    "@astrojs/node": "^11.0.2",
     "@astrojs/sitemap": "^3.7.3",
+    "@astrojs/vercel": "^11.0.5",
     "@libsql/client": "^0.17.4",
     "@uswds/uswds": "^3.10.0",
     "astro": "^6.0.0",

@@ -3,7 +3,7 @@ import mdx from '@astrojs/mdx';
 import sitemap from '@astrojs/sitemap';
 import astroLLMsGenerator from 'astro-llms-generate';
 import tailwindcss from '@tailwindcss/vite';
-import node from '@astrojs/node';
+import vercel from '@astrojs/vercel';
 import { fileURLToPath } from 'url';
 import { resolve } from 'path';
 
@@ -40,7 +40,7 @@ export default defineConfig({
 
   output: 'static',
 
-  adapter: node({ mode: 'standalone' }),
+  adapter: vercel(),
 
   // i18n: English at /, Spanish at /es/
   i18n: {
