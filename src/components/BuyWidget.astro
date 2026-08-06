@@ -1,5 +1,6 @@
 ---
-import { WEIGHT_OPTIONS } from '../utils/pricing';
+import { getWeightOptions } from '../utils/pricing';
+import { GRIND_OPTIONS } from '../utils/cart';
 
 interface Props {
   productSlug: string;
@@ -7,21 +8,19 @@ interface Props {
 }
 
 const { productSlug, productName } = Astro.props;
+const weightOptions = getWeightOptions(productSlug);
 ---
 
 <div class="buy-widget">
   <h2 class="buy-widget__heading">Order this coffee</h2>
-  <p class="buy-widget__note">Roasted to order · shipped within 48 h</p>
+  <p class="buy-widget__note">Roasted to order · shipped within 48 h · wholesale from 5 kg</p>
 
-  <form method="POST" action="/api/payment/create-order" class="buy-form">
-    <input type="hidden" name="productSlug" value={productSlug} />
-    <input type="hidden" name="productName" value={productName} />
-
+  <div class="buy-form" data-product-slug={productSlug} data-product-name={productName}>
     <div class="field">
       <label for="bw-weight" class="field__label">Weight</label>
-      <select id="bw-weight" name="weightGrams" class="field__select" required>
-        {WEIGHT_OPTIONS.map((opt, i) => (
-          <option value={opt.grams} selected={i === 0}>
+      <select id="bw-weight" class="field__select">
+        {weightOptions.map((opt, i) => (
+          <option value={opt.grams} data-price={opt.priceInr} selected={i === 0}>
             {opt.label} — ₹{opt.priceInr.toLocaleString('en-IN')}
           </option>
         ))}
@@ -29,36 +28,34 @@ const { productSlug, productName } = Astro.props;
     </div>
 
     <div class="field">
-      <label for="bw-name" class="field__label">Full name</label>
-      <input type="text" id="bw-name" name="customerName" required autocomplete="name" placeholder="Arjun Sharma" class="field__input" />
+      <label for="bw-grind" class="field__label">Grind</label>
+      <select id="bw-grind" class="field__select">
+        {GRIND_OPTIONS.map((g, i) => (
+          <option value={g} selected={i === 0}>{g}</option>
+        ))}
+      </select>
     </div>
 
-    <div class="field">
-      <label for="bw-email" class="field__label">Email</label>
-      <input type="email" id="bw-email" name="customerEmail" required autocomplete="email" placeholder="you@example.com" class="field__input" />
+    <div class="field field--qty">
+      <label for="bw-qty" class="field__label">Quantity</label>
+      <input type="number" id="bw-qty" class="field__input" value="1" min="1" step="1" inputmode="numeric" />
     </div>
 
-    <div class="field">
-      <label for="bw-phone" class="field__label">Phone</label>
-      <input type="tel" id="bw-phone" name="customerPhone" required autocomplete="tel" placeholder="+91 98765 43210" class="field__input" />
-    </div>
-
-    <div class="field">
-      <label for="bw-address" class="field__label">Delivery address</label>
-      <textarea id="bw-address" name="customerAddress" required rows="3" placeholder="Flat 4, Green View Apartments&#10;Bengaluru, Karnataka 560001" class="field__textarea"></textarea>
-    </div>
-
-    <button type="submit" class="buy-btn">
-      Pay securely →
+    <button type="button" class="buy-btn" id="bw-add-btn">
+      Add to cart — <span id="bw-line-total">₹{weightOptions[0].priceInr.toLocaleString('en-IN')}</span>
     </button>
+
+    <p class="buy-widget__added" id="bw-added" hidden>
+      Added to cart. <a href="/cart/" class="usa-link">View cart →</a>
+    </p>
 
     <p class="buy-widget__secure">
       <svg width="12" height="14" viewBox="0 0 12 14" fill="none" aria-hidden="true">
         <path d="M6 0L0 2.5V7c0 3.31 2.57 6.41 6 7 3.43-.59 6-3.69 6-7V2.5L6 0z" fill="currentColor" opacity=".5"/>
       </svg>
-      Secured by Cashfree Payments
+      Secured checkout by Cashfree Payments
     </p>
-  </form>
+  </div>
 </div>
 
 <style>
@@ -87,6 +84,10 @@ const { productSlug, productName } = Astro.props;
     margin-bottom: 0.85rem;
   }
 
+  .field--qty {
+    max-width: 120px;
+  }
+
   .field__label {
     display: block;
     font-size: 0.8rem;
@@ -96,8 +97,7 @@ const { productSlug, productName } = Astro.props;
   }
 
   .field__select,
-  .field__input,
-  .field__textarea {
+  .field__input {
     width: 100%;
     padding: 0.55rem 0.7rem;
     border: 1.5px solid #ccc;
@@ -111,16 +111,10 @@ const { productSlug, productName } = Astro.props;
   }
 
   .field__select:focus,
-  .field__input:focus,
-  .field__textarea:focus {
+  .field__input:focus {
     outline: none;
     border-color: #2e6e37;
     box-shadow: 0 0 0 3px rgba(46, 110, 55, 0.15);
-  }
-
-  .field__textarea {
-    resize: vertical;
-    min-height: 72px;
   }
 
   .buy-btn {
@@ -142,6 +136,14 @@ const { productSlug, productName } = Astro.props;
     background: #255c2e;
   }
 
+  .buy-widget__added {
+    text-align: center;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #2e6e37;
+    margin-top: 0.75rem;
+  }
+
   .buy-widget__secure {
     display: flex;
     align-items: center;
@@ -152,3 +154,50 @@ const { productSlug, productName } = Astro.props;
     justify-content: center;
   }
 </style>
+
+<script>
+  import { addToCart, type Grind } from '../utils/cart';
+
+  document.querySelectorAll<HTMLElement>('.buy-form').forEach((form) => {
+    const slug = form.dataset.productSlug!;
+    const name = form.dataset.productName!;
+    const weightSelect = form.querySelector<HTMLSelectElement>('#bw-weight')!;
+    const grindSelect = form.querySelector<HTMLSelectElement>('#bw-grind')!;
+    const qtyInput = form.querySelector<HTMLInputElement>('#bw-qty')!;
+    const lineTotalEl = form.querySelector<HTMLElement>('#bw-line-total')!;
+    const addBtn = form.querySelector<HTMLButtonElement>('#bw-add-btn')!;
+    const addedMsg = form.querySelector<HTMLElement>('#bw-added')!;
+
+    function selectedPrice(): number {
+      const opt = weightSelect.selectedOptions[0];
+      return Number(opt?.dataset.price ?? 0);
+    }
+
+    function updateTotal() {
+      const qty = Math.max(1, parseInt(qtyInput.value, 10) || 1);
+      const total = selectedPrice() * qty;
+      lineTotalEl.textContent = `₹${total.toLocaleString('en-IN')}`;
+    }
+
+    weightSelect.addEventListener('change', updateTotal);
+    qtyInput.addEventListener('input', updateTotal);
+
+    addBtn.addEventListener('click', () => {
+      const qty = Math.max(1, parseInt(qtyInput.value, 10) || 1);
+      const opt = weightSelect.selectedOptions[0];
+      addToCart(
+        {
+          productSlug: slug,
+          productName: name,
+          weightGrams: Number(opt.value),
+          weightLabel: opt.textContent?.split('—')[0].trim() ?? opt.value,
+          grind: grindSelect.value as Grind,
+          unitPriceInr: selectedPrice(),
+        },
+        qty
+      );
+      addedMsg.hidden = false;
+      window.setTimeout(() => { addedMsg.hidden = true; }, 4000);
+    });
+  });
+</script>

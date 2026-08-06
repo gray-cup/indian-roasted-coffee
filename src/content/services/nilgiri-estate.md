@@ -24,7 +24,7 @@ keyFacts:
   - label: Flavour Notes
     value: Dark Fruit, Cedar, Bittersweet Chocolate
   - label: Available Sizes
-    value: 250 g, 500 g, 1 kg
+    value: 250 g sample bag, then 5–100 kg wholesale
   - label: Freshness
     value: Best within 45 days of roast date
   - label: Roasted

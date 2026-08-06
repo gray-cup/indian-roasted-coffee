@@ -7,7 +7,7 @@ applySlug: chirang-assam
 image: /images/IMG_9822.webp
 imageAlt: Chirang Forest Robusta coffee from the Bodoland region of Assam
 acceptingApplications: true
-order: 7
+order: 9
 esSlug: chirang-assam
 pubDate: 2024-01-01
 updatedDate: 2025-10-01
@@ -24,7 +24,7 @@ keyFacts:
   - label: Flavour Notes
     value: Deep Cocoa, Earthy Wood, Smoky
   - label: Available Sizes
-    value: 250 g, 500 g, 1 kg
+    value: 250 g sample bag, then 5–100 kg wholesale
   - label: Freshness
     value: Best within 45 days of roast date
   - label: Roasted

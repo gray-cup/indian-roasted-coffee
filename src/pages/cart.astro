@@ -31,7 +31,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
             <thead>
               <tr>
                 <th scope="col">Product</th>
-                <th scope="col">Size</th>
+                <th scope="col">Weight</th>
                 <th scope="col">Grind</th>
                 <th scope="col">Qty</th>
                 <th scope="col" class="text-right">Price</th>
@@ -68,20 +68,43 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         <div class="grid-col-12 tablet:grid-col-4">
           <div class="usa-summary-box" role="complementary" aria-labelledby="cart-summary-heading">
             <div class="usa-summary-box__body">
-              <h2 class="usa-summary-box__heading" id="cart-summary-heading">Order summary</h2>
+              <h2 class="usa-summary-box__heading" id="cart-summary-heading">Checkout</h2>
               <div class="usa-summary-box__text">
                 <p>
                   <strong>Subtotal:</strong>
                   <span id="cart-summary-subtotal">₹0</span>
                 </p>
-                <p class="font-sans-sm text-base-dark">
+
+                <form id="checkout-form" class="margin-top-2">
+                  <div class="usa-form-group margin-top-1">
+                    <label class="usa-label" for="co-name">Full name</label>
+                    <input class="usa-input" id="co-name" name="name" required autocomplete="name" />
+                  </div>
+                  <div class="usa-form-group margin-top-1">
+                    <label class="usa-label" for="co-email">Email</label>
+                    <input class="usa-input" id="co-email" name="email" type="email" required autocomplete="email" />
+                  </div>
+                  <div class="usa-form-group margin-top-1">
+                    <label class="usa-label" for="co-phone">Phone</label>
+                    <input class="usa-input" id="co-phone" name="phone" type="tel" required autocomplete="tel" />
+                  </div>
+                  <div class="usa-form-group margin-top-1">
+                    <label class="usa-label" for="co-address">Delivery address</label>
+                    <textarea class="usa-textarea" id="co-address" name="address" rows="3" required></textarea>
+                  </div>
+
+                  <p id="checkout-error" class="usa-error-message" hidden></p>
+
+                  <button type="submit" class="usa-button usa-button--big width-full text-center margin-top-2" id="checkout-submit">
+                    Proceed to payment
+                  </button>
+                </form>
+
+                <p class="font-sans-sm text-base-dark margin-top-2">
                   All orders are roasted fresh and dispatched within 48 hours.
                   Standard delivery: 4–6 business days.
                 </p>
-                <a href="/contact/" class="usa-button usa-button--big width-full text-center">
-                  Proceed to checkout
-                </a>
-                <a href="/products/" class="usa-button usa-button--unstyled margin-top-2 display-block text-center">
+                <a href="/products/" class="usa-button usa-button--unstyled margin-top-1 display-block text-center">
                   Continue shopping
                 </a>
               </div>
@@ -94,29 +117,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 </BaseLayout>
 
 <script>
-  const CART_KEY = 'irc_cart';
-
-  interface CartItem {
-    id: string;
-    title: string;
-    size: string;
-    grind: string;
-    quantity: number;
-    pricePerUnit: number;
-  }
-
-  function getCart(): CartItem[] {
-    try {
-      return JSON.parse(localStorage.getItem(CART_KEY) || '[]');
-    } catch {
-      return [];
-    }
-  }
-
-  function saveCart(cart: CartItem[]) {
-    localStorage.setItem(CART_KEY, JSON.stringify(cart));
-    window.dispatchEvent(new CustomEvent('cart:updated', { detail: cart }));
-  }
+  import { getCart, updateQuantity, removeFromCart, clearCart, cartTotal, type CartItem } from '../utils/cart';
 
   function formatPrice(n: number) {
     return `₹${n.toLocaleString('en-IN')}`;
@@ -145,10 +146,10 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     if (tbody) {
       tbody.innerHTML = cart
         .map(
-          (item) => `
-          <tr data-id="${item.id}" data-size="${item.size}" data-grind="${item.grind}">
-            <td><strong>${item.title}</strong></td>
-            <td>${item.size}</td>
+          (item, idx) => `
+          <tr data-idx="${idx}">
+            <td><strong>${item.productName}</strong></td>
+            <td>${item.weightLabel}</td>
             <td class="font-sans-sm">${item.grind}</td>
             <td>
               <div style="display:flex;align-items:center;gap:0.5rem">
@@ -167,12 +168,12 @@ import BaseLayout from '../layouts/BaseLayout.astro';
                 >+</button>
               </div>
             </td>
-            <td class="text-right">${formatPrice(item.pricePerUnit * item.quantity)}</td>
+            <td class="text-right">${formatPrice(item.unitPriceInr * item.quantity)}</td>
             <td>
               <button
                 type="button"
                 class="usa-button usa-button--unstyled text-base-dark remove-item"
-                aria-label="Remove ${item.title} (${item.size}, ${item.grind}) from cart"
+                aria-label="Remove ${item.productName} (${item.weightLabel}, ${item.grind}) from cart"
                 style="font-size:0.85rem;text-decoration:underline"
               >Remove</button>
             </td>
@@ -181,51 +182,97 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         )
         .join('');
 
-      // Qty dec/inc
+      function lineFromRow(row: HTMLTableRowElement): CartItem {
+        const idx = Number(row.dataset.idx);
+        return getCart()[idx];
+      }
+
       tbody.querySelectorAll<HTMLButtonElement>('.qty-dec').forEach((btn) => {
         btn.addEventListener('click', () => {
           const row = btn.closest('tr') as HTMLTableRowElement;
-          mutate(row, -1);
+          const item = lineFromRow(row);
+          if (item) updateQuantity(item, item.quantity - 1);
         });
       });
       tbody.querySelectorAll<HTMLButtonElement>('.qty-inc').forEach((btn) => {
         btn.addEventListener('click', () => {
           const row = btn.closest('tr') as HTMLTableRowElement;
-          mutate(row, 1);
+          const item = lineFromRow(row);
+          if (item) updateQuantity(item, item.quantity + 1);
         });
       });
-
-      // Remove
       tbody.querySelectorAll<HTMLButtonElement>('.remove-item').forEach((btn) => {
         btn.addEventListener('click', () => {
           const row = btn.closest('tr') as HTMLTableRowElement;
-          const { id, size, grind } = row.dataset as { id: string; size: string; grind: string };
-          saveCart(getCart().filter((i) => !(i.id === id && i.size === size && i.grind === grind)));
-          render();
+          const item = lineFromRow(row);
+          if (item) removeFromCart(item);
         });
       });
     }
 
-    const total = cart.reduce((s, i) => s + i.pricePerUnit * i.quantity, 0);
+    const total = cartTotal(cart);
     if (subtotalEl) subtotalEl.textContent = formatPrice(total);
     if (summarySubtotal) summarySubtotal.textContent = formatPrice(total);
   }
 
-  function mutate(row: HTMLTableRowElement, delta: number) {
-    const { id, size, grind } = row.dataset as { id: string; size: string; grind: string };
-    const cart = getCart().map((i) =>
-      i.id === id && i.size === size && i.grind === grind
-        ? { ...i, quantity: Math.max(0, i.quantity + delta) }
-        : i
-    ).filter((i) => i.quantity > 0);
-    saveCart(cart);
-    render();
-  }
-
   document.getElementById('cart-clear-btn')?.addEventListener('click', () => {
-    localStorage.removeItem(CART_KEY);
-    window.dispatchEvent(new CustomEvent('cart:updated', { detail: [] }));
+    clearCart();
     render();
+  });
+
+  const checkoutForm = document.getElementById('checkout-form') as HTMLFormElement | null;
+  const checkoutError = document.getElementById('checkout-error') as HTMLElement | null;
+  const checkoutSubmit = document.getElementById('checkout-submit') as HTMLButtonElement | null;
+
+  checkoutForm?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (!checkoutSubmit) return;
+
+    const cart = getCart();
+    if (cart.length === 0) return;
+
+    const formData = new FormData(checkoutForm);
+    checkoutError?.setAttribute('hidden', '');
+    checkoutSubmit.disabled = true;
+    checkoutSubmit.textContent = 'Processing…';
+
+    try {
+      const res = await fetch('/api/payment/create-order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          customer: {
+            name: formData.get('name'),
+            email: formData.get('email'),
+            phone: formData.get('phone'),
+            address: formData.get('address'),
+          },
+          items: cart.map((i) => ({
+            productSlug: i.productSlug,
+            productName: i.productName,
+            weightGrams: i.weightGrams,
+            grind: i.grind,
+            quantity: i.quantity,
+          })),
+        }),
+      });
+
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(text || 'Could not start checkout.');
+      }
+
+      const { sid, oid } = await res.json();
+      clearCart();
+      window.location.href = `/checkout?sid=${encodeURIComponent(sid)}&oid=${encodeURIComponent(oid)}`;
+    } catch (err) {
+      if (checkoutError) {
+        checkoutError.textContent = err instanceof Error ? err.message : 'Something went wrong. Please try again.';
+        checkoutError.removeAttribute('hidden');
+      }
+      checkoutSubmit.disabled = false;
+      checkoutSubmit.textContent = 'Proceed to payment';
+    }
   });
 
   render();

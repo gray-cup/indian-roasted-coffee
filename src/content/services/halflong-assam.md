@@ -7,7 +7,7 @@ applySlug: halflong-assam
 image: /images/IMG_9818.webp
 imageAlt: Halflong Highland coffee from the North Cachar Hills of Assam
 acceptingApplications: true
-order: 6
+order: 8
 esSlug: halflong-assam
 pubDate: 2024-01-01
 updatedDate: 2025-10-01
@@ -24,7 +24,7 @@ keyFacts:
   - label: Flavour Notes
     value: Dark Toffee, Dried Fruit, Smoky
   - label: Available Sizes
-    value: 250 g, 500 g, 1 kg
+    value: 250 g sample bag, then 5–100 kg wholesale
   - label: Freshness
     value: Best within 45 days of roast date
   - label: Roasted

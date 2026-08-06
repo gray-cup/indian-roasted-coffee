@@ -1,8 +1,9 @@
 import type { APIRoute } from 'astro';
 import { createHmac } from 'crypto';
 import { db } from '../../../db/index';
-import { orders } from '../../../db/schema';
+import { orders, orderItems } from '../../../db/schema';
 import { eq } from 'drizzle-orm';
+import { sendOrderEmails } from '../../../utils/email';
 
 export const prerender = false;
 
@@ -40,10 +41,17 @@ export const POST: APIRoute = async ({ request }) => {
     paymentStatus === 'SUCCESS' ? 'PAID' :
     paymentStatus === 'FAILED'  ? 'FAILED' : 'PENDING';
 
+  const [existing] = await db.select().from(orders).where(eq(orders.orderId, orderId));
+
   await db
     .update(orders)
     .set({ status, webhookData: rawBody, updatedAt: new Date() })
     .where(eq(orders.orderId, orderId));
+
+  if (existing && existing.status !== 'PAID' && status === 'PAID') {
+    const items = await db.select().from(orderItems).where(eq(orderItems.orderId, orderId));
+    await sendOrderEmails({ ...existing, status: 'PAID' }, items);
+  }
 
   return new Response('OK', { status: 200 });
 };

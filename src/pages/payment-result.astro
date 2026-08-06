@@ -2,13 +2,15 @@
 export const prerender = false;
 
 import { db } from '../db/index';
-import { orders } from '../db/schema';
+import { orders, orderItems } from '../db/schema';
 import { eq } from 'drizzle-orm';
-import type { Order } from '../db/schema';
+import type { Order, OrderItem } from '../db/schema';
+import { sendOrderEmails } from '../utils/email';
 
 const orderId = Astro.url.searchParams.get('order_id');
 
 let order: Order | null = null;
+let items: OrderItem[] = [];
 let pageError: string | null = null;
 
 if (!orderId) {
@@ -39,15 +41,22 @@ if (!orderId) {
             order_status === 'EXPIRED' ? 'EXPIRED' : row.status;
 
           if (newStatus !== row.status) {
+            const wasPaid = row.status === 'PAID';
             await db.update(orders)
               .set({ status: newStatus, updatedAt: new Date() })
               .where(eq(orders.orderId, orderId));
             row.status = newStatus as Order['status'];
+
+            if (!wasPaid && newStatus === 'PAID') {
+              const rowItems = await db.select().from(orderItems).where(eq(orderItems.orderId, orderId));
+              await sendOrderEmails({ ...row, status: 'PAID' }, rowItems);
+            }
           }
         }
       } catch { /* webhook will correct it if the fetch fails */ }
 
       order = row;
+      items = await db.select().from(orderItems).where(eq(orderItems.orderId, orderId));
     }
   } catch (err) {
     console.error('payment-result error:', err);
@@ -102,8 +111,12 @@ const isFailed  = order?.status === 'FAILED' || order?.status === 'EXPIRED';
         <p class="sub">Thank you, {order!.customerName}. We'll start roasting your order shortly and send a confirmation to {order!.customerEmail}.</p>
         <div class="details">
           <div class="row"><span class="label">Order ID</span><span class="val" style="font-size:0.8rem;font-family:monospace">{order!.orderId}</span></div>
-          <div class="row"><span class="label">Product</span><span class="val">{order!.productName}</span></div>
-          <div class="row"><span class="label">Weight</span><span class="val">{order!.weightLabel}</span></div>
+          {items.map((item) => (
+            <div class="row">
+              <span class="label">{item.productName} ({item.weightLabel} · {item.grind}) × {item.quantity}</span>
+              <span class="val">₹{item.lineTotalInr.toLocaleString('en-IN')}</span>
+            </div>
+          ))}
           <div class="row"><span class="label">Amount paid</span><span class="val">₹{order!.amountInr.toLocaleString('en-IN')}</span></div>
           <div class="row"><span class="label">Delivery to</span><span class="val" style="max-width:60%;text-align:right">{order!.customerAddress}</span></div>
         </div>

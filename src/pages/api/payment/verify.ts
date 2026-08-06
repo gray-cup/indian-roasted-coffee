@@ -1,7 +1,8 @@
 import type { APIRoute } from 'astro';
 import { db } from '../../../db/index';
-import { orders } from '../../../db/schema';
+import { orders, orderItems } from '../../../db/schema';
 import { eq } from 'drizzle-orm';
+import { sendOrderEmails } from '../../../utils/email';
 
 export const prerender = false;
 
@@ -37,6 +38,8 @@ export const GET: APIRoute = async ({ url }) => {
         if (data.order_status === 'PAID') {
           await db.update(orders).set({ status: 'PAID', updatedAt: new Date() }).where(eq(orders.orderId, orderId));
           order.status = 'PAID';
+          const paidItems = await db.select().from(orderItems).where(eq(orderItems.orderId, orderId));
+          await sendOrderEmails({ ...order, status: 'PAID' }, paidItems);
         }
       }
     } catch (err) {
@@ -44,12 +47,19 @@ export const GET: APIRoute = async ({ url }) => {
     }
   }
 
+  const items = await db.select().from(orderItems).where(eq(orderItems.orderId, orderId));
+
   return Response.json({
-    status:      order.status,
-    orderId:     order.orderId,
-    productName: order.productName,
-    weightLabel: order.weightLabel,
-    amountInr:   order.amountInr,
+    status:       order.status,
+    orderId:      order.orderId,
+    amountInr:    order.amountInr,
     customerName: order.customerName,
+    items: items.map((i) => ({
+      productName: i.productName,
+      weightLabel: i.weightLabel,
+      grind:       i.grind,
+      quantity:    i.quantity,
+      lineTotalInr: i.lineTotalInr,
+    })),
   });
 };

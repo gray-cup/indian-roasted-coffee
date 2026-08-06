@@ -19,6 +19,10 @@ interface Props {
   imageAlt?: string;
   locale?: Locale;
   class?: string;
+  /** Price of the 250g sample bag, in INR */
+  startingPrice?: number;
+  /** Wholesale rate per kg at the 5kg+ tier, in INR */
+  ratePerKg?: number;
 }
 
 import type { Locale } from '../../i18n/utils';
@@ -34,6 +38,8 @@ const {
   imageAlt = '',
   locale = 'en',
   class: className,
+  startingPrice,
+  ratePerKg,
 } = Astro.props;
 
 const t = useTranslations(locale);
@@ -57,6 +63,15 @@ const resolvedCta = ctaText ?? t('home.learnMore');
     </div>
     <div class="usa-card__body">
       <p>{summary}</p>
+      {startingPrice !== undefined && (
+        <p class="text-bold margin-top-1">
+          From ₹{startingPrice.toLocaleString('en-IN')}{' '}
+          <span class="font-sans-3xs text-base-dark text-normal">(250 g)</span>
+          {ratePerKg !== undefined && (
+            <span class="font-sans-3xs text-base-dark text-normal"> · ₹{ratePerKg.toLocaleString('en-IN')}/kg wholesale, 5kg+</span>
+          )}
+        </p>
+      )}
     </div>
     <div class="usa-card__footer">
       {acceptingApplications ? (

@@ -2,10 +2,21 @@
 export const prerender = false;
 
 import { db } from '../../db/index';
-import { orders } from '../../db/schema';
-import { desc } from 'drizzle-orm';
+import { orders, orderItems } from '../../db/schema';
+import { desc, inArray } from 'drizzle-orm';
 
 const allOrders = await db.select().from(orders).orderBy(desc(orders.createdAt)).limit(500);
+
+const orderIds = allOrders.map(o => o.orderId);
+const allItems = orderIds.length
+  ? await db.select().from(orderItems).where(inArray(orderItems.orderId, orderIds))
+  : [];
+const itemsByOrder = new Map<string, typeof allItems>();
+for (const item of allItems) {
+  const list = itemsByOrder.get(item.orderId) ?? [];
+  list.push(item);
+  itemsByOrder.set(item.orderId, list);
+}
 
 const totalRevenue = allOrders
   .filter(o => o.status === 'PAID')
@@ -137,8 +148,7 @@ function fmt(d: Date | null) {
                 <th>Order ID</th>
                 <th>Customer</th>
                 <th>Phone</th>
-                <th>Product</th>
-                <th>Weight</th>
+                <th>Items</th>
                 <th>Amount</th>
                 <th>Status</th>
                 <th>Address</th>
@@ -154,8 +164,11 @@ function fmt(d: Date | null) {
                     <div class="muted">{o.customerEmail}</div>
                   </td>
                   <td class="muted">{o.customerPhone}</td>
-                  <td>{o.productName}</td>
-                  <td><strong>{o.weightLabel}</strong></td>
+                  <td style="max-width:260px;white-space:normal">
+                    {(itemsByOrder.get(o.orderId) ?? []).map(item => (
+                      <div><strong>{item.productName}</strong> — {item.weightLabel} · {item.grind} × {item.quantity}</div>
+                    ))}
+                  </td>
                   <td><strong>₹{o.amountInr.toLocaleString('en-IN')}</strong></td>
                   <td>
                     <span

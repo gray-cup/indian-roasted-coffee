@@ -7,7 +7,7 @@ applySlug: tirap-arunachal
 image: /images/IMG_9823.webp
 imageAlt: Tirap Arabica coffee from the remote highlands of Arunachal Pradesh
 acceptingApplications: true
-order: 8
+order: 10
 esSlug: tirap-arunachal
 pubDate: 2024-01-01
 updatedDate: 2025-10-01
@@ -24,7 +24,7 @@ keyFacts:
   - label: Flavour Notes
     value: Stone Fruit, Jasmine, Bright Citrus
   - label: Available Sizes
-    value: 250 g, 500 g
+    value: 250 g sample bag, then 5–100 kg wholesale
   - label: Freshness
     value: Best within 21 days of roast date
   - label: Roasted
@@ -32,7 +32,7 @@ keyFacts:
   - label: Ships In
     value: 48 hours after roasting
 related:
-  - koraput-odisha
+  - koraput-washed
   - coorg-arabica
 ---
 

@@ -1,20 +1,22 @@
+export const GRIND_OPTIONS = ['Whole Bean', 'Coarse', 'Medium', 'Fine', 'Espresso-Fine'] as const;
+export type Grind = (typeof GRIND_OPTIONS)[number];
+
 export interface CartItem {
-  id: string;
-  title: string;
-  size: string;
-  grind: string;
+  productSlug: string;
+  productName: string;
+  weightGrams: number;
+  weightLabel: string;
+  grind: Grind;
+  unitPriceInr: number;
   quantity: number;
-  pricePerUnit: number;
 }
 
 const CART_KEY = 'irc_cart';
 const CART_EVENT = 'cart:updated';
 
-export const SIZE_PRICES: Record<string, number> = {
-  '250 g': 349,
-  '500 g': 649,
-  '1 kg': 1199,
-};
+function sameLine(a: CartItem, b: Pick<CartItem, 'productSlug' | 'weightGrams' | 'grind'>): boolean {
+  return a.productSlug === b.productSlug && a.weightGrams === b.weightGrams && a.grind === b.grind;
+}
 
 export function getCart(): CartItem[] {
   if (typeof window === 'undefined') return [];
@@ -26,7 +28,7 @@ export function getCart(): CartItem[] {
 }
 
 export function cartTotal(cart: CartItem[]): number {
-  return cart.reduce((sum, item) => sum + item.pricePerUnit * item.quantity, 0);
+  return cart.reduce((sum, item) => sum + item.unitPriceInr * item.quantity, 0);
 }
 
 export function cartItemCount(cart: CartItem[]): number {
@@ -38,30 +40,29 @@ function dispatch(cart: CartItem[]) {
   window.dispatchEvent(new CustomEvent(CART_EVENT, { detail: cart }));
 }
 
-export function addToCart(item: Omit<CartItem, 'quantity'>): void {
+export function addToCart(item: Omit<CartItem, 'quantity'>, quantity = 1): void {
   const cart = getCart();
-  const existing = cart.find(
-    (i) => i.id === item.id && i.size === item.size && i.grind === item.grind
-  );
+  const existing = cart.find((i) => sameLine(i, item));
   if (existing) {
-    existing.quantity += 1;
+    existing.quantity += quantity;
   } else {
-    cart.push({ ...item, quantity: 1 });
+    cart.push({ ...item, quantity });
   }
   dispatch(cart);
 }
 
-export function updateQuantity(id: string, size: string, grind: string, quantity: number): void {
+export function updateQuantity(
+  line: Pick<CartItem, 'productSlug' | 'weightGrams' | 'grind'>,
+  quantity: number
+): void {
   const cart = getCart()
-    .map((i) => (i.id === id && i.size === size && i.grind === grind ? { ...i, quantity } : i))
+    .map((i) => (sameLine(i, line) ? { ...i, quantity } : i))
     .filter((i) => i.quantity > 0);
   dispatch(cart);
 }
 
-export function removeFromCart(id: string, size: string, grind: string): void {
-  const cart = getCart().filter(
-    (i) => !(i.id === id && i.size === size && i.grind === grind)
-  );
+export function removeFromCart(line: Pick<CartItem, 'productSlug' | 'weightGrams' | 'grind'>): void {
+  const cart = getCart().filter((i) => !sameLine(i, line));
   dispatch(cart);
 }
 

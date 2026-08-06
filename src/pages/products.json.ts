@@ -1,11 +1,8 @@
 import { getCollection } from 'astro:content';
 import { idToSlug } from '../utils/content';
-import { getPrice, formatWeight } from '../utils/pricing';
+import { getPrice, formatWeight, WEIGHT_GRAMS } from '../utils/pricing';
 
 const BASE_URL = 'https://indianroastedcoffee.com';
-
-// Retail weights shown on product pages (300g / 500g / 1kg).
-const RETAIL_GRAMS = [300, 500, 1_000];
 
 function resolveUrl(path: string): string {
   return path.startsWith('http') ? path : `${BASE_URL}${path}`;
@@ -18,10 +15,10 @@ export async function GET() {
     .sort((a, b) => a.data.order - b.data.order)
     .map((entry) => {
       const slug = idToSlug(entry.id);
-      const variants = RETAIL_GRAMS.map((grams) => ({
+      const variants = WEIGHT_GRAMS.map((grams) => ({
         label: formatWeight(grams),
         weightGrams: grams,
-        price: getPrice(grams),
+        price: getPrice(slug, grams),
       }));
       const prices = variants.map((v) => v.price);
 

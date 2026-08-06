@@ -1,9 +1,23 @@
 import type { APIRoute } from 'astro';
 import { db } from '../../../db/index';
-import { orders } from '../../../db/schema';
-import { getPrice, formatWeight } from '../../../utils/pricing';
+import { orders, orderItems } from '../../../db/schema';
+import { getPrice, formatWeight, WEIGHT_GRAMS } from '../../../utils/pricing';
+import { GRIND_OPTIONS } from '../../../utils/cart';
 
 export const prerender = false;
+
+interface CheckoutItem {
+  productSlug?: string;
+  productName?: string;
+  weightGrams?: number;
+  grind?: string;
+  quantity?: number;
+}
+
+interface CheckoutBody {
+  customer?: { name?: string; email?: string; phone?: string; address?: string };
+  items?: CheckoutItem[];
+}
 
 function cashfreeBase() {
   return process.env.CASHFREE_ENV === 'production'
@@ -17,32 +31,80 @@ function generateOrderId(): string {
   return `IRC-${ts}-${rand}`;
 }
 
-export const POST: APIRoute = async ({ request, redirect, url }) => {
-  let body: FormData;
+export const POST: APIRoute = async ({ request, url }) => {
+  let body: CheckoutBody;
   try {
-    body = await request.formData();
+    body = await request.json();
   } catch {
-    return new Response('Invalid form data', { status: 400 });
+    return new Response('Invalid JSON body', { status: 400 });
   }
 
-  const name    = body.get('name')?.toString().trim();
-  const email   = body.get('email')?.toString().trim().toLowerCase();
-  const phone   = body.get('phone')?.toString().trim();
-  const address = body.get('address')?.toString().trim();
-  const productSlug = body.get('product_slug')?.toString();
-  const productName = body.get('product_name')?.toString();
-  const weightGrams = parseInt(body.get('weight_grams')?.toString() ?? '0', 10);
+  const name = body.customer?.name?.toString().trim();
+  const email = body.customer?.email?.toString().trim().toLowerCase();
+  const phone = body.customer?.phone?.toString().trim();
+  const address = body.customer?.address?.toString().trim();
 
-  if (!name || !email || !phone || !address || !productSlug || !productName || !weightGrams) {
-    return new Response('Missing required fields', { status: 400 });
+  if (!name || !email || !phone || !address) {
+    return new Response('Missing customer details', { status: 400 });
   }
 
-  const amountInr  = getPrice(weightGrams);
-  const weightLabel = formatWeight(weightGrams);
-  const orderId    = generateOrderId();
-  const siteUrl    = process.env.SITE ?? url.origin;
+  const rawItems = body.items;
+  if (!Array.isArray(rawItems) || rawItems.length === 0) {
+    return new Response('Cart is empty', { status: 400 });
+  }
 
-  const appId  = process.env.CASHFREE_APP_ID;
+  const lineItems: Array<{
+    productSlug: string;
+    productName: string;
+    weightGrams: number;
+    weightLabel: string;
+    grind: string;
+    unitPriceInr: number;
+    quantity: number;
+    lineTotalInr: number;
+  }> = [];
+
+  for (const item of rawItems) {
+    const productSlug = item.productSlug?.toString();
+    const productName = item.productName?.toString();
+    const weightGrams = Number(item.weightGrams);
+    const grind = item.grind?.toString();
+    const quantity = Number(item.quantity);
+
+    if (
+      !productSlug || !productName || !grind ||
+      !WEIGHT_GRAMS.includes(weightGrams as (typeof WEIGHT_GRAMS)[number]) ||
+      !GRIND_OPTIONS.includes(grind as (typeof GRIND_OPTIONS)[number]) ||
+      !Number.isInteger(quantity) || quantity < 1
+    ) {
+      return new Response(`Invalid cart item for "${productName ?? productSlug ?? 'unknown'}"`, { status: 400 });
+    }
+
+    let unitPriceInr: number;
+    try {
+      unitPriceInr = getPrice(productSlug, weightGrams);
+    } catch {
+      return new Response(`Unknown product "${productSlug}"`, { status: 400 });
+    }
+
+    lineItems.push({
+      productSlug,
+      productName,
+      weightGrams,
+      weightLabel: formatWeight(weightGrams),
+      grind,
+      unitPriceInr,
+      quantity,
+      lineTotalInr: unitPriceInr * quantity,
+    });
+  }
+
+  const amountInr = lineItems.reduce((sum, i) => sum + i.lineTotalInr, 0);
+  const orderId = generateOrderId();
+  const siteUrl = process.env.SITE ?? url.origin;
+  const orderNote = lineItems.map((i) => `${i.productName} (${i.weightLabel} × ${i.quantity})`).join(', ');
+
+  const appId = process.env.CASHFREE_APP_ID;
   const secret = process.env.CASHFREE_SECRET_KEY;
   if (!appId || !secret) {
     console.error('Cashfree credentials not configured');
@@ -74,7 +136,7 @@ export const POST: APIRoute = async ({ request, redirect, url }) => {
           return_url: `${siteUrl}/payment-result?order_id=${orderId}`,
           notify_url: `${siteUrl}/api/payment/webhook`,
         },
-        order_note: `${productName} – ${weightLabel}`,
+        order_note: orderNote.slice(0, 255),
       }),
     });
 
@@ -91,7 +153,7 @@ export const POST: APIRoute = async ({ request, redirect, url }) => {
     return new Response('Payment setup failed', { status: 502 });
   }
 
-  // ── Persist order in DB ───────────────────────────────────────────────────
+  // ── Persist order + line items in DB ──────────────────────────────────────
   await db.insert(orders).values({
     orderId,
     cashfreeOrderId: orderId,
@@ -100,12 +162,12 @@ export const POST: APIRoute = async ({ request, redirect, url }) => {
     customerEmail: email,
     customerPhone: phone,
     customerAddress: address,
-    productSlug,
-    productName,
-    weightGrams,
-    weightLabel,
     amountInr,
   });
 
-  return redirect(`/checkout?sid=${paymentSessionId}&oid=${orderId}`, 302);
+  await db.insert(orderItems).values(
+    lineItems.map((i) => ({ orderId, ...i }))
+  );
+
+  return Response.json({ sid: paymentSessionId, oid: orderId });
 };

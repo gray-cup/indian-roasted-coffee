@@ -9,10 +9,6 @@ export const orders = sqliteTable('orders', {
   customerEmail: text('customer_email').notNull(),
   customerPhone: text('customer_phone').notNull(),
   customerAddress: text('customer_address').notNull(),
-  productSlug: text('product_slug').notNull(),
-  productName: text('product_name').notNull(),
-  weightGrams: integer('weight_grams').notNull(),
-  weightLabel: text('weight_label').notNull(),
   amountInr: real('amount_inr').notNull(),
   status: text('status', { enum: ['PENDING', 'PAID', 'FAILED', 'EXPIRED'] })
     .notNull()
@@ -26,5 +22,20 @@ export const orders = sqliteTable('orders', {
     .$defaultFn(() => new Date()),
 });
 
+export const orderItems = sqliteTable('order_items', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  orderId: text('order_id').notNull(),
+  productSlug: text('product_slug').notNull(),
+  productName: text('product_name').notNull(),
+  weightGrams: integer('weight_grams').notNull(),
+  weightLabel: text('weight_label').notNull(),
+  grind: text('grind').notNull(),
+  unitPriceInr: real('unit_price_inr').notNull(),
+  quantity: integer('quantity').notNull(),
+  lineTotalInr: real('line_total_inr').notNull(),
+});
+
 export type Order = typeof orders.$inferSelect;
 export type NewOrder = typeof orders.$inferInsert;
+export type OrderItem = typeof orderItems.$inferSelect;
+export type NewOrderItem = typeof orderItems.$inferInsert;
