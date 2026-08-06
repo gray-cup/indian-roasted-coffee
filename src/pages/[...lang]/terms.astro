@@ -1,0 +1,204 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumb from '../../components/uswds/Breadcrumb.astro';
+import { siteConfig } from '../../config/site';
+import type { Locale } from '../../i18n/utils';
+import { localeStaticPaths, withBase } from '../../i18n/utils';
+
+export function getStaticPaths() {
+  return localeStaticPaths();
+}
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const updatedDate = new Date('2025-01-01');
+
+// NOTE: The Spanish policy is intentionally a summary that links to the
+// full English policy. Replace it with a full translation before launch.
+const copy = {
+  en: {
+    title: 'Terms and conditions',
+    description: 'The terms and conditions that govern your use of this website and orders placed with us.',
+    breadcrumbs: [
+      { label: 'Home', href: '/' },
+      { label: 'Terms and conditions', href: '/terms/' },
+    ],
+    heading: 'Terms and conditions',
+  },
+  es: {
+    title: 'Términos y condiciones',
+    description: `Términos y condiciones que rigen el uso de este sitio y los pedidos con ${siteConfig.name}.`,
+    breadcrumbs: [
+      { label: 'Inicio', href: '/es/' },
+      { label: 'Términos y condiciones', href: '/es/terms/' },
+    ],
+    heading: 'Términos y condiciones',
+  },
+}[locale];
+---
+
+<BaseLayout title={copy.title} description={copy.description} locale={locale}>
+  <div class="grid-container usa-section">
+    <div class="grid-row">
+      <div class="grid-col-12 tablet:grid-col-8">
+        <Breadcrumb items={copy.breadcrumbs} />
+
+        <h1>{copy.heading}</h1>
+
+        {locale === 'en' ? (
+          <>
+            <p>
+              <em>Last updated: {updatedDate.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</em>
+            </p>
+
+            <div class="usa-prose">
+              <p class="usa-intro">
+                These terms and conditions govern your use of {siteConfig.name}{' '}
+                ({siteConfig.domain}) and any order you place with us. By using this
+                website or placing an order, you agree to these terms.
+              </p>
+
+              <h2>About us</h2>
+              <p>
+                {siteConfig.name} is a brand of Gray Cup Enterprises Private Limited,
+                operating from Bengaluru, Karnataka, India. See our{' '}
+                <a href={withBase('/about/')} class="usa-link">About page</a> for more
+                on who we are.
+              </p>
+
+              <h2>Products and roasting</h2>
+              <p>
+                Every lot we sell is single-origin and roasted to order in small
+                batches. We do not hold pre-roasted stock; orders are typically roasted
+                and dispatched within 48 hours of purchase. Roast dates, weights, and
+                grind options are shown on each product page at time of order.
+              </p>
+
+              <h2>Orders and pricing</h2>
+              <p>
+                All prices are listed in Indian Rupees (₹) and include applicable taxes
+                unless stated otherwise. We reserve the right to correct pricing errors
+                and to refuse or cancel an order — including after confirmation — if a
+                product is mispriced, out of stock, or if we suspect fraud. If we cancel
+                an order after payment, you will receive a full refund.
+              </p>
+
+              <h2>Payment</h2>
+              <p>
+                Payment is processed securely at checkout through our payment provider.
+                We do not store your card details on our servers. Orders are roasted
+                only after payment is successfully confirmed.
+              </p>
+
+              <h2>Shipping and delivery</h2>
+              <p>
+                We ship across India; wholesale and bulk orders may have separate
+                minimum order quantities and lead times, described on our{' '}
+                <a href={withBase('/wholesale/')} class="usa-link">wholesale page</a>.
+                Delivery estimates are provided at checkout and are not guaranteed —
+                delays caused by couriers or circumstances outside our control are not
+                our liability, though we will help track and resolve delivery issues.
+              </p>
+
+              <h2>Returns, refunds, and cancellations</h2>
+              <p>
+                Because coffee is a perishable product, returns are limited. Full
+                details on wrong or damaged items, quality concerns, and unopened-bag
+                returns are set out in our{' '}
+                <a href={withBase('/returns/')} class="usa-link">returns &amp; refunds policy</a>.
+              </p>
+
+              <h2>Account and website use</h2>
+              <p>
+                You agree to provide accurate information when placing an order and to
+                use this website only for lawful purposes. You may not use this site to
+                transmit malicious code, attempt unauthorized access to our systems, or
+                scrape or resell our content without permission.
+              </p>
+
+              <h2>Intellectual property</h2>
+              <p>
+                All content on this website — including text, images, logos, and
+                product photography — is owned by or licensed to Gray Cup Enterprises
+                Private Limited and may not be copied or reused without our written
+                permission.
+              </p>
+
+              <h2>Limitation of liability</h2>
+              <p>
+                To the extent permitted by law, {siteConfig.name} and Gray Cup
+                Enterprises Private Limited are not liable for indirect, incidental, or
+                consequential damages arising from your use of this website or
+                products purchased through it. Nothing in these terms limits liability
+                that cannot be excluded under Indian law.
+              </p>
+
+              <h2>Governing law</h2>
+              <p>
+                These terms are governed by the laws of India, and any disputes will be
+                subject to the exclusive jurisdiction of the courts of Bengaluru,
+                Karnataka.
+              </p>
+
+              <h2>Changes to these terms</h2>
+              <p>
+                We may update these terms from time to time. Changes take effect once
+                posted on this page, so please check back periodically. Continued use
+                of the website after changes are posted constitutes acceptance of the
+                revised terms.
+              </p>
+
+              <h2>Contact us</h2>
+              <p>
+                Questions about these terms? <a href={withBase('/contact/')} class="usa-link">Contact us</a>,
+                call <a href="tel:+918527914317" class="usa-link">+91‑85-2791‑4317</a>, or email{' '}
+                <a href="mailto:office@graycup.org" class="usa-link">office@graycup.org</a>{' '}
+                or <a href="mailto:arjun@graycup.in" class="usa-link">arjun@graycup.in</a>.
+              </p>
+            </div>
+          </>
+        ) : (
+          <div class="usa-prose">
+            <p class="usa-intro">
+              Estos términos y condiciones rigen el uso de {siteConfig.name} y
+              cualquier pedido realizado con nosotros.
+            </p>
+
+            <p>
+              Para leer los términos completos en inglés, visite{' '}
+              <a href={withBase('/terms/')} class="usa-link" hreflang="en">
+                nuestra página de términos en inglés
+              </a>.
+            </p>
+
+            <h2>Resumen</h2>
+            <ul>
+              <li>Todos los precios se muestran en rupias indias (₹) e incluyen los impuestos aplicables.</li>
+              <li>Tostamos a pedido; los pedidos se envían normalmente dentro de 48 horas.</li>
+              <li>
+                Las devoluciones y reembolsos se rigen por nuestra{' '}
+                <a href={withBase('/es/returns/')} class="usa-link">
+                  política de devoluciones y reembolsos
+                </a>.
+              </li>
+              <li>Estos términos se rigen por las leyes de India.</li>
+            </ul>
+
+            <h2>Contáctenos</h2>
+            <p>
+              ¿Preguntas sobre estos términos?{' '}
+              <a href={withBase('/es/contact/')} class="usa-link">Contáctenos</a>,
+              llame al <a href="tel:+918527914317" class="usa-link">+91‑85-2791‑4317</a>, o
+              escriba a{' '}
+              <a href="mailto:office@graycup.org" class="usa-link">office@graycup.org</a>{' '}
+              o <a href="mailto:arjun@graycup.in" class="usa-link">arjun@graycup.in</a>.
+            </p>
+          </div>
+        )}
+      </div>
+    </div>
+  </div>
+</BaseLayout>

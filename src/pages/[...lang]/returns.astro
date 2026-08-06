@@ -1,0 +1,162 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumb from '../../components/uswds/Breadcrumb.astro';
+import { siteConfig } from '../../config/site';
+import type { Locale } from '../../i18n/utils';
+import { localeStaticPaths, withBase } from '../../i18n/utils';
+
+export function getStaticPaths() {
+  return localeStaticPaths();
+}
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const updatedDate = new Date('2025-01-01');
+
+// NOTE: The Spanish policy is intentionally a summary that links to the
+// full English policy. Replace it with a full translation before launch.
+const copy = {
+  en: {
+    title: 'Returns & refunds',
+    description: 'Our returns, refund, and replacement policy for orders placed on this site.',
+    breadcrumbs: [
+      { label: 'Home', href: '/' },
+      { label: 'Returns & refunds', href: '/returns/' },
+    ],
+    heading: 'Returns & refunds',
+  },
+  es: {
+    title: 'Devoluciones y reembolsos',
+    description: `Política de devoluciones, reembolsos y reemplazos de ${siteConfig.name}.`,
+    breadcrumbs: [
+      { label: 'Inicio', href: '/es/' },
+      { label: 'Devoluciones y reembolsos', href: '/es/returns/' },
+    ],
+    heading: 'Devoluciones y reembolsos',
+  },
+}[locale];
+---
+
+<BaseLayout title={copy.title} description={copy.description} locale={locale}>
+  <div class="grid-container usa-section">
+    <div class="grid-row">
+      <div class="grid-col-12 tablet:grid-col-8">
+        <Breadcrumb items={copy.breadcrumbs} />
+
+        <h1>{copy.heading}</h1>
+
+        {locale === 'en' ? (
+          <>
+            <p>
+              <em>Last updated: {updatedDate.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</em>
+            </p>
+
+            <div class="usa-prose">
+              <p class="usa-intro">
+                Because coffee is a perishable food product, we cannot accept returns of
+                opened bags. However, we stand behind every roast — read on for how we
+                handle wrong items, damage, quality concerns, and unopened returns.
+              </p>
+
+              <h2>Wrong item received</h2>
+              <p>
+                Contact us within 7 days of delivery and we'll send the correct product
+                at no extra charge. You do not need to send the incorrect item back.
+              </p>
+
+              <h2>Damaged in transit</h2>
+              <p>
+                Send us a photo of the damaged bag or packaging within 7 days of delivery
+                and we'll arrange a replacement or a full refund, whichever you prefer.
+              </p>
+
+              <h2>Quality concerns</h2>
+              <p>
+                If your beans taste off, or were clearly mis-roasted or mis-ground, reach
+                out with details about the order and what you noticed. We take every
+                report seriously and will make it right with a replacement or refund.
+              </p>
+
+              <h2>Unopened bags</h2>
+              <p>
+                Sealed, unopened bags may be returned within 14 days of delivery for a
+                full refund. The bag must be in its original, unopened condition. You are
+                responsible for return shipping costs unless the return is due to our
+                error.
+              </p>
+
+              <h2>What we cannot accept</h2>
+              <ul>
+                <li>Opened or partially used bags, except for the quality and damage cases above</li>
+                <li>Bags returned more than 14 days after delivery</li>
+                <li>Wholesale or bulk orders outside the terms agreed at time of purchase</li>
+              </ul>
+
+              <h2>How refunds are processed</h2>
+              <p>
+                Once a return or replacement is approved, refunds are issued to your
+                original payment method within 5–7 business days. You'll receive an email
+                confirmation once the refund has been initiated. Replacement orders are
+                roasted and shipped within our standard 48-hour dispatch window.
+              </p>
+
+              <h2>Cancellations</h2>
+              <p>
+                Because we roast to order, we can only cancel an order before it enters
+                roasting. <a href={withBase('/contact/')} class="usa-link">Contact us</a>{' '}
+                as soon as possible if you need to cancel or change an order.
+              </p>
+
+              <h2>How to start a return</h2>
+              <p>
+                Email us at{' '}
+                <a href="mailto:office@graycup.org" class="usa-link">office@graycup.org</a>{' '}
+                or <a href="mailto:arjun@graycup.in" class="usa-link">arjun@graycup.in</a>{' '}
+                with your order number and details, call us at{' '}
+                <a href="tel:+918527914317" class="usa-link">+91‑85-2791‑4317</a>, or{' '}
+                <a href={withBase('/contact/')} class="usa-link">use our contact form</a>.
+                We respond within 1 business day.
+              </p>
+            </div>
+          </>
+        ) : (
+          <div class="usa-prose">
+            <p class="usa-intro">
+              Debido a que el café es un producto alimenticio perecedero, no podemos
+              aceptar devoluciones de bolsas abiertas. Sin embargo, respaldamos cada
+              tueste.
+            </p>
+
+            <p>
+              Para leer la política completa en inglés, visite{' '}
+              <a href={withBase('/returns/')} class="usa-link" hreflang="en">
+                nuestra página de devoluciones en inglés
+              </a>.
+            </p>
+
+            <h2>Resumen</h2>
+            <ul>
+              <li>Artículo incorrecto: contáctenos dentro de 7 días para un reemplazo gratuito.</li>
+              <li>Daño en tránsito: envíe una foto dentro de 7 días para un reemplazo o reembolso.</li>
+              <li>Bolsas selladas y sin abrir: se pueden devolver dentro de 14 días para un reembolso completo.</li>
+            </ul>
+
+            <h2>Cómo iniciar una devolución</h2>
+            <p>
+              Escríbanos a{' '}
+              <a href="mailto:office@graycup.org" class="usa-link">office@graycup.org</a>{' '}
+              o <a href="mailto:arjun@graycup.in" class="usa-link">arjun@graycup.in</a>,
+              llámenos al{' '}
+              <a href="tel:+918527914317" class="usa-link">+91‑85-2791‑4317</a>, o{' '}
+              <a href={withBase('/es/contact/')} class="usa-link">contáctenos</a> con
+              los detalles de su pedido.
+            </p>
+          </div>
+        )}
+      </div>
+    </div>
+  </div>
+</BaseLayout>
