@@ -17,7 +17,7 @@
   },
   "scripts": {
     "dev": "node scripts/setup-uswds.mjs && astro dev",
-    "build": "node scripts/setup-uswds.mjs && astro build && pagefind --site dist/client && node scripts/copy-pagefind-vercel.mjs",
+    "build": "node scripts/setup-uswds.mjs && astro build && pagefind --site dist/client",
     "preview": "astro preview",
     "check": "astro check",
     "setup": "node scripts/setup-uswds.mjs",
