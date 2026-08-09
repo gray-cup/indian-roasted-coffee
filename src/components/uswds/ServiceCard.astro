@@ -1,17 +1,20 @@
 ---
 /**
- * ServiceCard — usa-card variant for service/program listings
+ * ServiceCard — usa-card variant for product listings
  * https://designsystem.digital.gov/components/card/
  *
- * Wraps the USWDS card pattern with service-specific props
- * so the service index and homepage can stay clean.
+ * When `productSlug` + `priceFrom` are given, the card shows a starting
+ * price and a quick "Add to cart" action (default: smallest size, whole
+ * bean) alongside the link to the full product page for size/grind choice.
+ * Without those props it falls back to a plain link button — used by the
+ * internal component style guide, which has no real product data.
  */
 
 interface Props {
   title: string;
   summary: string;
   href: string;
-  /** Link text for the primary CTA button */
+  /** Link text for the fallback CTA button (used when no productSlug is given) */
   ctaText?: string;
   acceptingApplications?: boolean;
   /** Optional image URL for media variant */
@@ -19,10 +22,17 @@ interface Props {
   imageAlt?: string;
   locale?: Locale;
   class?: string;
+  /** Product slug — enables the price + Add to cart footer */
+  productSlug?: string;
+  /** Starting price in INR, for the smallest available weight */
+  priceFrom?: number;
+  /** Grams the priceFrom corresponds to (defaults to the smallest weight tier) */
+  priceFromGrams?: number;
 }
 
 import type { Locale } from '../../i18n/utils';
 import { useTranslations, withBase } from '../../i18n/utils';
+import { formatWeight } from '../../utils/pricing';
 
 const {
   title,
@@ -34,11 +44,17 @@ const {
   imageAlt = '',
   locale = 'en',
   class: className,
+  productSlug,
+  priceFrom,
+  priceFromGrams = 300,
 } = Astro.props;
 
 const t = useTranslations(locale);
 const resolvedHref = withBase(href);
 const resolvedCta = ctaText ?? t('home.learnMore');
+const isProduct = Boolean(productSlug && priceFrom);
+const addToCartLabel = locale === 'es' ? 'Añadir al carrito' : 'Add to cart';
+const viewOptionsLabel = locale === 'es' ? 'Ver opciones y tamaños' : 'View options & sizes';
 ---
 
 <li class:list={['usa-card', className]}>
@@ -57,13 +73,93 @@ const resolvedCta = ctaText ?? t('home.learnMore');
     </div>
     <div class="usa-card__body">
       <p>{summary}</p>
+      {isProduct && (
+        <p class="service-card__price">
+          From <strong>₹{priceFrom!.toLocaleString('en-IN')}</strong>{' '}
+          <span class="service-card__price-unit">/ {formatWeight(priceFromGrams)}</span>
+        </p>
+      )}
     </div>
     <div class="usa-card__footer">
-      {acceptingApplications ? (
-        <a href={resolvedHref} class="usa-button">{resolvedCta}</a>
-      ) : (
+      {!acceptingApplications ? (
         <span class="usa-tag">{t('serviceCard.notAccepting')}</span>
+      ) : isProduct ? (
+        <div class="service-card__actions">
+          <button
+            type="button"
+            class="usa-button width-full service-card__add-btn"
+            data-add-to-cart
+            data-id={productSlug}
+            data-title={title}
+            data-grams={priceFromGrams}
+            data-price={priceFrom}
+          >
+            {addToCartLabel}
+          </button>
+          <a href={resolvedHref} class="usa-button usa-button--unstyled service-card__view-link">
+            {viewOptionsLabel}
+          </a>
+        </div>
+      ) : (
+        <a href={resolvedHref} class="usa-button">{resolvedCta}</a>
       )}
     </div>
   </div>
 </li>
+
+<style>
+  .service-card__price {
+    font-size: 0.95rem;
+    color: #1b1b1b;
+    margin-top: 0.5rem;
+  }
+
+  .service-card__price-unit {
+    font-size: 0.8rem;
+    color: #666;
+  }
+
+  .service-card__actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+
+  .service-card__view-link {
+    text-align: center;
+    font-size: 0.8rem;
+  }
+
+  .service-card__add-btn[data-added="true"] {
+    background-color: #2e6e37;
+  }
+</style>
+
+<script>
+  import { addToCart } from '../../utils/cart';
+  import { formatWeight } from '../../utils/pricing';
+
+  document.querySelectorAll<HTMLButtonElement>('[data-add-to-cart]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const { id, title, grams, price } = btn.dataset;
+      if (!id || !title || !grams || !price) return;
+
+      addToCart({
+        id,
+        title,
+        grams: Number(grams),
+        size: formatWeight(Number(grams)),
+        grind: 'Whole Bean',
+        pricePerUnit: Number(price),
+      });
+
+      const original = btn.textContent;
+      btn.dataset.added = 'true';
+      btn.textContent = 'Added ✓';
+      window.setTimeout(() => {
+        btn.dataset.added = 'false';
+        btn.textContent = original ?? '';
+      }, 1800);
+    });
+  });
+</script>
