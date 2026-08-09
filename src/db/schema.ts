@@ -13,6 +13,9 @@ export const orders = sqliteTable('orders', {
   productName: text('product_name').notNull(),
   weightGrams: integer('weight_grams').notNull(),
   weightLabel: text('weight_label').notNull(),
+  grind: text('grind'),
+  /** JSON-serialized CartItem[] when the order came from the cart (multiple lines). */
+  cartItemsJson: text('cart_items_json'),
   amountInr: real('amount_inr').notNull(),
   status: text('status', { enum: ['PENDING', 'PAID', 'FAILED', 'EXPIRED'] })
     .notNull()

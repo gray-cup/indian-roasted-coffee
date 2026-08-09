@@ -7,6 +7,21 @@ import { idToSlug } from '../../../utils/content';
 
 export const prerender = false;
 
+interface CartLine {
+  id: string;
+  grams: number;
+  grind: string;
+  quantity: number;
+}
+
+interface RequestBody {
+  name?: string;
+  email?: string;
+  phone?: string;
+  address?: string;
+  items?: CartLine[];
+}
+
 function cashfreeBase() {
   return process.env.CASHFREE_ENV === 'production'
     ? 'https://api.cashfree.com/pg'
@@ -19,38 +34,60 @@ function generateOrderId(): string {
   return `IRC-${ts}-${rand}`;
 }
 
-export const POST: APIRoute = async ({ request, redirect, url }) => {
-  let body: FormData;
+export const POST: APIRoute = async ({ request, url }) => {
+  let body: RequestBody;
   try {
-    body = await request.formData();
+    body = await request.json();
   } catch {
-    return new Response('Invalid form data', { status: 400 });
+    return new Response('Invalid JSON body', { status: 400 });
   }
 
-  const name       = body.get('name')?.toString().trim();
-  const email      = body.get('email')?.toString().trim().toLowerCase();
-  const phone      = body.get('phone')?.toString().trim();
-  const address    = body.get('address')?.toString().trim();
-  const productSlug = body.get('product_slug')?.toString();
-  const grind      = body.get('grind')?.toString();
-  const weightGrams = parseInt(body.get('weight_grams')?.toString() ?? '0', 10);
+  const name    = body.name?.trim();
+  const email   = body.email?.trim().toLowerCase();
+  const phone   = body.phone?.trim();
+  const address = body.address?.trim();
+  const items   = Array.isArray(body.items) ? body.items : [];
 
-  if (!name || !email || !phone || !address || !productSlug || !weightGrams) {
+  if (!name || !email || !phone || !address || items.length === 0) {
     return new Response('Missing required fields', { status: 400 });
   }
 
-  // Look up the product server-side — never trust a client-supplied price or multiplier.
+  // Look up every product server-side — never trust client-supplied prices.
   const services = await getCollection('services', ({ data }) => !data.draft);
-  const product = services.find((s) => idToSlug(s.id) === productSlug);
-  if (!product) {
-    return new Response('Unknown product', { status: 400 });
+  const servicesBySlug = new Map(services.map((s) => [idToSlug(s.id), s]));
+
+  const lines: Array<{
+    slug: string;
+    title: string;
+    grams: number;
+    grind: string;
+    quantity: number;
+    unitPrice: number;
+  }> = [];
+
+  for (const item of items) {
+    if (!item || typeof item.id !== 'string' || !Number.isFinite(item.grams) || !Number.isFinite(item.quantity)) {
+      return new Response('Invalid cart item', { status: 400 });
+    }
+    const product = servicesBySlug.get(item.id);
+    if (!product) {
+      return new Response(`Unknown product: ${item.id}`, { status: 400 });
+    }
+    const quantity = Math.max(1, Math.min(100, Math.round(item.quantity)));
+    lines.push({
+      slug: item.id,
+      title: product.data.title,
+      grams: item.grams,
+      grind: typeof item.grind === 'string' && item.grind ? item.grind : 'Whole Bean',
+      quantity,
+      unitPrice: getPrice(item.grams, product.data.priceMultiplier),
+    });
   }
 
-  const productName = product.data.title;
-  const amountInr   = getPrice(weightGrams, product.data.priceMultiplier);
-  const weightLabel = formatWeight(weightGrams);
-  const orderId     = generateOrderId();
-  const siteUrl     = process.env.SITE ?? url.origin;
+  const amountInr = lines.reduce((sum, l) => sum + l.unitPrice * l.quantity, 0);
+  const totalGrams = lines.reduce((sum, l) => sum + l.grams * l.quantity, 0);
+  const orderId   = generateOrderId();
+  const siteUrl   = process.env.SITE ?? url.origin;
 
   const appId  = process.env.CASHFREE_APP_ID;
   const secret = process.env.CASHFREE_SECRET_KEY;
@@ -59,7 +96,10 @@ export const POST: APIRoute = async ({ request, redirect, url }) => {
     return new Response('Payment not configured', { status: 503 });
   }
 
-  // ── Create order in Cashfree ──────────────────────────────────────────────
+  const orderNote = lines
+    .map((l) => `${l.title} × ${l.quantity} (${formatWeight(l.grams)}, ${l.grind})`)
+    .join('; ');
+
   let paymentSessionId: string;
   try {
     const res = await fetch(`${cashfreeBase()}/orders`, {
@@ -84,7 +124,7 @@ export const POST: APIRoute = async ({ request, redirect, url }) => {
           return_url: `${siteUrl}/payment-result?order_id=${orderId}`,
           notify_url: `${siteUrl}/api/payment/webhook`,
         },
-        order_note: `${productName} – ${weightLabel}${grind ? ` – ${grind}` : ''}`,
+        order_note: orderNote.slice(0, 500),
       }),
     });
 
@@ -101,7 +141,6 @@ export const POST: APIRoute = async ({ request, redirect, url }) => {
     return new Response('Payment setup failed', { status: 502 });
   }
 
-  // ── Persist order in DB ───────────────────────────────────────────────────
   await db.insert(orders).values({
     orderId,
     cashfreeOrderId: orderId,
@@ -110,13 +149,14 @@ export const POST: APIRoute = async ({ request, redirect, url }) => {
     customerEmail: email,
     customerPhone: phone,
     customerAddress: address,
-    productSlug,
-    productName,
-    weightGrams,
-    weightLabel,
-    grind: grind || null,
+    productSlug: 'cart',
+    productName: `Cart order (${lines.length} item${lines.length === 1 ? '' : 's'})`,
+    weightGrams: totalGrams,
+    weightLabel: `${lines.length} item${lines.length === 1 ? '' : 's'}`,
+    grind: null,
+    cartItemsJson: JSON.stringify(lines),
     amountInr,
   });
 
-  return redirect(`/checkout?sid=${paymentSessionId}&oid=${orderId}`, 302);
+  return Response.json({ sid: paymentSessionId, oid: orderId });
 };

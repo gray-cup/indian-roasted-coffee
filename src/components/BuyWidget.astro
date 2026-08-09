@@ -1,27 +1,39 @@
 ---
-import { WEIGHT_OPTIONS } from '../utils/pricing';
+import { getWeightOptions } from '../utils/pricing';
 
 interface Props {
   productSlug: string;
   productName: string;
+  /** Per-product rate multiplier — see `priceMultiplier` in content.config.ts. */
+  priceMultiplier?: number;
 }
 
-const { productSlug, productName } = Astro.props;
+const { productSlug, productName, priceMultiplier = 1 } = Astro.props;
+const weightOptions = getWeightOptions(priceMultiplier);
+
+const GRINDS = ['Whole Bean', 'Coarse (French Press)', 'Medium (Filter/Pour-over)', 'Fine (Espresso)'];
 ---
 
 <div class="buy-widget">
   <h2 class="buy-widget__heading">Order this coffee</h2>
   <p class="buy-widget__note">Roasted to order · shipped within 48 h</p>
 
-  <form method="POST" action="/api/payment/create-order" class="buy-form">
-    <input type="hidden" name="productSlug" value={productSlug} />
-    <input type="hidden" name="productName" value={productName} />
+  <form
+    method="POST"
+    action="/api/payment/create-order"
+    class="buy-form"
+    id="buy-form"
+    data-product-slug={productSlug}
+    data-product-name={productName}
+  >
+    <input type="hidden" name="product_slug" value={productSlug} />
+    <input type="hidden" name="product_name" value={productName} />
 
     <div class="field">
       <label for="bw-weight" class="field__label">Weight</label>
-      <select id="bw-weight" name="weightGrams" class="field__select" required>
-        {WEIGHT_OPTIONS.map((opt, i) => (
-          <option value={opt.grams} selected={i === 0}>
+      <select id="bw-weight" name="weight_grams" class="field__select" required>
+        {weightOptions.map((opt, i) => (
+          <option value={opt.grams} data-price={opt.priceInr} selected={i === 0}>
             {opt.label} — ₹{opt.priceInr.toLocaleString('en-IN')}
           </option>
         ))}
@@ -29,28 +41,44 @@ const { productSlug, productName } = Astro.props;
     </div>
 
     <div class="field">
+      <label for="bw-grind" class="field__label">Grind</label>
+      <select id="bw-grind" name="grind" class="field__select" required>
+        {GRINDS.map((g, i) => (
+          <option value={g} selected={i === 0}>{g}</option>
+        ))}
+      </select>
+    </div>
+
+    <div class="field">
       <label for="bw-name" class="field__label">Full name</label>
-      <input type="text" id="bw-name" name="customerName" required autocomplete="name" placeholder="Arjun Sharma" class="field__input" />
+      <input type="text" id="bw-name" name="name" required autocomplete="name" placeholder="Arjun Sharma" class="field__input" />
     </div>
 
     <div class="field">
       <label for="bw-email" class="field__label">Email</label>
-      <input type="email" id="bw-email" name="customerEmail" required autocomplete="email" placeholder="you@example.com" class="field__input" />
+      <input type="email" id="bw-email" name="email" required autocomplete="email" placeholder="you@example.com" class="field__input" />
     </div>
 
     <div class="field">
       <label for="bw-phone" class="field__label">Phone</label>
-      <input type="tel" id="bw-phone" name="customerPhone" required autocomplete="tel" placeholder="+91 98765 43210" class="field__input" />
+      <input type="tel" id="bw-phone" name="phone" required autocomplete="tel" placeholder="+91 98765 43210" class="field__input" />
     </div>
 
     <div class="field">
       <label for="bw-address" class="field__label">Delivery address</label>
-      <textarea id="bw-address" name="customerAddress" required rows="3" placeholder="Flat 4, Green View Apartments&#10;Bengaluru, Karnataka 560001" class="field__textarea"></textarea>
+      <textarea id="bw-address" name="address" required rows="3" placeholder="Flat 4, Green View Apartments&#10;Bengaluru, Karnataka 560001" class="field__textarea"></textarea>
     </div>
 
-    <button type="submit" class="buy-btn">
-      Pay securely →
-    </button>
+    <div class="buy-widget__actions">
+      <button type="button" class="cart-btn-add" id="bw-add-to-cart">
+        Add to cart
+      </button>
+      <button type="submit" class="buy-btn">
+        Pay securely →
+      </button>
+    </div>
+
+    <p class="buy-widget__cart-msg" id="bw-cart-msg" hidden>Added to cart.</p>
 
     <p class="buy-widget__secure">
       <svg width="12" height="14" viewBox="0 0 12 14" fill="none" aria-hidden="true">
@@ -123,23 +151,54 @@ const { productSlug, productName } = Astro.props;
     min-height: 72px;
   }
 
+  .buy-widget__actions {
+    display: flex;
+    gap: 0.6rem;
+    margin-top: 0.25rem;
+  }
+
+  .cart-btn-add {
+    flex: 1;
+    padding: 0.75rem 1rem;
+    background: #fff;
+    color: #2e6e37;
+    border: 1.5px solid #2e6e37;
+    border-radius: 7px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.15s;
+    letter-spacing: 0.01em;
+  }
+
+  .cart-btn-add:hover {
+    background: #eef5ef;
+  }
+
   .buy-btn {
-    width: 100%;
+    flex: 1;
     padding: 0.75rem 1rem;
     background: #2e6e37;
     color: #fff;
     border: none;
     border-radius: 7px;
-    font-size: 1rem;
+    font-size: 0.9rem;
     font-weight: 700;
     cursor: pointer;
-    margin-top: 0.25rem;
     transition: background 0.15s;
     letter-spacing: 0.01em;
   }
 
   .buy-btn:hover {
     background: #255c2e;
+  }
+
+  .buy-widget__cart-msg {
+    font-size: 0.8rem;
+    color: #2e6e37;
+    font-weight: 600;
+    margin-top: 0.6rem;
+    text-align: center;
   }
 
   .buy-widget__secure {
@@ -152,3 +211,41 @@ const { productSlug, productName } = Astro.props;
     justify-content: center;
   }
 </style>
+
+<script>
+  import { addToCart } from '../utils/cart';
+
+  const form = document.getElementById('buy-form') as HTMLFormElement | null;
+  const addBtn = document.getElementById('bw-add-to-cart') as HTMLButtonElement | null;
+  const msg = document.getElementById('bw-cart-msg') as HTMLParagraphElement | null;
+
+  addBtn?.addEventListener('click', () => {
+    if (!form) return;
+
+    const weightSelect = form.querySelector<HTMLSelectElement>('#bw-weight');
+    const grindSelect = form.querySelector<HTMLSelectElement>('#bw-grind');
+    const selectedOption = weightSelect?.selectedOptions[0];
+    if (!weightSelect || !grindSelect || !selectedOption) return;
+
+    const productSlug = form.dataset.productSlug ?? '';
+    const productName = form.dataset.productName ?? '';
+    const weightLabel = selectedOption.textContent?.split('—')[0].trim() ?? weightSelect.value;
+    const grams = Number(weightSelect.value);
+    const pricePerUnit = Number(selectedOption.dataset.price ?? 0);
+
+    addToCart({
+      id: productSlug,
+      title: productName,
+      grams,
+      size: weightLabel,
+      grind: grindSelect.value,
+      pricePerUnit,
+    });
+
+    if (msg) {
+      msg.hidden = false;
+      msg.textContent = `Added ${weightLabel} (${grindSelect.value}) to cart.`;
+      window.setTimeout(() => { msg.hidden = true; }, 3000);
+    }
+  });
+</script>

@@ -50,7 +50,11 @@ const copy = {
   <Content />
 
   <Fragment slot="sidebar">
-    <BuyWidget productSlug={slug} productName={service.data.title} />
+    <BuyWidget
+      productSlug={slug}
+      productName={service.data.title}
+      priceMultiplier={service.data.priceMultiplier}
+    />
 
     {service.data.eligibility.length > 0 && (
       <SummaryBox heading={copy.details} label={copy.details}>

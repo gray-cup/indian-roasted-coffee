@@ -6,6 +6,7 @@ summary: Medium roast from the tribal highlands of Koraput, Odisha. Rare and wil
 applySlug: koraput-odisha
 image: /images/IMG_9816.webp
 imageAlt: Koraput Arabica coffee from the tribal highlands of Odisha
+priceMultiplier: 1.15
 acceptingApplications: true
 order: 5
 esSlug: koraput-odisha
@@ -21,6 +22,10 @@ eligibility:
   - label: Process
     value: Natural (Sun-dried)
 keyFacts:
+  - label: Coffee Type
+    value: 100% Arabica, Single-Origin
+  - label: Bean Format
+    value: Whole Bean (grind options available at checkout)
   - label: Flavour Notes
     value: Wild Berry, Brown Sugar, Floral
   - label: Available Sizes

@@ -19,6 +19,8 @@ const services = defineCollection({
     ).default([]),
     image: z.string().optional(),
     imageAlt: z.string().optional(),
+    /** Multiplies the base per-kg rate in utils/pricing.ts. 1 = standard rate. */
+    priceMultiplier: z.number().default(1),
     acceptingApplications: z.boolean().default(true),
     order: z.number().default(0),
     draft: z.boolean().default(false),

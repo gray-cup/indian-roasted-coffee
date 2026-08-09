@@ -26,10 +26,11 @@ export function formatWeight(grams: number): string {
   return `${grams / 1000}kg`;
 }
 
-export function getPrice(grams: number): number {
+/** @param multiplier Per-product rate multiplier (see `priceMultiplier` in content.config.ts). */
+export function getPrice(grams: number, multiplier = 1): number {
   const kg = grams / 1000;
   const tier = TIERS.find(t => kg <= t.maxKg)!;
-  return Math.round(kg * tier.ratePerKg);
+  return Math.round(kg * tier.ratePerKg * multiplier);
 }
 
 export const WEIGHT_OPTIONS: WeightOption[] = GRAMS.map(grams => ({
@@ -37,3 +38,12 @@ export const WEIGHT_OPTIONS: WeightOption[] = GRAMS.map(grams => ({
   label: formatWeight(grams),
   priceInr: getPrice(grams),
 }));
+
+/** Weight/price options for a specific product's rate multiplier. */
+export function getWeightOptions(multiplier = 1): WeightOption[] {
+  return GRAMS.map(grams => ({
+    grams,
+    label: formatWeight(grams),
+    priceInr: getPrice(grams, multiplier),
+  }));
+}

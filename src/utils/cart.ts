@@ -1,6 +1,10 @@
 export interface CartItem {
+  /** Product slug — matches the content collection entry id. */
   id: string;
   title: string;
+  /** Weight in grams — the source of truth for repricing at checkout. */
+  grams: number;
+  /** Display label, e.g. "500g" — derived from `grams` at add-to-cart time. */
   size: string;
   grind: string;
   quantity: number;
@@ -9,12 +13,6 @@ export interface CartItem {
 
 const CART_KEY = 'irc_cart';
 const CART_EVENT = 'cart:updated';
-
-export const SIZE_PRICES: Record<string, number> = {
-  '250 g': 349,
-  '500 g': 649,
-  '1 kg': 1199,
-};
 
 export function getCart(): CartItem[] {
   if (typeof window === 'undefined') return [];
@@ -41,7 +39,7 @@ function dispatch(cart: CartItem[]) {
 export function addToCart(item: Omit<CartItem, 'quantity'>): void {
   const cart = getCart();
   const existing = cart.find(
-    (i) => i.id === item.id && i.size === item.size && i.grind === item.grind
+    (i) => i.id === item.id && i.grams === item.grams && i.grind === item.grind
   );
   if (existing) {
     existing.quantity += 1;
@@ -51,16 +49,16 @@ export function addToCart(item: Omit<CartItem, 'quantity'>): void {
   dispatch(cart);
 }
 
-export function updateQuantity(id: string, size: string, grind: string, quantity: number): void {
+export function updateQuantity(id: string, grams: number, grind: string, quantity: number): void {
   const cart = getCart()
-    .map((i) => (i.id === id && i.size === size && i.grind === grind ? { ...i, quantity } : i))
+    .map((i) => (i.id === id && i.grams === grams && i.grind === grind ? { ...i, quantity } : i))
     .filter((i) => i.quantity > 0);
   dispatch(cart);
 }
 
-export function removeFromCart(id: string, size: string, grind: string): void {
+export function removeFromCart(id: string, grams: number, grind: string): void {
   const cart = getCart().filter(
-    (i) => !(i.id === id && i.size === size && i.grind === grind)
+    (i) => !(i.id === id && i.grams === grams && i.grind === grind)
   );
   dispatch(cart);
 }

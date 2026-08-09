@@ -78,9 +78,32 @@ import BaseLayout from '../layouts/BaseLayout.astro';
                   All orders are roasted fresh and dispatched within 48 hours.
                   Standard delivery: 4–6 business days.
                 </p>
-                <a href="/contact/" class="usa-button usa-button--big width-full text-center">
-                  Proceed to checkout
-                </a>
+
+                <form id="cart-checkout-form" class="usa-form margin-top-2">
+                  <div class="usa-form-group margin-top-1">
+                    <label class="usa-label" for="cc-name">Full name</label>
+                    <input class="usa-input" id="cc-name" name="name" type="text" autocomplete="name" required />
+                  </div>
+                  <div class="usa-form-group">
+                    <label class="usa-label" for="cc-email">Email</label>
+                    <input class="usa-input" id="cc-email" name="email" type="email" autocomplete="email" required />
+                  </div>
+                  <div class="usa-form-group">
+                    <label class="usa-label" for="cc-phone">Phone</label>
+                    <input class="usa-input" id="cc-phone" name="phone" type="tel" autocomplete="tel" required />
+                  </div>
+                  <div class="usa-form-group">
+                    <label class="usa-label" for="cc-address">Delivery address</label>
+                    <textarea class="usa-textarea" id="cc-address" name="address" rows="3" required></textarea>
+                  </div>
+
+                  <p id="cart-checkout-error" class="usa-error-message" hidden></p>
+
+                  <button type="submit" class="usa-button usa-button--big width-full text-center margin-top-1" id="cart-checkout-submit">
+                    Proceed to checkout
+                  </button>
+                </form>
+
                 <a href="/products/" class="usa-button usa-button--unstyled margin-top-2 display-block text-center">
                   Continue shopping
                 </a>
@@ -99,6 +122,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   interface CartItem {
     id: string;
     title: string;
+    grams: number;
     size: string;
     grind: string;
     quantity: number;
@@ -146,7 +170,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       tbody.innerHTML = cart
         .map(
           (item) => `
-          <tr data-id="${item.id}" data-size="${item.size}" data-grind="${item.grind}">
+          <tr data-id="${item.id}" data-grams="${item.grams}" data-grind="${item.grind}">
             <td><strong>${item.title}</strong></td>
             <td>${item.size}</td>
             <td class="font-sans-sm">${item.grind}</td>
@@ -199,8 +223,8 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       tbody.querySelectorAll<HTMLButtonElement>('.remove-item').forEach((btn) => {
         btn.addEventListener('click', () => {
           const row = btn.closest('tr') as HTMLTableRowElement;
-          const { id, size, grind } = row.dataset as { id: string; size: string; grind: string };
-          saveCart(getCart().filter((i) => !(i.id === id && i.size === size && i.grind === grind)));
+          const { id, grams, grind } = row.dataset as { id: string; grams: string; grind: string };
+          saveCart(getCart().filter((i) => !(i.id === id && i.grams === Number(grams) && i.grind === grind)));
           render();
         });
       });
@@ -212,9 +236,9 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   }
 
   function mutate(row: HTMLTableRowElement, delta: number) {
-    const { id, size, grind } = row.dataset as { id: string; size: string; grind: string };
+    const { id, grams, grind } = row.dataset as { id: string; grams: string; grind: string };
     const cart = getCart().map((i) =>
-      i.id === id && i.size === size && i.grind === grind
+      i.id === id && i.grams === Number(grams) && i.grind === grind
         ? { ...i, quantity: Math.max(0, i.quantity + delta) }
         : i
     ).filter((i) => i.quantity > 0);
@@ -226,6 +250,58 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     localStorage.removeItem(CART_KEY);
     window.dispatchEvent(new CustomEvent('cart:updated', { detail: [] }));
     render();
+  });
+
+  // ── Checkout: send the cart to Cashfree via our multi-item order API ───────
+  const checkoutForm = document.getElementById('cart-checkout-form') as HTMLFormElement | null;
+  const checkoutSubmit = document.getElementById('cart-checkout-submit') as HTMLButtonElement | null;
+  const checkoutError = document.getElementById('cart-checkout-error') as HTMLParagraphElement | null;
+
+  checkoutForm?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (checkoutError) checkoutError.hidden = true;
+
+    const cart = getCart();
+    if (cart.length === 0) return;
+
+    const formData = new FormData(checkoutForm);
+    const payload = {
+      name: formData.get('name'),
+      email: formData.get('email'),
+      phone: formData.get('phone'),
+      address: formData.get('address'),
+      items: cart.map((i) => ({ id: i.id, grams: i.grams, grind: i.grind, quantity: i.quantity })),
+    };
+
+    if (checkoutSubmit) {
+      checkoutSubmit.disabled = true;
+      checkoutSubmit.textContent = 'Redirecting to payment…';
+    }
+
+    try {
+      const res = await fetch('/api/payment/create-cart-order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(text || 'Checkout failed');
+      }
+
+      const data = await res.json() as { sid: string; oid: string };
+      window.location.href = `/checkout?sid=${encodeURIComponent(data.sid)}&oid=${encodeURIComponent(data.oid)}`;
+    } catch (err) {
+      if (checkoutError) {
+        checkoutError.hidden = false;
+        checkoutError.textContent = err instanceof Error ? err.message : 'Checkout failed. Please try again.';
+      }
+      if (checkoutSubmit) {
+        checkoutSubmit.disabled = false;
+        checkoutSubmit.textContent = 'Proceed to checkout';
+      }
+    }
   });
 
   render();
