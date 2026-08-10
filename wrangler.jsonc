@@ -1,0 +1,28 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "indian-roasted-coffee",
+  "compatibility_date": "2025-06-01",
+  "compatibility_flags": [
+    // Enables Node.js built-ins (needed by @libsql/client, crypto, etc.)
+    "nodejs_compat",
+    // Populates the global `process.env` from vars/secrets below, so all the
+    // existing `process.env.X` reads in src/db, src/pages/api, etc. keep working
+    // unchanged. Default on for compat dates >= 2025-04-01, listed explicitly here.
+    "nodejs_compat_populate_process_env"
+  ],
+  "observability": {
+    "enabled": true
+  }
+
+  // `main` and `assets` are filled in automatically by @astrojs/cloudflare
+  // at build time — do not set them here.
+  //
+  // ─── Secrets ──────────────────────────────────────────────────────────────
+  // Do NOT put real values here — this file is committed. Set each of the
+  // following with `wrangler secret put <NAME>` (or in the Cloudflare
+  // dashboard → Workers → Settings → Variables) before deploying:
+  //   CASHFREE_APP_ID, CASHFREE_SECRET_KEY, CASHFREE_ENV,
+  //   TURSO_CONNECTION_URL, TURSO_AUTH_TOKEN, ADMIN_PASSWORD, SITE
+  // For local `wrangler dev`, put the same keys/values in a `.dev.vars` file
+  // (see .dev.vars.example).
+}

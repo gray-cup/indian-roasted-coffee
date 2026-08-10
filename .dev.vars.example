@@ -1,0 +1,22 @@
+# Local environment variables for `wrangler dev` / `astro dev` on the
+# Cloudflare adapter. Copy to `.dev.vars` and fill in real values —
+# `.dev.vars` is gitignored, same as `.env`.
+#
+# In production these are NOT read from this file — set them with
+# `wrangler secret put <NAME>` (or the Cloudflare dashboard → Workers →
+# Settings → Variables) instead. See wrangler.jsonc for the full list.
+
+# ─── Cashfree Payments ────────────────────────────────────────────────────────
+CASHFREE_APP_ID=your_app_id
+CASHFREE_SECRET_KEY=your_secret_key
+CASHFREE_ENV=sandbox
+
+# ─── Turso (SQLite edge DB) ───────────────────────────────────────────────────
+TURSO_CONNECTION_URL=libsql://your-db-name-your-org.turso.io
+TURSO_AUTH_TOKEN=your_turso_auth_token
+
+# ─── Admin panel ──────────────────────────────────────────────────────────────
+ADMIN_PASSWORD=change_me_to_something_strong
+
+# ─── Site ─────────────────────────────────────────────────────────────────────
+SITE=https://indianroastedcoffee.com

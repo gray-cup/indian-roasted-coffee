@@ -1,9 +1,9 @@
-import { defineConfig, envField } from 'astro/config';
+import { defineConfig, envField, sessionDrivers } from 'astro/config';
 import mdx from '@astrojs/mdx';
 import sitemap from '@astrojs/sitemap';
 import astroLLMsGenerator from 'astro-llms-generate';
 import tailwindcss from '@tailwindcss/vite';
-import vercel from '@astrojs/vercel';
+import cloudflare from '@astrojs/cloudflare';
 import { fileURLToPath } from 'url';
 import { resolve } from 'path';
 
@@ -40,7 +40,25 @@ export default defineConfig({
 
   output: 'static',
 
-  adapter: vercel(),
+  adapter: cloudflare({
+    // Prerender static pages with Astro's normal Node environment instead of
+    // spinning up a workerd/miniflare sandbox during build — simpler and
+    // avoids the worker needing to exist before its own build has produced it.
+    prerenderEnvironment: 'node',
+    // This site doesn't use astro:assets' <Image> component, so skip
+    // Cloudflare Images processing/binding entirely.
+    imageService: 'passthrough',
+    // Use our own wrangler.jsonc (name, compatibility flags, observability)
+    // as the base config — the adapter fills in `main`/`assets` itself.
+    configPath: './wrangler.jsonc',
+  }),
+
+  // The Cloudflare adapter auto-provisions a KV namespace for session storage
+  // unless a session driver is already set. This site doesn't use
+  // Astro.session, so use the in-memory driver to skip that KV binding.
+  session: {
+    driver: sessionDrivers.memory(),
+  },
 
   // i18n: English at /, Spanish at /es/
   i18n: {

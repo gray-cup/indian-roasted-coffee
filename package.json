@@ -18,7 +18,8 @@
   "scripts": {
     "dev": "node scripts/setup-uswds.mjs && astro dev",
     "build": "node scripts/setup-uswds.mjs && astro build && pagefind --site dist/client",
-    "preview": "astro preview",
+    "preview": "wrangler dev --config dist/server/wrangler.json",
+    "deploy": "bun run build && wrangler deploy --config dist/server/wrangler.json",
     "check": "astro check",
     "setup": "node scripts/setup-uswds.mjs",
     "ci:check": "bash scripts/check.sh",
@@ -29,9 +30,9 @@
     "db:studio": "drizzle-kit studio"
   },
   "dependencies": {
+    "@astrojs/cloudflare": "13.7.0",
     "@astrojs/mdx": "^5.0.0",
     "@astrojs/sitemap": "^3.7.3",
-    "@astrojs/vercel": "^11.0.5",
     "@libsql/client": "^0.17.4",
     "@uswds/uswds": "^3.10.0",
     "astro": "^6.0.0",
@@ -48,6 +49,7 @@
     "pagefind": "^1.5.2",
     "sass": "^1.77.0",
     "tailwindcss": "^4.0.0",
-    "typescript": "^5.5.0"
+    "typescript": "^5.5.0",
+    "wrangler": "^4.120.0"
   }
 }
