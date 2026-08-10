@@ -41,6 +41,20 @@ const GRINDS = ['Whole Bean', 'Coarse (French Press)', 'Medium (Filter/Pour-over
     </div>
 
     <div class="field">
+      <label for="bw-qty" class="field__label">Quantity</label>
+      <input
+        type="number"
+        id="bw-qty"
+        name="quantity"
+        class="field__input"
+        value="1"
+        min="1"
+        max="20"
+        required
+      />
+    </div>
+
+    <div class="field">
       <label for="bw-grind" class="field__label">Grind</label>
       <select id="bw-grind" name="grind" class="field__select" required>
         {GRINDS.map((g, i) => (
@@ -224,27 +238,31 @@ const GRINDS = ['Whole Bean', 'Coarse (French Press)', 'Medium (Filter/Pour-over
 
     const weightSelect = form.querySelector<HTMLSelectElement>('#bw-weight');
     const grindSelect = form.querySelector<HTMLSelectElement>('#bw-grind');
+    const qtyInput = form.querySelector<HTMLInputElement>('#bw-qty');
     const selectedOption = weightSelect?.selectedOptions[0];
-    if (!weightSelect || !grindSelect || !selectedOption) return;
+    if (!weightSelect || !grindSelect || !qtyInput || !selectedOption) return;
 
     const productSlug = form.dataset.productSlug ?? '';
     const productName = form.dataset.productName ?? '';
     const weightLabel = selectedOption.textContent?.split('—')[0].trim() ?? weightSelect.value;
     const grams = Number(weightSelect.value);
     const pricePerUnit = Number(selectedOption.dataset.price ?? 0);
+    const quantity = Math.max(1, Math.min(20, Math.round(Number(qtyInput.value) || 1)));
 
-    addToCart({
-      id: productSlug,
-      title: productName,
-      grams,
-      size: weightLabel,
-      grind: grindSelect.value,
-      pricePerUnit,
-    });
+    for (let i = 0; i < quantity; i++) {
+      addToCart({
+        id: productSlug,
+        title: productName,
+        grams,
+        size: weightLabel,
+        grind: grindSelect.value,
+        pricePerUnit,
+      });
+    }
 
     if (msg) {
       msg.hidden = false;
-      msg.textContent = `Added ${weightLabel} (${grindSelect.value}) to cart.`;
+      msg.textContent = `Added ${quantity} × ${weightLabel} (${grindSelect.value}) to cart.`;
       window.setTimeout(() => { msg.hidden = true; }, 3000);
     }
   });

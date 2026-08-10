@@ -3,11 +3,11 @@
  * ServiceCard — usa-card variant for product listings
  * https://designsystem.digital.gov/components/card/
  *
- * When `productSlug` + `priceFrom` are given, the card shows a starting
- * price and a quick "Add to cart" action (default: smallest size, whole
- * bean) alongside the link to the full product page for size/grind choice.
- * Without those props it falls back to a plain link button — used by the
- * internal component style guide, which has no real product data.
+ * When `productSlug` is given, the card shows a compact weight + quantity
+ * picker with Add to cart / Buy now actions, so a purchase can be started
+ * without opening the full product page. Without `productSlug` it falls
+ * back to a plain link button — used by the internal component style
+ * guide, which has no real product data.
  */
 
 interface Props {
@@ -22,17 +22,15 @@ interface Props {
   imageAlt?: string;
   locale?: Locale;
   class?: string;
-  /** Product slug — enables the price + Add to cart footer */
+  /** Product slug — enables the price + purchase footer */
   productSlug?: string;
-  /** Starting price in INR, for the smallest available weight */
-  priceFrom?: number;
-  /** Grams the priceFrom corresponds to (defaults to the smallest weight tier) */
-  priceFromGrams?: number;
+  /** Per-product rate multiplier — see `priceMultiplier` in content.config.ts */
+  priceMultiplier?: number;
 }
 
 import type { Locale } from '../../i18n/utils';
 import { useTranslations, withBase } from '../../i18n/utils';
-import { formatWeight } from '../../utils/pricing';
+import { getPrice, formatWeight } from '../../utils/pricing';
 
 const {
   title,
@@ -45,60 +43,75 @@ const {
   locale = 'en',
   class: className,
   productSlug,
-  priceFrom,
-  priceFromGrams = 300,
+  priceMultiplier = 1,
 } = Astro.props;
 
 const t = useTranslations(locale);
 const resolvedHref = withBase(href);
 const resolvedCta = ctaText ?? t('home.learnMore');
-const isProduct = Boolean(productSlug && priceFrom);
-const addToCartLabel = locale === 'es' ? 'Añadir al carrito' : 'Add to cart';
-const viewOptionsLabel = locale === 'es' ? 'Ver opciones y tamaños' : 'View options & sizes';
+const isProduct = Boolean(productSlug);
+
+// A short pick of common retail sizes for the compact card picker —
+// the full bulk/wholesale range lives on the product page itself.
+const CARD_GRAMS = [300, 500, 1000];
+const cardOptions = CARD_GRAMS.map((grams) => ({
+  grams,
+  label: formatWeight(grams),
+  priceInr: getPrice(grams, priceMultiplier),
+}));
+
+const addToCartLabel = locale === 'es' ? 'Añadir' : 'Add to cart';
+const buyNowLabel = locale === 'es' ? 'Comprar' : 'Buy now';
 ---
 
-<li class:list={['usa-card', className]}>
+<li class:list={['usa-card', 'service-card', className]}>
   <div class="usa-card__container">
     {imageSrc && (
-      <div class="usa-card__media">
+      <div class="usa-card__media service-card__media">
         <div class="usa-card__img">
           <img src={imageSrc} alt={imageAlt} loading="lazy" />
         </div>
       </div>
     )}
-    <div class="usa-card__header">
-      <h2 class="usa-card__heading">
+    <div class="usa-card__header service-card__header">
+      <h2 class="usa-card__heading service-card__heading">
         <a href={resolvedHref} class="usa-link">{title}</a>
       </h2>
     </div>
-    <div class="usa-card__body">
-      <p>{summary}</p>
-      {isProduct && (
-        <p class="service-card__price">
-          From <strong>₹{priceFrom!.toLocaleString('en-IN')}</strong>{' '}
-          <span class="service-card__price-unit">/ {formatWeight(priceFromGrams)}</span>
-        </p>
-      )}
+    <div class="usa-card__body service-card__body">
+      <p class="service-card__summary">{summary}</p>
     </div>
-    <div class="usa-card__footer">
+    <div class="usa-card__footer service-card__footer">
       {!acceptingApplications ? (
         <span class="usa-tag">{t('serviceCard.notAccepting')}</span>
       ) : isProduct ? (
-        <div class="service-card__actions">
-          <button
-            type="button"
-            class="usa-button width-full service-card__add-btn"
-            data-add-to-cart
-            data-id={productSlug}
-            data-title={title}
-            data-grams={priceFromGrams}
-            data-price={priceFrom}
-          >
-            {addToCartLabel}
-          </button>
-          <a href={resolvedHref} class="usa-button usa-button--unstyled service-card__view-link">
-            {viewOptionsLabel}
-          </a>
+        <div class="service-card__buy" data-card-buy data-id={productSlug} data-title={title}>
+          <div class="service-card__row">
+            <select class="service-card__select" data-card-weight aria-label={`${title} — weight`}>
+              {cardOptions.map((opt, i) => (
+                <option value={opt.grams} data-price={opt.priceInr} selected={i === 0}>
+                  {opt.label} — ₹{opt.priceInr.toLocaleString('en-IN')}
+                </option>
+              ))}
+            </select>
+            <input
+              type="number"
+              class="service-card__qty"
+              data-card-qty
+              value="1"
+              min="1"
+              max="20"
+              aria-label={`${title} — quantity`}
+            />
+          </div>
+          <div class="service-card__row">
+            <button type="button" class="usa-button usa-button--outline service-card__btn" data-card-add>
+              {addToCartLabel}
+            </button>
+            <button type="button" class="usa-button service-card__btn" data-card-buy-now>
+              {buyNowLabel}
+            </button>
+          </div>
         </div>
       ) : (
         <a href={resolvedHref} class="usa-button">{resolvedCta}</a>
@@ -108,30 +121,83 @@ const viewOptionsLabel = locale === 'es' ? 'Ver opciones y tamaños' : 'View opt
 </li>
 
 <style>
-  .service-card__price {
-    font-size: 0.95rem;
-    color: #1b1b1b;
-    margin-top: 0.5rem;
+  .service-card {
+    max-width: 17rem;
   }
 
-  .service-card__price-unit {
-    font-size: 0.8rem;
-    color: #666;
+  .service-card__media :global(img) {
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
   }
 
-  .service-card__actions {
+  .service-card__header,
+  .service-card__body {
+    padding-top: 0.75rem;
+    padding-bottom: 0;
+  }
+
+  .service-card__heading {
+    font-size: 1rem;
+    line-height: 1.25;
+  }
+
+  .service-card__summary {
+    font-size: 0.82rem;
+    line-height: 1.4;
+    color: #444;
+    margin: 0.25rem 0 0;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .service-card__footer {
+    padding-top: 0.6rem;
+  }
+
+  .service-card__buy {
     display: flex;
     flex-direction: column;
     gap: 0.4rem;
   }
 
-  .service-card__view-link {
-    text-align: center;
-    font-size: 0.8rem;
+  .service-card__row {
+    display: flex;
+    gap: 0.4rem;
   }
 
-  .service-card__add-btn[data-added="true"] {
+  .service-card__select {
+    flex: 1;
+    min-width: 0;
+    font-size: 0.78rem;
+    padding: 0.35rem 0.4rem;
+    border: 1.5px solid #ccc;
+    border-radius: 5px;
+    background: #fff;
+  }
+
+  .service-card__qty {
+    width: 3.2rem;
+    font-size: 0.78rem;
+    padding: 0.35rem 0.3rem;
+    border: 1.5px solid #ccc;
+    border-radius: 5px;
+    text-align: center;
+  }
+
+  .service-card__btn {
+    flex: 1;
+    min-width: 0;
+    font-size: 0.8rem;
+    padding: 0.5rem 0.4rem;
+    margin: 0;
+    text-align: center;
+  }
+
+  .service-card__btn[data-added="true"] {
     background-color: #2e6e37;
+    color: #fff;
   }
 </style>
 
@@ -139,27 +205,47 @@ const viewOptionsLabel = locale === 'es' ? 'Ver opciones y tamaños' : 'View opt
   import { addToCart } from '../../utils/cart';
   import { formatWeight } from '../../utils/pricing';
 
-  document.querySelectorAll<HTMLButtonElement>('[data-add-to-cart]').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      const { id, title, grams, price } = btn.dataset;
-      if (!id || !title || !grams || !price) return;
+  document.querySelectorAll<HTMLElement>('[data-card-buy]').forEach((wrap) => {
+    const id = wrap.dataset.id;
+    const title = wrap.dataset.title;
+    const weightSelect = wrap.querySelector<HTMLSelectElement>('[data-card-weight]');
+    const qtyInput = wrap.querySelector<HTMLInputElement>('[data-card-qty]');
+    const addBtn = wrap.querySelector<HTMLButtonElement>('[data-card-add]');
+    const buyBtn = wrap.querySelector<HTMLButtonElement>('[data-card-buy-now]');
+    if (!id || !title || !weightSelect || !qtyInput || !addBtn || !buyBtn) return;
 
-      addToCart({
-        id,
-        title,
-        grams: Number(grams),
-        size: formatWeight(Number(grams)),
-        grind: 'Whole Bean',
-        pricePerUnit: Number(price),
-      });
+    function addSelectedToCart() {
+      const selected = weightSelect!.selectedOptions[0];
+      const grams = Number(weightSelect!.value);
+      const price = Number(selected?.dataset.price ?? 0);
+      const qty = Math.max(1, Math.min(20, Math.round(Number(qtyInput!.value) || 1)));
 
-      const original = btn.textContent;
-      btn.dataset.added = 'true';
-      btn.textContent = 'Added ✓';
+      for (let i = 0; i < qty; i++) {
+        addToCart({
+          id: id!,
+          title: title!,
+          grams,
+          size: formatWeight(grams),
+          grind: 'Whole Bean',
+          pricePerUnit: price,
+        });
+      }
+    }
+
+    addBtn.addEventListener('click', () => {
+      addSelectedToCart();
+      const original = addBtn.textContent;
+      addBtn.dataset.added = 'true';
+      addBtn.textContent = 'Added ✓';
       window.setTimeout(() => {
-        btn.dataset.added = 'false';
-        btn.textContent = original ?? '';
-      }, 1800);
+        addBtn.dataset.added = 'false';
+        addBtn.textContent = original ?? '';
+      }, 1500);
+    });
+
+    buyBtn.addEventListener('click', () => {
+      addSelectedToCart();
+      window.location.href = '/cart/';
     });
   });
 </script>

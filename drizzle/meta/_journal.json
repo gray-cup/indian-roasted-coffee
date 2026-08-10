@@ -15,6 +15,13 @@
       "when": 1786245322392,
       "tag": "0001_vengeful_sunspot",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1786320838781,
+      "tag": "0002_futuristic_shard",
+      "breakpoints": true
     }
   ]
 }

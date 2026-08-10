@@ -44,17 +44,19 @@ const allCrumbs = [
 <BaseLayout title={title} description={description} locale={locale}>
   <div class="grid-container usa-section">
     <Breadcrumb items={allCrumbs} wrap />
-    <div class="grid-row grid-gap">
-      <div class="grid-col-12 tablet:grid-col-8">
-        {!acceptingApplications && (
-          <Alert type="warning" slim>
-            {locale === 'es'
-              ? 'Este producto no está disponible actualmente.'
-              : 'This product is not currently available.'}
-          </Alert>
-        )}
 
-        <h1>{title}</h1>
+    {!acceptingApplications && (
+      <Alert type="warning" slim>
+        {locale === 'es'
+          ? 'Este producto no está disponible actualmente.'
+          : 'This product is not currently available.'}
+      </Alert>
+    )}
+
+    <h1 class="service-layout__title">{title}</h1>
+
+    <div class="grid-row grid-gap service-layout__row">
+      <div class="grid-col-12 tablet:grid-col-8 service-layout__main">
         {imageSrc && (
           <img
             src={imageSrc}
@@ -68,7 +70,7 @@ const allCrumbs = [
         </div>
       </div>
 
-      <div class="grid-col-12 tablet:grid-col-4">
+      <div class="grid-col-12 tablet:grid-col-4 service-layout__sidebar">
         <slot name="sidebar" />
 
         {applyHref && acceptingApplications && (
@@ -91,3 +93,26 @@ const allCrumbs = [
     </div>
   </div>
 </BaseLayout>
+
+<style>
+  /* On mobile, show the purchase widget right after the title —
+     not below the full article, which pushed it out of easy reach. */
+  .service-layout__row {
+    display: flex;
+    flex-wrap: wrap;
+  }
+
+  .service-layout__sidebar {
+    order: -1;
+  }
+
+  .service-layout__main {
+    order: 0;
+  }
+
+  @media (min-width: 40em) {
+    .service-layout__sidebar {
+      order: 0;
+    }
+  }
+</style>

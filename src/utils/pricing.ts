@@ -7,10 +7,10 @@ export interface WeightOption {
 // ─── Pricing tiers ────────────────────────────────────────────────────────────
 // Price per kg in INR. Update these values to match your actual rates.
 const TIERS = [
-  { maxKg: 1,        ratePerKg: 1200 }, // retail:        300 g – 1 kg
-  { maxKg: 10,       ratePerKg: 1000 }, // semi-wholesale: 2 kg – 10 kg
-  { maxKg: 50,       ratePerKg: 850  }, // wholesale:     15 kg – 50 kg
-  { maxKg: Infinity, ratePerKg: 750  }, // bulk:          55 kg – 100 kg
+  { maxKg: 1,        ratePerKg: 1560 }, // retail:        300 g – 1 kg
+  { maxKg: 10,       ratePerKg: 1300 }, // semi-wholesale: 2 kg – 10 kg
+  { maxKg: 50,       ratePerKg: 1105 }, // wholesale:     15 kg – 50 kg
+  { maxKg: Infinity, ratePerKg: 975  }, // bulk:          55 kg – 100 kg
 ] as const;
 
 // ─── Available weight options ─────────────────────────────────────────────────

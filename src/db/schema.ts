@@ -13,6 +13,7 @@ export const orders = sqliteTable('orders', {
   productName: text('product_name').notNull(),
   weightGrams: integer('weight_grams').notNull(),
   weightLabel: text('weight_label').notNull(),
+  quantity: integer('quantity').notNull().default(1),
   grind: text('grind'),
   /** JSON-serialized CartItem[] when the order came from the cart (multiple lines). */
   cartItemsJson: text('cart_items_json'),

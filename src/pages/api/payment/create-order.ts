@@ -34,6 +34,7 @@ export const POST: APIRoute = async ({ request, redirect, url }) => {
   const productSlug = body.get('product_slug')?.toString();
   const grind      = body.get('grind')?.toString();
   const weightGrams = parseInt(body.get('weight_grams')?.toString() ?? '0', 10);
+  const quantity   = Math.max(1, Math.min(20, Math.round(parseInt(body.get('quantity')?.toString() ?? '1', 10) || 1)));
 
   if (!name || !email || !phone || !address || !productSlug || !weightGrams) {
     return new Response('Missing required fields', { status: 400 });
@@ -47,8 +48,8 @@ export const POST: APIRoute = async ({ request, redirect, url }) => {
   }
 
   const productName = product.data.title;
-  const amountInr   = getPrice(weightGrams, product.data.priceMultiplier);
-  const weightLabel = formatWeight(weightGrams);
+  const amountInr   = getPrice(weightGrams, product.data.priceMultiplier) * quantity;
+  const weightLabel = quantity > 1 ? `${quantity} × ${formatWeight(weightGrams)}` : formatWeight(weightGrams);
   const orderId     = generateOrderId();
   const siteUrl     = process.env.SITE ?? url.origin;
 
@@ -84,7 +85,7 @@ export const POST: APIRoute = async ({ request, redirect, url }) => {
           return_url: `${siteUrl}/payment-result?order_id=${orderId}`,
           notify_url: `${siteUrl}/api/payment/webhook`,
         },
-        order_note: `${productName} – ${weightLabel}${grind ? ` – ${grind}` : ''}`,
+        order_note: `${productName} – ${weightLabel}${grind ? ` – ${grind}` : ''}`.slice(0, 500),
       }),
     });
 
@@ -114,6 +115,7 @@ export const POST: APIRoute = async ({ request, redirect, url }) => {
     productName,
     weightGrams,
     weightLabel,
+    quantity,
     grind: grind || null,
     amountInr,
   });
