@@ -9,6 +9,10 @@ export const orders = sqliteTable('orders', {
   customerEmail: text('customer_email').notNull(),
   customerPhone: text('customer_phone').notNull(),
   customerAddress: text('customer_address').notNull(),
+  customerType: text('customer_type', { enum: ['individual', 'business'] })
+    .notNull()
+    .default('individual'),
+  gstNumber: text('gst_number'),
   productSlug: text('product_slug').notNull(),
   productName: text('product_name').notNull(),
   weightGrams: integer('weight_grams').notNull(),

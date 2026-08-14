@@ -21,65 +21,42 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       <p>Your cart is empty.</p>
     </div>
 
-    <form id="cart-checkout-form" novalidate>
-      <div id="cart-has-items" hidden class="checkout-grid">
-        <div class="checkout-grid__main">
-          <div class="checkout-items" id="cart-items-list"></div>
+    <div id="cart-has-items" hidden class="checkout-grid">
+      <div class="checkout-grid__main">
+        <div class="checkout-items" id="cart-items-list"></div>
 
-          <button type="button" class="checkout-clear-btn" id="cart-clear-btn">Clear cart</button>
-
-          <div class="checkout-details" id="checkout-details" hidden>
-            <p class="section-label">Delivery details</p>
-
-            <div class="field">
-              <input class="field__input" type="text" name="name" placeholder="Full name" autocomplete="name" required />
-            </div>
-            <div class="field-row">
-              <input class="field__input" type="tel" name="phone" placeholder="Phone number" autocomplete="tel" required />
-              <input class="field__input" type="email" name="email" placeholder="Email address" autocomplete="email" required />
-            </div>
-            <div class="field">
-              <textarea class="field__textarea" name="address" rows="3" placeholder="Delivery address" required></textarea>
-            </div>
-          </div>
-        </div>
-
-        <div class="checkout-summary">
-          <p class="section-label">Order summary</p>
-
-          <div class="checkout-summary__row">
-            <span>Subtotal</span>
-            <span id="cart-subtotal">₹0</span>
-          </div>
-          <p class="checkout-summary__note">
-            Shipping calculated at checkout. Free on orders above ₹1,500. All orders roasted fresh and dispatched within 48 hours.
-          </p>
-          <div class="checkout-summary__row checkout-summary__row--total">
-            <span>Total</span>
-            <span id="cart-summary-total">₹0</span>
-          </div>
-
-          <p id="cart-checkout-error" class="checkout-summary__error" hidden></p>
-
-          <button type="button" class="btn-buy checkout-summary__submit" id="cart-proceed-btn">
-            Proceed to checkout
-          </button>
-
-          <button type="submit" class="btn-buy checkout-summary__submit" id="cart-checkout-submit" hidden>
-            Pay <span id="cart-checkout-submit-amount">₹0</span> →
-          </button>
-
-          <p class="checkout-summary__secure">
-            <svg width="12" height="14" viewBox="0 0 12 14" fill="none" aria-hidden="true">
-              <path d="M6 0L0 2.5V7c0 3.31 2.57 6.41 6 7 3.43-.59 6-3.69 6-7V2.5L6 0z" fill="currentColor" opacity=".5"/>
-            </svg>
-            Secured by Cashfree Payments
-          </p>
-
-          <a href="/products/" class="checkout-summary__continue">Continue shopping</a>
-        </div>
+        <button type="button" class="checkout-clear-btn" id="cart-clear-btn">Clear cart</button>
       </div>
-    </form>
+
+      <div class="checkout-summary">
+        <p class="section-label">Order summary</p>
+
+        <div class="checkout-summary__row">
+          <span>Subtotal</span>
+          <span id="cart-subtotal">₹0</span>
+        </div>
+        <p class="checkout-summary__note">
+          Shipping calculated at checkout. Free on orders above ₹1,500. All orders roasted fresh and dispatched within 48 hours.
+        </p>
+        <div class="checkout-summary__row checkout-summary__row--total">
+          <span>Total</span>
+          <span id="cart-summary-total">₹0</span>
+        </div>
+
+        <a href="/checkout-details/" class="btn-buy checkout-summary__submit" id="cart-proceed-btn">
+          Proceed to checkout
+        </a>
+
+        <p class="checkout-summary__secure">
+          <svg width="12" height="14" viewBox="0 0 12 14" fill="none" aria-hidden="true">
+            <path d="M6 0L0 2.5V7c0 3.31 2.57 6.41 6 7 3.43-.59 6-3.69 6-7V2.5L6 0z" fill="currentColor" opacity=".5"/>
+          </svg>
+          Secured by Cashfree Payments
+        </p>
+
+        <a href="/products/" class="checkout-summary__continue">Continue shopping</a>
+      </div>
+    </div>
   </div>
 </BaseLayout>
 
@@ -147,23 +124,6 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     display: none;
   }
 
-  .checkout-page__empty-btn {
-    display: inline-block;
-    width: auto;
-    padding: 0.85rem 1.75rem;
-    background: #1c1917;
-    color: #fff;
-    border-radius: 1rem;
-    font-size: 0.95rem;
-    font-weight: 900;
-    text-decoration: none;
-    text-align: center;
-  }
-
-  .checkout-page__empty-btn:hover {
-    background: #292524;
-  }
-
   .checkout-grid {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
@@ -208,14 +168,13 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     text-decoration: underline;
     cursor: pointer;
     padding: 0;
-    margin-bottom: 2rem;
   }
 
   .checkout-clear-btn:hover {
     color: #374151;
   }
 
-  /* ── Delivery details form ──────────────────────────────────────────── */
+  /* ── Sticky order summary ───────────────────────────────────────────── */
 
   .section-label {
     font-size: 0.72rem;
@@ -225,50 +184,6 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     letter-spacing: 0.08em;
     margin: 0 0 1rem;
   }
-
-  .field,
-  .field-row {
-    margin-bottom: 0.75rem;
-  }
-
-  .field-row {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 0.75rem;
-  }
-
-  @media (min-width: 30em) {
-    .field-row {
-      grid-template-columns: 1fr 1fr;
-    }
-  }
-
-  .field__input,
-  .field__textarea {
-    width: 100%;
-    padding: 0.75rem 0.9rem;
-    border: 2px solid #e5e7eb;
-    border-radius: 0.75rem;
-    font-size: 0.9rem;
-    color: #111827;
-    font-family: inherit;
-    background: #fff;
-    transition: border-color 0.15s;
-    box-sizing: border-box;
-  }
-
-  .field__input:focus,
-  .field__textarea:focus {
-    outline: none;
-    border-color: #1c1917;
-  }
-
-  .field__textarea {
-    resize: vertical;
-    min-height: 80px;
-  }
-
-  /* ── Sticky order summary ───────────────────────────────────────────── */
 
   .checkout-summary {
     background: #fff;
@@ -306,12 +221,6 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     font-weight: 900;
     color: #111827;
     margin-bottom: 1.25rem;
-  }
-
-  .checkout-summary__error {
-    font-size: 0.8rem;
-    color: #dc2626;
-    margin-bottom: 0.75rem;
   }
 
   .checkout-summary__submit {
@@ -355,6 +264,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     font-weight: 900;
     cursor: pointer;
     text-align: center;
+    text-decoration: none;
     transition: all 0.2s;
     box-sizing: border-box;
   }
@@ -365,17 +275,9 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     transform: translateY(-1px);
   }
 
-  .btn-buy:disabled {
+  .btn-buy[aria-disabled="true"] {
     opacity: 0.6;
-    cursor: not-allowed;
-    transform: none;
-    box-shadow: none;
-  }
-
-  /* Same `display`-vs-`[hidden]` issue as above — .btn-buy sets display
-     directly, so the proceed/pay button swap needs an explicit override. */
-  .btn-buy[hidden] {
-    display: none;
+    pointer-events: none;
   }
 </style>
 
@@ -525,24 +427,20 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     const list = document.getElementById('cart-items-list');
     const subtotalEl = document.getElementById('cart-subtotal');
     const totalEl = document.getElementById('cart-summary-total');
-    const submitAmountEl = document.getElementById('cart-checkout-submit-amount');
-    const submitBtn = document.getElementById('cart-checkout-submit') as HTMLButtonElement | null;
-    const proceedBtn = document.getElementById('cart-proceed-btn') as HTMLButtonElement | null;
+    const proceedBtn = document.getElementById('cart-proceed-btn') as HTMLAnchorElement | null;
 
     if (loading) loading.setAttribute('hidden', '');
 
     if (cart.length === 0) {
       empty?.removeAttribute('hidden');
       hasItems?.setAttribute('hidden', '');
-      if (proceedBtn) proceedBtn.disabled = true;
-      if (submitBtn) submitBtn.disabled = true;
+      proceedBtn?.setAttribute('aria-disabled', 'true');
       return;
     }
 
     empty?.setAttribute('hidden', '');
     hasItems?.removeAttribute('hidden');
-    if (proceedBtn) proceedBtn.disabled = false;
-    if (submitBtn) submitBtn.disabled = false;
+    proceedBtn?.removeAttribute('aria-disabled');
 
     if (list) {
       list.innerHTML = cart
@@ -592,7 +490,6 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     const total = cart.reduce((s, i) => s + i.pricePerUnit * i.quantity, 0);
     if (subtotalEl) subtotalEl.textContent = formatPrice(total);
     if (totalEl) totalEl.textContent = formatPrice(total);
-    if (submitAmountEl) submitAmountEl.textContent = formatPrice(total);
   }
 
   function mutate(row: HTMLElement | null, delta: number) {
@@ -611,72 +508,6 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
   document.getElementById('cart-clear-btn')?.addEventListener('click', () => {
     clearCart();
-  });
-
-  // ── Step 2: reveal delivery details only once the shopper commits to checkout ──
-  const proceedBtn = document.getElementById('cart-proceed-btn') as HTMLButtonElement | null;
-  const detailsSection = document.getElementById('checkout-details') as HTMLDivElement | null;
-  const payBtn = document.getElementById('cart-checkout-submit') as HTMLButtonElement | null;
-
-  proceedBtn?.addEventListener('click', () => {
-    detailsSection?.removeAttribute('hidden');
-    proceedBtn.setAttribute('hidden', '');
-    payBtn?.removeAttribute('hidden');
-    detailsSection?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    detailsSection?.querySelector<HTMLInputElement>('input')?.focus();
-  });
-
-  // ── Checkout: send the cart to Cashfree via our multi-item order API ───────
-  const checkoutForm = document.getElementById('cart-checkout-form') as HTMLFormElement | null;
-  const checkoutSubmit = document.getElementById('cart-checkout-submit') as HTMLButtonElement | null;
-  const checkoutError = document.getElementById('cart-checkout-error') as HTMLParagraphElement | null;
-
-  checkoutForm?.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    if (checkoutError) checkoutError.hidden = true;
-
-    const cart = $cart.get();
-    if (cart.length === 0) return;
-
-    const formData = new FormData(checkoutForm);
-    const payload = {
-      name: formData.get('name'),
-      email: formData.get('email'),
-      phone: formData.get('phone'),
-      address: formData.get('address'),
-      items: cart.map((i) => ({ id: i.id, grams: i.grams, grind: i.grind, quantity: i.quantity })),
-    };
-
-    const originalLabel = checkoutSubmit?.innerHTML;
-    if (checkoutSubmit) {
-      checkoutSubmit.disabled = true;
-      checkoutSubmit.textContent = 'Redirecting to payment…';
-    }
-
-    try {
-      const res = await fetch('/api/payment/create-cart-order', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
-
-      if (!res.ok) {
-        const text = await res.text();
-        throw new Error(text || 'Checkout failed');
-      }
-
-      const data = await res.json() as { sid: string; oid: string };
-      window.location.href = `/checkout?sid=${encodeURIComponent(data.sid)}&oid=${encodeURIComponent(data.oid)}`;
-    } catch (err) {
-      if (checkoutError) {
-        checkoutError.hidden = false;
-        checkoutError.textContent = err instanceof Error ? err.message : 'Checkout failed. Please try again.';
-      }
-      if (checkoutSubmit) {
-        checkoutSubmit.disabled = false;
-        if (originalLabel) checkoutSubmit.innerHTML = originalLabel;
-      }
-    }
   });
 
   $cart.subscribe(render);

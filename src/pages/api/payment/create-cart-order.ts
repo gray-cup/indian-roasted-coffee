@@ -19,8 +19,14 @@ interface RequestBody {
   email?: string;
   phone?: string;
   address?: string;
+  customerType?: string;
+  gstNumber?: string;
   items?: CartLine[];
 }
+
+// Loose check for a 15-character Indian GSTIN (2-digit state code + 10-char
+// PAN + entity/check digits). Not a full checksum validation.
+const GSTIN_PATTERN = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][1-9A-Z][Z][0-9A-Z]$/;
 
 function cashfreeBase() {
   return process.env.CASHFREE_ENV === 'production'
@@ -47,9 +53,20 @@ export const POST: APIRoute = async ({ request, url }) => {
   const phone   = body.phone?.trim();
   const address = body.address?.trim();
   const items   = Array.isArray(body.items) ? body.items : [];
+  const customerType = body.customerType === 'business' ? 'business' : 'individual';
+  const gstNumber = body.gstNumber?.trim().toUpperCase();
 
   if (!name || !email || !phone || !address || items.length === 0) {
     return new Response('Missing required fields', { status: 400 });
+  }
+
+  if (customerType === 'business') {
+    if (!gstNumber) {
+      return new Response('GST number is required for business orders', { status: 400 });
+    }
+    if (!GSTIN_PATTERN.test(gstNumber)) {
+      return new Response('Enter a valid 15-character GSTIN', { status: 400 });
+    }
   }
 
   // Look up every product server-side — never trust client-supplied prices.
@@ -98,7 +115,8 @@ export const POST: APIRoute = async ({ request, url }) => {
 
   const orderNote = lines
     .map((l) => `${l.title} × ${l.quantity} (${formatWeight(l.grams)}, ${l.grind})`)
-    .join('; ');
+    .join('; ')
+    + (customerType === 'business' ? ` — Business, GSTIN ${gstNumber}` : '');
 
   let paymentSessionId: string;
   try {
@@ -149,6 +167,8 @@ export const POST: APIRoute = async ({ request, url }) => {
     customerEmail: email,
     customerPhone: phone,
     customerAddress: address,
+    customerType,
+    gstNumber: customerType === 'business' ? gstNumber : null,
     productSlug: 'cart',
     productName: `Cart order (${lines.length} item${lines.length === 1 ? '' : 's'})`,
     weightGrams: totalGrams,

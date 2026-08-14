@@ -1,0 +1,589 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout
+  title="Checkout"
+  description="Enter your delivery and billing details to complete your Indian Roasted Coffee order."
+  noindex={true}
+>
+  <div class="checkout-page">
+    <div class="checkout-page__crumb">
+      <a href="/">Home</a><span>/</span><a href="/cart/">Cart</a><span>/</span><span>Checkout</span>
+    </div>
+    <h1 class="checkout-page__heading">Checkout</h1>
+
+    <div id="checkout-loading" class="checkout-page__loading">
+      <p>Loading your order…</p>
+    </div>
+
+    <div id="checkout-empty" hidden class="checkout-page__empty">
+      <p>Your cart is empty.</p>
+      <a href="/products/" class="checkout-page__empty-btn">Browse products</a>
+    </div>
+
+    <form id="checkout-form" hidden novalidate class="checkout-grid">
+      <div class="checkout-grid__main">
+        <p class="section-label">Order summary</p>
+        <div class="checkout-items" id="checkout-items-list"></div>
+
+        <p class="section-label checkout-details-label">Billing type</p>
+        <div class="type-toggle" role="group" aria-label="Individual or business">
+          <button type="button" class="type-toggle__btn" data-type-btn="individual" aria-pressed="true">
+            Individual
+          </button>
+          <button type="button" class="type-toggle__btn" data-type-btn="business" aria-pressed="false">
+            Business
+          </button>
+        </div>
+        <input type="hidden" name="customerType" id="customer-type-input" value="individual" />
+
+        <div class="field">
+          <input class="field__input" type="text" name="name" placeholder="Full name" autocomplete="name" required />
+        </div>
+        <div class="field-row">
+          <input class="field__input" type="tel" name="phone" placeholder="Phone number" autocomplete="tel" required />
+          <input class="field__input" type="email" name="email" placeholder="Email address" autocomplete="email" required />
+        </div>
+        <div class="field">
+          <textarea class="field__textarea" name="address" rows="3" placeholder="Delivery address" required></textarea>
+        </div>
+
+        <div class="field" id="gst-field" hidden>
+          <input
+            class="field__input"
+            type="text"
+            name="gstNumber"
+            id="gst-input"
+            placeholder="GSTIN, e.g. 22AAAAA0000A1Z5"
+            maxlength="15"
+            autocomplete="off"
+          />
+          <p class="field__hint">15-character GSTIN — required for business orders.</p>
+        </div>
+      </div>
+
+      <div class="checkout-summary">
+        <p class="section-label">Total</p>
+
+        <div class="checkout-summary__row">
+          <span>Subtotal</span>
+          <span id="checkout-subtotal">₹0</span>
+        </div>
+        <p class="checkout-summary__note">
+          Shipping calculated at checkout. Free on orders above ₹1,500. All orders roasted fresh and dispatched within 48 hours.
+        </p>
+        <div class="checkout-summary__row checkout-summary__row--total">
+          <span>Total</span>
+          <span id="checkout-total">₹0</span>
+        </div>
+
+        <p id="checkout-error" class="checkout-summary__error" hidden></p>
+
+        <button type="submit" class="btn-buy" id="checkout-submit">
+          Pay <span id="checkout-submit-amount">₹0</span> →
+        </button>
+
+        <p class="checkout-summary__secure">
+          <svg width="12" height="14" viewBox="0 0 12 14" fill="none" aria-hidden="true">
+            <path d="M6 0L0 2.5V7c0 3.31 2.57 6.41 6 7 3.43-.59 6-3.69 6-7V2.5L6 0z" fill="currentColor" opacity=".5"/>
+          </svg>
+          Secured by Cashfree Payments
+        </p>
+
+        <a href="/cart/" class="checkout-summary__continue">← Back to cart</a>
+      </div>
+    </form>
+  </div>
+</BaseLayout>
+
+<style>
+  .checkout-page {
+    max-width: 72rem;
+    margin: 0 auto;
+    padding: 2rem 1.25rem 4rem;
+    overflow-x: hidden;
+    box-sizing: border-box;
+  }
+
+  .checkout-page,
+  .checkout-page *,
+  .checkout-page *::before,
+  .checkout-page *::after {
+    box-sizing: border-box;
+  }
+
+  .checkout-page__crumb {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #9ca3af;
+    margin-bottom: 0.75rem;
+  }
+
+  .checkout-page__crumb a {
+    color: #9ca3af;
+    text-decoration: none;
+  }
+
+  .checkout-page__crumb a:hover {
+    color: #1c1917;
+  }
+
+  .checkout-page__heading {
+    font-size: 1.75rem;
+    font-weight: 900;
+    color: #111827;
+    letter-spacing: -0.01em;
+    margin: 0 0 2rem;
+  }
+
+  .checkout-page__loading,
+  .checkout-page__empty {
+    color: #6b7280;
+  }
+
+  .checkout-page__empty {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  /* `display` set directly on a class always beats the browser's built-in
+     `[hidden] { display: none }` rule (author CSS outranks the UA
+     stylesheet regardless of specificity), so `hidden` alone can't hide
+     this element — it needs its own explicit override. Same applies to
+     every other `[hidden]`-toggled element below that also sets `display`. */
+  .checkout-page__empty[hidden] {
+    display: none;
+  }
+
+  .checkout-page__empty-btn {
+    display: inline-block;
+    width: auto;
+    padding: 0.85rem 1.75rem;
+    background: #1c1917;
+    color: #fff;
+    border-radius: 1rem;
+    font-size: 0.95rem;
+    font-weight: 900;
+    text-decoration: none;
+    text-align: center;
+  }
+
+  .checkout-page__empty-btn:hover {
+    background: #292524;
+  }
+
+  .checkout-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 2.5rem;
+  }
+
+  .checkout-grid[hidden] {
+    display: none;
+  }
+
+  @media (min-width: 64em) {
+    .checkout-grid {
+      grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+      align-items: start;
+    }
+  }
+
+  .checkout-grid__main,
+  .checkout-summary {
+    min-width: 0;
+  }
+
+  .checkout-items {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-bottom: 2rem;
+  }
+
+  .section-label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #374151;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin: 0 0 1rem;
+  }
+
+  .checkout-details-label {
+    margin-top: 0;
+  }
+
+  .type-toggle {
+    display: inline-flex;
+    border: 2px solid #e5e7eb;
+    border-radius: 0.75rem;
+    padding: 0.25rem;
+    gap: 0.25rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .type-toggle__btn {
+    padding: 0.5rem 1.1rem;
+    border: none;
+    border-radius: 0.5rem;
+    background: transparent;
+    color: #6b7280;
+    font-size: 0.85rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .type-toggle__btn[aria-pressed="true"] {
+    background: #1c1917;
+    color: #fff;
+  }
+
+  .field,
+  .field-row {
+    margin-bottom: 0.75rem;
+  }
+
+  .field-row {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+
+  @media (min-width: 30em) {
+    .field-row {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  .field__input,
+  .field__textarea {
+    width: 100%;
+    padding: 0.75rem 0.9rem;
+    border: 2px solid #e5e7eb;
+    border-radius: 0.75rem;
+    font-size: 0.9rem;
+    color: #111827;
+    font-family: inherit;
+    background: #fff;
+    transition: border-color 0.15s;
+    box-sizing: border-box;
+  }
+
+  .field__input:focus,
+  .field__textarea:focus {
+    outline: none;
+    border-color: #1c1917;
+  }
+
+  .field__textarea {
+    resize: vertical;
+    min-height: 80px;
+  }
+
+  .field__hint {
+    font-size: 0.72rem;
+    color: #9ca3af;
+    margin: 0.35rem 0 0;
+  }
+
+  #gst-field[hidden] {
+    display: none;
+  }
+
+  .checkout-summary {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 1.25rem;
+    padding: 1.5rem;
+  }
+
+  @media (min-width: 64em) {
+    .checkout-summary {
+      position: sticky;
+      top: 1.5rem;
+    }
+  }
+
+  .checkout-summary__row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.85rem;
+    color: #6b7280;
+    margin-bottom: 0.5rem;
+  }
+
+  .checkout-summary__note {
+    font-size: 0.75rem;
+    color: #9ca3af;
+    line-height: 1.5;
+    margin: 0.5rem 0 1rem;
+  }
+
+  .checkout-summary__row--total {
+    padding-top: 0.9rem;
+    border-top: 1px solid #e5e7eb;
+    font-size: 1.1rem;
+    font-weight: 900;
+    color: #111827;
+    margin-bottom: 1.25rem;
+  }
+
+  .checkout-summary__error {
+    font-size: 0.8rem;
+    color: #dc2626;
+    margin-bottom: 0.75rem;
+  }
+
+  .checkout-summary__secure {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.72rem;
+    color: #9ca3af;
+    justify-content: center;
+    margin: 0.75rem 0 1rem;
+  }
+
+  .checkout-summary__continue {
+    display: block;
+    text-align: center;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #6b7280;
+    text-decoration: none;
+  }
+
+  .checkout-summary__continue:hover {
+    color: #1c1917;
+    text-decoration: underline;
+  }
+
+  .btn-buy {
+    display: block;
+    width: 100%;
+    padding: 1.1rem 1rem;
+    background: #1c1917;
+    color: #fff;
+    border: none;
+    border-radius: 1rem;
+    font-size: 1.05rem;
+    font-weight: 900;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.2s;
+    box-sizing: border-box;
+  }
+
+  .btn-buy:hover {
+    background: #292524;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+    transform: translateY(-1px);
+  }
+
+  .btn-buy:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+  }
+</style>
+
+<!--
+  Item cards are built at runtime via `innerHTML`, so Astro's scoped styles
+  (which rely on a data-astro-cid attribute stamped onto template markup at
+  build time) never reach them — these rules have to be global.
+-->
+<style is:global>
+  .item-card {
+    display: flex;
+    gap: 1rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 1rem;
+    padding: 0.9rem;
+    box-sizing: border-box;
+  }
+
+  .item-card__img {
+    width: 3.75rem;
+    height: 3.75rem;
+    flex-shrink: 0;
+    border-radius: 0.65rem;
+    overflow: hidden;
+    background: #f3f4f6;
+  }
+
+  .item-card__img img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .item-card__body {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 0.2rem;
+  }
+
+  .item-card__title {
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: #111827;
+    margin: 0;
+    overflow-wrap: break-word;
+  }
+
+  .item-card__meta {
+    font-size: 0.75rem;
+    color: #9ca3af;
+    margin: 0;
+  }
+
+  .item-card__price {
+    flex-shrink: 0;
+    align-self: center;
+    font-size: 0.9rem;
+    font-weight: 900;
+    color: #111827;
+    white-space: nowrap;
+    margin: 0;
+  }
+</style>
+
+<script>
+  import { $cart, type CartItem } from '../utils/cart';
+
+  function formatPrice(n: number) {
+    return `₹${n.toLocaleString('en-IN')}`;
+  }
+
+  const cart = $cart.get();
+  const loading = document.getElementById('checkout-loading');
+  const empty = document.getElementById('checkout-empty');
+  const form = document.getElementById('checkout-form') as HTMLFormElement | null;
+
+  loading?.setAttribute('hidden', '');
+
+  if (cart.length === 0) {
+    empty?.removeAttribute('hidden');
+  } else {
+    form?.removeAttribute('hidden');
+    renderSummary(cart);
+  }
+
+  function renderSummary(cart: readonly CartItem[]) {
+    const list = document.getElementById('checkout-items-list');
+    const subtotalEl = document.getElementById('checkout-subtotal');
+    const totalEl = document.getElementById('checkout-total');
+    const submitAmountEl = document.getElementById('checkout-submit-amount');
+
+    if (list) {
+      list.innerHTML = cart
+        .map(
+          (item) => `
+          <div class="item-card">
+            <div class="item-card__img">
+              ${item.image ? `<img src="${item.image}" alt="${item.title}" loading="lazy" />` : ''}
+            </div>
+            <div class="item-card__body">
+              <p class="item-card__title">${item.title}</p>
+              <p class="item-card__meta">${item.size} · ${item.grind} · Qty ${item.quantity}</p>
+            </div>
+            <p class="item-card__price">${formatPrice(item.pricePerUnit * item.quantity)}</p>
+          </div>
+        `
+        )
+        .join('');
+    }
+
+    const total = cart.reduce((s, i) => s + i.pricePerUnit * i.quantity, 0);
+    if (subtotalEl) subtotalEl.textContent = formatPrice(total);
+    if (totalEl) totalEl.textContent = formatPrice(total);
+    if (submitAmountEl) submitAmountEl.textContent = formatPrice(total);
+  }
+
+  // ── Individual / Business toggle ────────────────────────────────────────
+  const typeButtons = document.querySelectorAll<HTMLButtonElement>('[data-type-btn]');
+  const typeInput = document.getElementById('customer-type-input') as HTMLInputElement | null;
+  const gstField = document.getElementById('gst-field') as HTMLDivElement | null;
+  const gstInput = document.getElementById('gst-input') as HTMLInputElement | null;
+
+  typeButtons.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const type = btn.dataset.typeBtn ?? 'individual';
+      typeButtons.forEach((b) => b.setAttribute('aria-pressed', String(b === btn)));
+      if (typeInput) typeInput.value = type;
+
+      const isBusiness = type === 'business';
+      if (gstField) gstField.hidden = !isBusiness;
+      if (gstInput) gstInput.required = isBusiness;
+      if (!isBusiness && gstInput) gstInput.value = '';
+    });
+  });
+
+  // ── Submit: create the Cashfree order and hand off to /checkout ────────
+  const submitBtn = document.getElementById('checkout-submit') as HTMLButtonElement | null;
+  const errorEl = document.getElementById('checkout-error') as HTMLParagraphElement | null;
+
+  form?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (errorEl) errorEl.hidden = true;
+
+    const currentCart = $cart.get();
+    if (currentCart.length === 0) return;
+
+    const formData = new FormData(form);
+    const payload = {
+      name: formData.get('name'),
+      email: formData.get('email'),
+      phone: formData.get('phone'),
+      address: formData.get('address'),
+      customerType: formData.get('customerType'),
+      gstNumber: formData.get('gstNumber'),
+      items: currentCart.map((i) => ({ id: i.id, grams: i.grams, grind: i.grind, quantity: i.quantity })),
+    };
+
+    const originalLabel = submitBtn?.innerHTML;
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Redirecting to payment…';
+    }
+
+    try {
+      const res = await fetch('/api/payment/create-cart-order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(text || 'Checkout failed');
+      }
+
+      const data = await res.json() as { sid: string; oid: string };
+      window.location.href = `/checkout?sid=${encodeURIComponent(data.sid)}&oid=${encodeURIComponent(data.oid)}`;
+    } catch (err) {
+      if (errorEl) {
+        errorEl.hidden = false;
+        errorEl.textContent = err instanceof Error ? err.message : 'Checkout failed. Please try again.';
+      }
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        if (originalLabel) submitBtn.innerHTML = originalLabel;
+      }
+    }
+  });
+</script>

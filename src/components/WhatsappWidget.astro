@@ -6,7 +6,7 @@
   target="_blank"
   rel="noopener noreferrer"
   aria-label="Chat on WhatsApp"
-  class="fixed bottom-10 right-8 rounded-full cursor-pointer duration-200 hover:scale-110 z-50"
+  class="whatsapp-widget"
 >
   <svg
     xmlns="http://www.w3.org/2000/svg"
@@ -29,3 +29,32 @@
     />
   </svg>
 </a>
+
+<style>
+  /*
+   * Plain CSS, not Tailwind utility classes — this project only imports
+   * `tailwindcss/utilities` (see globals.css), which excludes the default
+   * `@theme` spacing/scale tokens. Numeric-scale utilities like `bottom-10`,
+   * `right-8`, and `scale-110` silently fail to generate without them
+   * (fixed-value utilities like `.fixed`/`.z-50`/`.rounded-full` are
+   * unaffected, which is why only the positioning broke): the element kept
+   * `position: fixed` but with no `bottom`/`right` set, so it rendered at
+   * its default in-flow position — bottom-left, since it's the last thing
+   * in <main> — instead of pinned to the bottom-right corner.
+   */
+  .whatsapp-widget {
+    position: fixed;
+    bottom: 2.5rem;
+    right: 2rem;
+    z-index: 50;
+    border-radius: 999px;
+    cursor: pointer;
+    display: block;
+    line-height: 0;
+    transition: transform 0.2s;
+  }
+
+  .whatsapp-widget:hover {
+    transform: scale(1.1);
+  }
+</style>
