@@ -101,8 +101,9 @@ const ogLocaleAlternate = locale === 'es' ? 'en_US' : 'es_US';
     <!-- Main page content -->
     <main id="main-content" tabindex="-1">
       <slot />
+          <WhatsappWidget />
+
     </main>
-    <WhatsappWidget />
     <!-- Site footer with navigation links -->
     <Footer locale={locale} />
 

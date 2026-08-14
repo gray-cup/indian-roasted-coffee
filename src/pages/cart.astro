@@ -3,253 +3,627 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 ---
 
 <BaseLayout
-  title="Your Cart"
-  description="Review your Indian Roasted Coffee order before checkout."
+  title="Your Order"
+  description="Review your Indian Roasted Coffee order and complete checkout."
   noindex={true}
 >
-  <div class="grid-container usa-section">
-    <h1>Your cart</h1>
+  <div class="checkout-page">
+    <div class="checkout-page__crumb">
+      <a href="/">Home</a><span>/</span><span>Your order</span>
+    </div>
+    <h1 class="checkout-page__heading">Your order</h1>
 
-    <!-- Empty state (shown until JS runs) -->
-    <div id="cart-loading" class="usa-prose">
-      <p class="text-base">Loading your cart…</p>
+    <div id="cart-loading" class="checkout-page__loading">
+      <p>Loading your cart…</p>
     </div>
 
-    <!-- Empty cart -->
-    <div id="cart-empty" hidden>
-      <div class="usa-prose margin-bottom-4">
-        <p>Your cart is empty.</p>
-        <a href="/products/" class="usa-button">Browse products</a>
-      </div>
+    <div id="cart-empty" hidden class="checkout-page__empty">
+      <p>Your cart is empty.</p>
     </div>
 
-    <!-- Cart with items -->
-    <div id="cart-has-items" hidden>
-      <div class="grid-row grid-gap">
-        <div class="grid-col-12 tablet:grid-col-8">
-          <table class="usa-table usa-table--borderless width-full" id="cart-table">
-            <thead>
-              <tr>
-                <th scope="col">Product</th>
-                <th scope="col">Size</th>
-                <th scope="col">Grind</th>
-                <th scope="col">Qty</th>
-                <th scope="col" class="text-right">Price</th>
-                <th scope="col"><span class="usa-sr-only">Remove</span></th>
-              </tr>
-            </thead>
-            <tbody id="cart-tbody"></tbody>
-            <tfoot>
-              <tr>
-                <td colspan="4" class="text-right text-bold">Subtotal</td>
-                <td class="text-right text-bold" id="cart-subtotal">₹0</td>
-                <td></td>
-              </tr>
-              <tr>
-                <td colspan="4" class="text-right text-base-dark font-sans-sm">
-                  Shipping calculated at checkout. Free on orders above ₹1,500.
-                </td>
-                <td colspan="2"></td>
-              </tr>
-            </tfoot>
-          </table>
+    <form id="cart-checkout-form" novalidate>
+      <div id="cart-has-items" hidden class="checkout-grid">
+        <div class="checkout-grid__main">
+          <div class="checkout-items" id="cart-items-list"></div>
 
-          <div class="margin-top-2">
-            <button
-              type="button"
-              class="usa-button usa-button--unstyled text-base-dark font-sans-sm"
-              id="cart-clear-btn"
-            >
-              Clear cart
-            </button>
-          </div>
-        </div>
+          <button type="button" class="checkout-clear-btn" id="cart-clear-btn">Clear cart</button>
 
-        <div class="grid-col-12 tablet:grid-col-4">
-          <div class="usa-summary-box" role="complementary" aria-labelledby="cart-summary-heading">
-            <div class="usa-summary-box__body">
-              <h2 class="usa-summary-box__heading" id="cart-summary-heading">Order summary</h2>
-              <div class="usa-summary-box__text">
-                <p>
-                  <strong>Subtotal:</strong>
-                  <span id="cart-summary-subtotal">₹0</span>
-                </p>
-                <p class="font-sans-sm text-base-dark">
-                  All orders are roasted fresh and dispatched within 48 hours.
-                  Standard delivery: 4–6 business days.
-                </p>
+          <div class="checkout-details" id="checkout-details" hidden>
+            <p class="section-label">Delivery details</p>
 
-                <form id="cart-checkout-form" class="usa-form margin-top-2">
-                  <div class="usa-form-group margin-top-1">
-                    <label class="usa-label" for="cc-name">Full name</label>
-                    <input class="usa-input" id="cc-name" name="name" type="text" autocomplete="name" required />
-                  </div>
-                  <div class="usa-form-group">
-                    <label class="usa-label" for="cc-email">Email</label>
-                    <input class="usa-input" id="cc-email" name="email" type="email" autocomplete="email" required />
-                  </div>
-                  <div class="usa-form-group">
-                    <label class="usa-label" for="cc-phone">Phone</label>
-                    <input class="usa-input" id="cc-phone" name="phone" type="tel" autocomplete="tel" required />
-                  </div>
-                  <div class="usa-form-group">
-                    <label class="usa-label" for="cc-address">Delivery address</label>
-                    <textarea class="usa-textarea" id="cc-address" name="address" rows="3" required></textarea>
-                  </div>
-
-                  <p id="cart-checkout-error" class="usa-error-message" hidden></p>
-
-                  <button type="submit" class="usa-button usa-button--big width-full text-center margin-top-1" id="cart-checkout-submit">
-                    Proceed to checkout
-                  </button>
-                </form>
-
-                <a href="/products/" class="usa-button usa-button--unstyled margin-top-2 display-block text-center">
-                  Continue shopping
-                </a>
-              </div>
+            <div class="field">
+              <input class="field__input" type="text" name="name" placeholder="Full name" autocomplete="name" required />
+            </div>
+            <div class="field-row">
+              <input class="field__input" type="tel" name="phone" placeholder="Phone number" autocomplete="tel" required />
+              <input class="field__input" type="email" name="email" placeholder="Email address" autocomplete="email" required />
+            </div>
+            <div class="field">
+              <textarea class="field__textarea" name="address" rows="3" placeholder="Delivery address" required></textarea>
             </div>
           </div>
         </div>
+
+        <div class="checkout-summary">
+          <p class="section-label">Order summary</p>
+
+          <div class="checkout-summary__row">
+            <span>Subtotal</span>
+            <span id="cart-subtotal">₹0</span>
+          </div>
+          <p class="checkout-summary__note">
+            Shipping calculated at checkout. Free on orders above ₹1,500. All orders roasted fresh and dispatched within 48 hours.
+          </p>
+          <div class="checkout-summary__row checkout-summary__row--total">
+            <span>Total</span>
+            <span id="cart-summary-total">₹0</span>
+          </div>
+
+          <p id="cart-checkout-error" class="checkout-summary__error" hidden></p>
+
+          <button type="button" class="btn-buy checkout-summary__submit" id="cart-proceed-btn">
+            Proceed to checkout
+          </button>
+
+          <button type="submit" class="btn-buy checkout-summary__submit" id="cart-checkout-submit" hidden>
+            Pay <span id="cart-checkout-submit-amount">₹0</span> →
+          </button>
+
+          <p class="checkout-summary__secure">
+            <svg width="12" height="14" viewBox="0 0 12 14" fill="none" aria-hidden="true">
+              <path d="M6 0L0 2.5V7c0 3.31 2.57 6.41 6 7 3.43-.59 6-3.69 6-7V2.5L6 0z" fill="currentColor" opacity=".5"/>
+            </svg>
+            Secured by Cashfree Payments
+          </p>
+
+          <a href="/products/" class="checkout-summary__continue">Continue shopping</a>
+        </div>
       </div>
-    </div>
+    </form>
   </div>
 </BaseLayout>
 
-<script>
-  const CART_KEY = 'irc_cart';
-
-  interface CartItem {
-    id: string;
-    title: string;
-    grams: number;
-    size: string;
-    grind: string;
-    quantity: number;
-    pricePerUnit: number;
+<style>
+  .checkout-page {
+    max-width: 72rem;
+    margin: 0 auto;
+    padding: 2rem 1.25rem 4rem;
+    overflow-x: hidden;
+    box-sizing: border-box;
   }
 
-  function getCart(): CartItem[] {
-    try {
-      return JSON.parse(localStorage.getItem(CART_KEY) || '[]');
-    } catch {
-      return [];
+  .checkout-page,
+  .checkout-page *,
+  .checkout-page *::before,
+  .checkout-page *::after {
+    box-sizing: border-box;
+  }
+
+  .checkout-page__crumb {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #9ca3af;
+    margin-bottom: 0.75rem;
+  }
+
+  .checkout-page__crumb a {
+    color: #9ca3af;
+    text-decoration: none;
+  }
+
+  .checkout-page__crumb a:hover {
+    color: #1c1917;
+  }
+
+  .checkout-page__heading {
+    font-size: 1.75rem;
+    font-weight: 900;
+    color: #111827;
+    letter-spacing: -0.01em;
+    margin: 0 0 2rem;
+  }
+
+  .checkout-page__loading,
+  .checkout-page__empty {
+    color: #6b7280;
+  }
+
+  .checkout-page__empty {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  /* `display` set directly on a class always beats the browser's built-in
+     `[hidden] { display: none }` rule (author CSS outranks the UA
+     stylesheet regardless of specificity), so `hidden` alone can't hide
+     this element — it needs its own explicit override. */
+  .checkout-page__empty[hidden] {
+    display: none;
+  }
+
+  .checkout-page__empty-btn {
+    display: inline-block;
+    width: auto;
+    padding: 0.85rem 1.75rem;
+    background: #1c1917;
+    color: #fff;
+    border-radius: 1rem;
+    font-size: 0.95rem;
+    font-weight: 900;
+    text-decoration: none;
+    text-align: center;
+  }
+
+  .checkout-page__empty-btn:hover {
+    background: #292524;
+  }
+
+  .checkout-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 2.5rem;
+  }
+
+  /* Same `display`-vs-`[hidden]` issue as `.checkout-page__empty` above. */
+  .checkout-grid[hidden] {
+    display: none;
+  }
+
+  @media (min-width: 64em) {
+    .checkout-grid {
+      grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+      align-items: start;
     }
   }
 
-  function saveCart(cart: CartItem[]) {
-    localStorage.setItem(CART_KEY, JSON.stringify(cart));
-    window.dispatchEvent(new CustomEvent('cart:updated', { detail: cart }));
+  .checkout-grid__main,
+  .checkout-summary {
+    min-width: 0;
   }
+
+  /* ── Item cards ─────────────────────────────────────────────────────── */
+  /* Structure: image + a content column, and the content column stacks its
+     own two rows (title/remove, then qty/price) — each row only ever has
+     two flex children, so nothing has to fight for space or wrap oddly. */
+
+  .checkout-items {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+  }
+
+  .checkout-clear-btn {
+    background: none;
+    border: none;
+    color: #9ca3af;
+    font-size: 0.78rem;
+    font-weight: 600;
+    text-decoration: underline;
+    cursor: pointer;
+    padding: 0;
+    margin-bottom: 2rem;
+  }
+
+  .checkout-clear-btn:hover {
+    color: #374151;
+  }
+
+  /* ── Delivery details form ──────────────────────────────────────────── */
+
+  .section-label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #374151;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin: 0 0 1rem;
+  }
+
+  .field,
+  .field-row {
+    margin-bottom: 0.75rem;
+  }
+
+  .field-row {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+
+  @media (min-width: 30em) {
+    .field-row {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  .field__input,
+  .field__textarea {
+    width: 100%;
+    padding: 0.75rem 0.9rem;
+    border: 2px solid #e5e7eb;
+    border-radius: 0.75rem;
+    font-size: 0.9rem;
+    color: #111827;
+    font-family: inherit;
+    background: #fff;
+    transition: border-color 0.15s;
+    box-sizing: border-box;
+  }
+
+  .field__input:focus,
+  .field__textarea:focus {
+    outline: none;
+    border-color: #1c1917;
+  }
+
+  .field__textarea {
+    resize: vertical;
+    min-height: 80px;
+  }
+
+  /* ── Sticky order summary ───────────────────────────────────────────── */
+
+  .checkout-summary {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 1.25rem;
+    padding: 1.5rem;
+  }
+
+  @media (min-width: 64em) {
+    .checkout-summary {
+      position: sticky;
+      top: 1.5rem;
+    }
+  }
+
+  .checkout-summary__row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.85rem;
+    color: #6b7280;
+    margin-bottom: 0.5rem;
+  }
+
+  .checkout-summary__note {
+    font-size: 0.75rem;
+    color: #9ca3af;
+    line-height: 1.5;
+    margin: 0.5rem 0 1rem;
+  }
+
+  .checkout-summary__row--total {
+    padding-top: 0.9rem;
+    border-top: 1px solid #e5e7eb;
+    font-size: 1.1rem;
+    font-weight: 900;
+    color: #111827;
+    margin-bottom: 1.25rem;
+  }
+
+  .checkout-summary__error {
+    font-size: 0.8rem;
+    color: #dc2626;
+    margin-bottom: 0.75rem;
+  }
+
+  .checkout-summary__submit {
+    margin-bottom: 0.75rem;
+  }
+
+  .checkout-summary__secure {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.72rem;
+    color: #9ca3af;
+    justify-content: center;
+    margin: 0 0 1rem;
+  }
+
+  .checkout-summary__continue {
+    display: block;
+    text-align: center;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #6b7280;
+    text-decoration: none;
+  }
+
+  .checkout-summary__continue:hover {
+    color: #1c1917;
+    text-decoration: underline;
+  }
+
+  /* Shared button, styled to match BuyWidget's primary CTA */
+  .btn-buy {
+    display: block;
+    width: 100%;
+    padding: 1.1rem 1rem;
+    background: #1c1917;
+    color: #fff;
+    border: none;
+    border-radius: 1rem;
+    font-size: 1.05rem;
+    font-weight: 900;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.2s;
+    box-sizing: border-box;
+  }
+
+  .btn-buy:hover {
+    background: #292524;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+    transform: translateY(-1px);
+  }
+
+  .btn-buy:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+  }
+
+  /* Same `display`-vs-`[hidden]` issue as above — .btn-buy sets display
+     directly, so the proceed/pay button swap needs an explicit override. */
+  .btn-buy[hidden] {
+    display: none;
+  }
+</style>
+
+<!--
+  The item cards below are built at runtime via `innerHTML` (see the script),
+  so Astro's normal style scoping — which works by stamping a data-astro-cid
+  attribute onto elements present in the template at build time — never
+  reaches them. These rules must be global or they silently don't apply
+  (which is why the thumbnail was rendering at its raw, unconstrained size).
+-->
+<style is:global>
+  .item-card {
+    display: flex;
+    gap: 1rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 1rem;
+    padding: 0.9rem;
+    box-sizing: border-box;
+  }
+
+  .item-card__img {
+    width: 4.5rem;
+    height: 4.5rem;
+    flex-shrink: 0;
+    border-radius: 0.75rem;
+    overflow: hidden;
+    background: #f3f4f6;
+  }
+
+  .item-card__img img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .item-card__body {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+  }
+
+  .item-card__head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.75rem;
+  }
+
+  .item-card__title {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #111827;
+    margin: 0 0 0.15rem;
+    overflow-wrap: break-word;
+  }
+
+  .item-card__meta {
+    font-size: 0.75rem;
+    color: #9ca3af;
+    margin: 0;
+  }
+
+  .item-card__remove {
+    flex-shrink: 0;
+    background: none;
+    border: none;
+    color: #9ca3af;
+    font-size: 0.72rem;
+    font-weight: 600;
+    text-decoration: underline;
+    cursor: pointer;
+    padding: 0;
+    white-space: nowrap;
+  }
+
+  .item-card__remove:hover {
+    color: #dc2626;
+  }
+
+  .item-card__foot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+  }
+
+  .item-card__stepper {
+    display: inline-flex;
+    align-items: center;
+    flex-shrink: 0;
+    border: 2px solid #e5e7eb;
+    border-radius: 0.6rem;
+    overflow: hidden;
+  }
+
+  .item-card__stepper button {
+    width: 1.9rem;
+    height: 1.9rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #374151;
+    background: #fff;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    box-sizing: border-box;
+  }
+
+  .item-card__stepper button:hover {
+    background: #f3f4f6;
+  }
+
+  .item-card__stepper span {
+    width: 1.9rem;
+    text-align: center;
+    font-size: 0.85rem;
+    font-weight: 900;
+    color: #111827;
+  }
+
+  .item-card__price {
+    font-size: 0.95rem;
+    font-weight: 900;
+    color: #111827;
+    white-space: nowrap;
+    margin: 0;
+  }
+</style>
+
+<script>
+  import { $cart, clearCart, type CartItem } from '../utils/cart';
 
   function formatPrice(n: number) {
     return `₹${n.toLocaleString('en-IN')}`;
   }
 
-  function render() {
-    const cart = getCart();
+  function render(cart: readonly CartItem[]) {
     const loading = document.getElementById('cart-loading');
     const empty = document.getElementById('cart-empty');
     const hasItems = document.getElementById('cart-has-items');
-    const tbody = document.getElementById('cart-tbody');
+    const list = document.getElementById('cart-items-list');
     const subtotalEl = document.getElementById('cart-subtotal');
-    const summarySubtotal = document.getElementById('cart-summary-subtotal');
+    const totalEl = document.getElementById('cart-summary-total');
+    const submitAmountEl = document.getElementById('cart-checkout-submit-amount');
+    const submitBtn = document.getElementById('cart-checkout-submit') as HTMLButtonElement | null;
+    const proceedBtn = document.getElementById('cart-proceed-btn') as HTMLButtonElement | null;
 
     if (loading) loading.setAttribute('hidden', '');
 
     if (cart.length === 0) {
       empty?.removeAttribute('hidden');
       hasItems?.setAttribute('hidden', '');
+      if (proceedBtn) proceedBtn.disabled = true;
+      if (submitBtn) submitBtn.disabled = true;
       return;
     }
 
     empty?.setAttribute('hidden', '');
     hasItems?.removeAttribute('hidden');
+    if (proceedBtn) proceedBtn.disabled = false;
+    if (submitBtn) submitBtn.disabled = false;
 
-    if (tbody) {
-      tbody.innerHTML = cart
+    if (list) {
+      list.innerHTML = cart
         .map(
           (item) => `
-          <tr data-id="${item.id}" data-grams="${item.grams}" data-grind="${item.grind}">
-            <td><strong>${item.title}</strong></td>
-            <td>${item.size}</td>
-            <td class="font-sans-sm">${item.grind}</td>
-            <td>
-              <div style="display:flex;align-items:center;gap:0.5rem">
-                <button
-                  type="button"
-                  class="usa-button usa-button--unstyled qty-dec"
-                  aria-label="Decrease quantity"
-                  style="font-size:1.2rem;line-height:1;padding:0 0.25rem"
-                >−</button>
-                <span class="qty-display">${item.quantity}</span>
-                <button
-                  type="button"
-                  class="usa-button usa-button--unstyled qty-inc"
-                  aria-label="Increase quantity"
-                  style="font-size:1.2rem;line-height:1;padding:0 0.25rem"
-                >+</button>
+          <div class="item-card" data-id="${item.id}" data-grams="${item.grams}" data-grind="${item.grind}">
+            <div class="item-card__img">
+              ${item.image ? `<img src="${item.image}" alt="${item.title}" loading="lazy" />` : ''}
+            </div>
+            <div class="item-card__body">
+              <div class="item-card__head">
+                <div>
+                  <p class="item-card__title">${item.title}</p>
+                  <p class="item-card__meta">${item.size} · ${item.grind}</p>
+                </div>
+                <button type="button" class="item-card__remove">Remove</button>
               </div>
-            </td>
-            <td class="text-right">${formatPrice(item.pricePerUnit * item.quantity)}</td>
-            <td>
-              <button
-                type="button"
-                class="usa-button usa-button--unstyled text-base-dark remove-item"
-                aria-label="Remove ${item.title} (${item.size}, ${item.grind}) from cart"
-                style="font-size:0.85rem;text-decoration:underline"
-              >Remove</button>
-            </td>
-          </tr>
+              <div class="item-card__foot">
+                <div class="item-card__stepper">
+                  <button type="button" class="qty-dec" aria-label="Decrease quantity">−</button>
+                  <span>${item.quantity}</span>
+                  <button type="button" class="qty-inc" aria-label="Increase quantity">+</button>
+                </div>
+                <p class="item-card__price">${formatPrice(item.pricePerUnit * item.quantity)}</p>
+              </div>
+            </div>
+          </div>
         `
         )
         .join('');
 
-      // Qty dec/inc
-      tbody.querySelectorAll<HTMLButtonElement>('.qty-dec').forEach((btn) => {
-        btn.addEventListener('click', () => {
-          const row = btn.closest('tr') as HTMLTableRowElement;
-          mutate(row, -1);
-        });
+      list.querySelectorAll<HTMLButtonElement>('.qty-dec').forEach((btn) => {
+        btn.addEventListener('click', () => mutate(btn.closest('.item-card') as HTMLElement, -1));
       });
-      tbody.querySelectorAll<HTMLButtonElement>('.qty-inc').forEach((btn) => {
-        btn.addEventListener('click', () => {
-          const row = btn.closest('tr') as HTMLTableRowElement;
-          mutate(row, 1);
-        });
+      list.querySelectorAll<HTMLButtonElement>('.qty-inc').forEach((btn) => {
+        btn.addEventListener('click', () => mutate(btn.closest('.item-card') as HTMLElement, 1));
       });
-
-      // Remove
-      tbody.querySelectorAll<HTMLButtonElement>('.remove-item').forEach((btn) => {
+      list.querySelectorAll<HTMLButtonElement>('.item-card__remove').forEach((btn) => {
         btn.addEventListener('click', () => {
-          const row = btn.closest('tr') as HTMLTableRowElement;
+          const row = btn.closest('.item-card') as HTMLElement;
           const { id, grams, grind } = row.dataset as { id: string; grams: string; grind: string };
-          saveCart(getCart().filter((i) => !(i.id === id && i.grams === Number(grams) && i.grind === grind)));
-          render();
+          $cart.set($cart.get().filter((i) => !(i.id === id && i.grams === Number(grams) && i.grind === grind)));
         });
       });
     }
 
     const total = cart.reduce((s, i) => s + i.pricePerUnit * i.quantity, 0);
     if (subtotalEl) subtotalEl.textContent = formatPrice(total);
-    if (summarySubtotal) summarySubtotal.textContent = formatPrice(total);
+    if (totalEl) totalEl.textContent = formatPrice(total);
+    if (submitAmountEl) submitAmountEl.textContent = formatPrice(total);
   }
 
-  function mutate(row: HTMLTableRowElement, delta: number) {
+  function mutate(row: HTMLElement | null, delta: number) {
+    if (!row) return;
     const { id, grams, grind } = row.dataset as { id: string; grams: string; grind: string };
-    const cart = getCart().map((i) =>
-      i.id === id && i.grams === Number(grams) && i.grind === grind
-        ? { ...i, quantity: Math.max(0, i.quantity + delta) }
-        : i
-    ).filter((i) => i.quantity > 0);
-    saveCart(cart);
-    render();
+    $cart.set(
+      $cart.get()
+        .map((i) =>
+          i.id === id && i.grams === Number(grams) && i.grind === grind
+            ? { ...i, quantity: Math.max(0, i.quantity + delta) }
+            : i
+        )
+        .filter((i) => i.quantity > 0)
+    );
   }
 
   document.getElementById('cart-clear-btn')?.addEventListener('click', () => {
-    localStorage.removeItem(CART_KEY);
-    window.dispatchEvent(new CustomEvent('cart:updated', { detail: [] }));
-    render();
+    clearCart();
+  });
+
+  // ── Step 2: reveal delivery details only once the shopper commits to checkout ──
+  const proceedBtn = document.getElementById('cart-proceed-btn') as HTMLButtonElement | null;
+  const detailsSection = document.getElementById('checkout-details') as HTMLDivElement | null;
+  const payBtn = document.getElementById('cart-checkout-submit') as HTMLButtonElement | null;
+
+  proceedBtn?.addEventListener('click', () => {
+    detailsSection?.removeAttribute('hidden');
+    proceedBtn.setAttribute('hidden', '');
+    payBtn?.removeAttribute('hidden');
+    detailsSection?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    detailsSection?.querySelector<HTMLInputElement>('input')?.focus();
   });
 
   // ── Checkout: send the cart to Cashfree via our multi-item order API ───────
@@ -261,7 +635,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     e.preventDefault();
     if (checkoutError) checkoutError.hidden = true;
 
-    const cart = getCart();
+    const cart = $cart.get();
     if (cart.length === 0) return;
 
     const formData = new FormData(checkoutForm);
@@ -273,6 +647,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       items: cart.map((i) => ({ id: i.id, grams: i.grams, grind: i.grind, quantity: i.quantity })),
     };
 
+    const originalLabel = checkoutSubmit?.innerHTML;
     if (checkoutSubmit) {
       checkoutSubmit.disabled = true;
       checkoutSubmit.textContent = 'Redirecting to payment…';
@@ -299,11 +674,10 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       }
       if (checkoutSubmit) {
         checkoutSubmit.disabled = false;
-        checkoutSubmit.textContent = 'Proceed to checkout';
+        if (originalLabel) checkoutSubmit.innerHTML = originalLabel;
       }
     }
   });
 
-  render();
-  window.addEventListener('cart:updated', render);
+  $cart.subscribe(render);
 </script>

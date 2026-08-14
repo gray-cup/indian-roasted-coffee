@@ -1,3 +1,5 @@
+import { persistentJSON } from '@nanostores/persistent';
+
 export interface CartItem {
   /** Product slug — matches the content collection entry id. */
   id: string;
@@ -9,61 +11,56 @@ export interface CartItem {
   grind: string;
   quantity: number;
   pricePerUnit: number;
+  /** Product image URL, for cart/checkout thumbnails. */
+  image?: string;
 }
 
-const CART_KEY = 'irc_cart';
-const CART_EVENT = 'cart:updated';
+/**
+ * Shared cart state — see https://docs.astro.build/en/recipes/sharing-state-islands/
+ * `persistentJSON` mirrors this atom to localStorage under `irc_cart` and
+ * keeps it in sync across tabs automatically (via the storage event), so
+ * every island (BuyWidget, ServiceCard, CartButton, the cart page) just
+ * reads/writes this one store instead of hand-rolling localStorage +
+ * CustomEvent plumbing.
+ */
+export const $cart = persistentJSON<CartItem[]>('irc_cart', []);
 
-export function getCart(): CartItem[] {
-  if (typeof window === 'undefined') return [];
-  try {
-    return JSON.parse(localStorage.getItem(CART_KEY) || '[]');
-  } catch {
-    return [];
-  }
+export function getCart(): readonly CartItem[] {
+  return $cart.get();
 }
 
-export function cartTotal(cart: CartItem[]): number {
+export function cartTotal(cart: readonly CartItem[]): number {
   return cart.reduce((sum, item) => sum + item.pricePerUnit * item.quantity, 0);
 }
 
-export function cartItemCount(cart: CartItem[]): number {
+export function cartItemCount(cart: readonly CartItem[]): number {
   return cart.reduce((sum, item) => sum + item.quantity, 0);
 }
 
-function dispatch(cart: CartItem[]) {
-  localStorage.setItem(CART_KEY, JSON.stringify(cart));
-  window.dispatchEvent(new CustomEvent(CART_EVENT, { detail: cart }));
-}
-
 export function addToCart(item: Omit<CartItem, 'quantity'>): void {
-  const cart = getCart();
+  const cart = $cart.get();
   const existing = cart.find(
     (i) => i.id === item.id && i.grams === item.grams && i.grind === item.grind
   );
   if (existing) {
-    existing.quantity += 1;
+    $cart.set(cart.map((i) => (i === existing ? { ...i, quantity: i.quantity + 1 } : i)));
   } else {
-    cart.push({ ...item, quantity: 1 });
+    $cart.set([...cart, { ...item, quantity: 1 }]);
   }
-  dispatch(cart);
 }
 
 export function updateQuantity(id: string, grams: number, grind: string, quantity: number): void {
-  const cart = getCart()
-    .map((i) => (i.id === id && i.grams === grams && i.grind === grind ? { ...i, quantity } : i))
-    .filter((i) => i.quantity > 0);
-  dispatch(cart);
+  $cart.set(
+    $cart.get()
+      .map((i) => (i.id === id && i.grams === grams && i.grind === grind ? { ...i, quantity } : i))
+      .filter((i) => i.quantity > 0)
+  );
 }
 
 export function removeFromCart(id: string, grams: number, grind: string): void {
-  const cart = getCart().filter(
-    (i) => !(i.id === id && i.grams === grams && i.grind === grind)
-  );
-  dispatch(cart);
+  $cart.set($cart.get().filter((i) => !(i.id === id && i.grams === grams && i.grind === grind)));
 }
 
 export function clearCart(): void {
-  localStorage.removeItem(CART_KEY);
-  window.dispatchEvent(new CustomEvent(CART_EVENT, { detail: [] }));
+  $cart.set([]);
 }

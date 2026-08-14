@@ -66,21 +66,9 @@ const label = locale === 'es' ? 'Carrito' : 'Cart';
 </style>
 
 <script>
-  const CART_KEY = 'irc_cart';
+  import { $cart, cartItemCount } from '../utils/cart';
 
-  function getCount(): number {
-    try {
-      const cart: Array<{ quantity: number }> = JSON.parse(
-        localStorage.getItem(CART_KEY) || '[]'
-      );
-      return cart.reduce((s, i) => s + i.quantity, 0);
-    } catch {
-      return 0;
-    }
-  }
-
-  function sync() {
-    const count = getCount();
+  function sync(count: number) {
     const btn = document.getElementById('cart-nav-btn');
     const badge = document.getElementById('cart-nav-count');
     if (!btn || !badge) return;
@@ -94,7 +82,7 @@ const label = locale === 'es' ? 'Carrito' : 'Cart';
     }
   }
 
-  sync();
-  window.addEventListener('cart:updated', sync);
-  window.addEventListener('storage', (e) => { if (e.key === CART_KEY) sync(); });
+  // persistentJSON already keeps $cart in sync across tabs — one subscription
+  // covers same-tab updates (add/remove/qty change) and cross-tab updates alike.
+  $cart.subscribe((cart) => sync(cartItemCount(cart)));
 </script>
