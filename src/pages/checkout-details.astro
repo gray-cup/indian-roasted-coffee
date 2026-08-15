@@ -1,5 +1,8 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import { STATES_CITIES } from '../utils/geo';
+
+const states = [...STATES_CITIES].sort((a, b) => a.state.localeCompare(b.state));
 ---
 
 <BaseLayout
@@ -44,6 +47,28 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         </div>
         <div class="field">
           <textarea class="field__textarea" name="address" rows="3" placeholder="Delivery address" required></textarea>
+        </div>
+        <div class="field-row">
+          <select class="field__input" name="state" required aria-label="State">
+            <option value="" disabled selected>State</option>
+            {states.map((s) => <option value={s.state}>{s.state}</option>)}
+          </select>
+          <input
+            class="field__input"
+            type="text"
+            name="pincode"
+            placeholder="PIN code"
+            inputmode="numeric"
+            pattern="[1-9][0-9]{5}"
+            maxlength="6"
+            autocomplete="postal-code"
+            required
+          />
+        </div>
+        <div class="field">
+          <select class="field__input" disabled aria-label="Country (currently India-only)">
+            <option selected>India</option>
+          </select>
         </div>
 
         <div class="field" id="gst-field" hidden>
@@ -274,6 +299,25 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     background: #fff;
     transition: border-color 0.15s;
     box-sizing: border-box;
+  }
+
+  select.field__input {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8' fill='none'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236b7280' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.9rem center;
+    padding-right: 2.25rem;
+    cursor: pointer;
+  }
+
+  select.field__input:disabled {
+    background-color: #f9fafb;
+    color: #9ca3af;
+    cursor: not-allowed;
+  }
+
+  select.field__input:invalid {
+    color: #6b7280;
   }
 
   .field__input:focus,
@@ -554,6 +598,8 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       email: formData.get('email'),
       phone: formData.get('phone'),
       address: formData.get('address'),
+      state: formData.get('state'),
+      pincode: formData.get('pincode'),
       customerType: formData.get('customerType'),
       gstNumber: formData.get('gstNumber'),
       items: currentCart.map((i) => ({ id: i.id, grams: i.grams, grind: i.grind, quantity: i.quantity })),

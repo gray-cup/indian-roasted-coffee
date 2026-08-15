@@ -9,6 +9,8 @@ export const orders = sqliteTable('orders', {
   customerEmail: text('customer_email').notNull(),
   customerPhone: text('customer_phone').notNull(),
   customerAddress: text('customer_address').notNull(),
+  customerState: text('customer_state'),
+  customerPincode: text('customer_pincode'),
   customerType: text('customer_type', { enum: ['individual', 'business'] })
     .notNull()
     .default('individual'),

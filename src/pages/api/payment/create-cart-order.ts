@@ -4,6 +4,7 @@ import { db } from '../../../db/index';
 import { orders } from '../../../db/schema';
 import { getPrice, formatWeight, getDeliveryFee } from '../../../utils/pricing';
 import { idToSlug } from '../../../utils/content';
+import { STATES_CITIES } from '../../../utils/geo';
 
 export const prerender = false;
 
@@ -19,10 +20,15 @@ interface RequestBody {
   email?: string;
   phone?: string;
   address?: string;
+  state?: string;
+  pincode?: string;
   customerType?: string;
   gstNumber?: string;
   items?: CartLine[];
 }
+
+// Indian PIN codes are 6 digits, first digit 1-9.
+const PINCODE_PATTERN = /^[1-9][0-9]{5}$/;
 
 // Loose check for a 15-character Indian GSTIN (2-digit state code + 10-char
 // PAN + entity/check digits). Not a full checksum validation.
@@ -52,12 +58,22 @@ export const POST: APIRoute = async ({ request, url }) => {
   const email   = body.email?.trim().toLowerCase();
   const phone   = body.phone?.trim();
   const address = body.address?.trim();
+  const state   = body.state?.trim();
+  const pincode = body.pincode?.trim();
   const items   = Array.isArray(body.items) ? body.items : [];
   const customerType = body.customerType === 'business' ? 'business' : 'individual';
   const gstNumber = body.gstNumber?.trim().toUpperCase();
 
-  if (!name || !email || !phone || !address || items.length === 0) {
+  if (!name || !email || !phone || !address || !state || !pincode || items.length === 0) {
     return new Response('Missing required fields', { status: 400 });
+  }
+
+  if (!PINCODE_PATTERN.test(pincode)) {
+    return new Response('Enter a valid 6-digit PIN code', { status: 400 });
+  }
+
+  if (!STATES_CITIES.some((s) => s.state === state)) {
+    return new Response('Select a valid state', { status: 400 });
   }
 
   if (customerType === 'business') {
@@ -170,6 +186,8 @@ export const POST: APIRoute = async ({ request, url }) => {
     customerEmail: email,
     customerPhone: phone,
     customerAddress: address,
+    customerState: state,
+    customerPincode: pincode,
     customerType,
     gstNumber: customerType === 'business' ? gstNumber : null,
     productSlug: 'cart',
