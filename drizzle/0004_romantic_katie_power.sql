@@ -1,0 +1,1 @@
+ALTER TABLE `orders` ADD `delivery_fee_inr` real DEFAULT 0 NOT NULL;

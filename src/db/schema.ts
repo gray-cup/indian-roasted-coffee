@@ -21,6 +21,8 @@ export const orders = sqliteTable('orders', {
   grind: text('grind'),
   /** JSON-serialized CartItem[] when the order came from the cart (multiple lines). */
   cartItemsJson: text('cart_items_json'),
+  /** Delivery fee component of amountInr — see getDeliveryFee() in utils/pricing.ts. */
+  deliveryFeeInr: real('delivery_fee_inr').notNull().default(0),
   amountInr: real('amount_inr').notNull(),
   status: text('status', { enum: ['PENDING', 'PAID', 'FAILED', 'EXPIRED'] })
     .notNull()

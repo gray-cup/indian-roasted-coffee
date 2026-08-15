@@ -2,7 +2,7 @@ import type { APIRoute } from 'astro';
 import { getCollection } from 'astro:content';
 import { db } from '../../../db/index';
 import { orders } from '../../../db/schema';
-import { getPrice, formatWeight } from '../../../utils/pricing';
+import { getPrice, formatWeight, getDeliveryFee } from '../../../utils/pricing';
 import { idToSlug } from '../../../utils/content';
 
 export const prerender = false;
@@ -48,7 +48,9 @@ export const POST: APIRoute = async ({ request, redirect, url }) => {
   }
 
   const productName = product.data.title;
-  const amountInr   = getPrice(weightGrams, product.data.priceMultiplier) * quantity;
+  const subtotalInr = getPrice(weightGrams, product.data.priceMultiplier) * quantity;
+  const deliveryFeeInr = getDeliveryFee(weightGrams * quantity);
+  const amountInr   = subtotalInr + deliveryFeeInr;
   const weightLabel = quantity > 1 ? `${quantity} × ${formatWeight(weightGrams)}` : formatWeight(weightGrams);
   const orderId     = generateOrderId();
   const siteUrl     = process.env.SITE ?? url.origin;
@@ -85,7 +87,7 @@ export const POST: APIRoute = async ({ request, redirect, url }) => {
           return_url: `${siteUrl}/payment-result?order_id=${orderId}`,
           notify_url: `${siteUrl}/api/payment/webhook`,
         },
-        order_note: `${productName} – ${weightLabel}${grind ? ` – ${grind}` : ''}`.slice(0, 500),
+        order_note: `${productName} – ${weightLabel}${grind ? ` – ${grind}` : ''} — Delivery ₹${deliveryFeeInr}`.slice(0, 500),
       }),
     });
 
@@ -117,6 +119,7 @@ export const POST: APIRoute = async ({ request, redirect, url }) => {
     weightLabel,
     quantity,
     grind: grind || null,
+    deliveryFeeInr,
     amountInr,
   });
 

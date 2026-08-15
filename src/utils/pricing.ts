@@ -47,3 +47,16 @@ export function getWeightOptions(multiplier = 1): WeightOption[] {
     priceInr: getPrice(grams, multiplier),
   }));
 }
+
+// ─── Delivery fee ───────────────────────────────────────────────────────────
+// Flat ₹80 up to 500 g; beyond that, ₹80 base + ₹55 per kg of the order's
+// total weight (e.g. 1 kg → ₹80 + ₹55 = ₹135).
+const DELIVERY_BASE_FEE = 80;
+const DELIVERY_BASE_THRESHOLD_GRAMS = 500;
+const DELIVERY_RATE_PER_KG = 55;
+
+export function getDeliveryFee(totalGrams: number): number {
+  if (totalGrams <= DELIVERY_BASE_THRESHOLD_GRAMS) return DELIVERY_BASE_FEE;
+  const kg = totalGrams / 1000;
+  return Math.round(DELIVERY_BASE_FEE + DELIVERY_RATE_PER_KG * kg);
+}

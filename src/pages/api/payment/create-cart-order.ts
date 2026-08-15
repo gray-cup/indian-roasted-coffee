@@ -2,7 +2,7 @@ import type { APIRoute } from 'astro';
 import { getCollection } from 'astro:content';
 import { db } from '../../../db/index';
 import { orders } from '../../../db/schema';
-import { getPrice, formatWeight } from '../../../utils/pricing';
+import { getPrice, formatWeight, getDeliveryFee } from '../../../utils/pricing';
 import { idToSlug } from '../../../utils/content';
 
 export const prerender = false;
@@ -101,9 +101,11 @@ export const POST: APIRoute = async ({ request, url }) => {
     });
   }
 
-  const amountInr = lines.reduce((sum, l) => sum + l.unitPrice * l.quantity, 0);
-  const totalGrams = lines.reduce((sum, l) => sum + l.grams * l.quantity, 0);
-  const orderId   = generateOrderId();
+  const subtotalInr = lines.reduce((sum, l) => sum + l.unitPrice * l.quantity, 0);
+  const totalGrams  = lines.reduce((sum, l) => sum + l.grams * l.quantity, 0);
+  const deliveryFeeInr = getDeliveryFee(totalGrams);
+  const amountInr   = subtotalInr + deliveryFeeInr;
+  const orderId     = generateOrderId();
   const siteUrl   = process.env.SITE ?? url.origin;
 
   const appId  = process.env.CASHFREE_APP_ID;
@@ -116,7 +118,8 @@ export const POST: APIRoute = async ({ request, url }) => {
   const orderNote = lines
     .map((l) => `${l.title} × ${l.quantity} (${formatWeight(l.grams)}, ${l.grind})`)
     .join('; ')
-    + (customerType === 'business' ? ` — Business, GSTIN ${gstNumber}` : '');
+    + ` — Delivery ₹${deliveryFeeInr}`
+    + (customerType === 'business' ? `, Business GSTIN ${gstNumber}` : '');
 
   let paymentSessionId: string;
   try {
@@ -175,6 +178,7 @@ export const POST: APIRoute = async ({ request, url }) => {
     weightLabel: `${lines.length} item${lines.length === 1 ? '' : 's'}`,
     grind: null,
     cartItemsJson: JSON.stringify(lines),
+    deliveryFeeInr,
     amountInr,
   });
 

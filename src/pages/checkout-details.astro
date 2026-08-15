@@ -70,8 +70,12 @@ import BaseLayout from '../layouts/BaseLayout.astro';
           <span>Subtotal</span>
           <span id="checkout-subtotal">₹0</span>
         </div>
+        <div class="checkout-summary__row">
+          <span>Delivery</span>
+          <span id="checkout-delivery">₹0</span>
+        </div>
         <p class="checkout-summary__note">
-          Shipping calculated at checkout. Free on orders above ₹1,500. All orders roasted fresh and dispatched within 48 hours.
+          ₹80 delivery up to 500 g; ₹80 + ₹55/kg above that. All orders roasted fresh and dispatched within 48 hours.
         </p>
         <div class="checkout-summary__row checkout-summary__row--total">
           <span>Total</span>
@@ -464,6 +468,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
 <script>
   import { $cart, type CartItem } from '../utils/cart';
+  import { getDeliveryFee } from '../utils/pricing';
 
   function formatPrice(n: number) {
     return `₹${n.toLocaleString('en-IN')}`;
@@ -486,6 +491,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   function renderSummary(cart: readonly CartItem[]) {
     const list = document.getElementById('checkout-items-list');
     const subtotalEl = document.getElementById('checkout-subtotal');
+    const deliveryEl = document.getElementById('checkout-delivery');
     const totalEl = document.getElementById('checkout-total');
     const submitAmountEl = document.getElementById('checkout-submit-amount');
 
@@ -508,8 +514,12 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         .join('');
     }
 
-    const total = cart.reduce((s, i) => s + i.pricePerUnit * i.quantity, 0);
-    if (subtotalEl) subtotalEl.textContent = formatPrice(total);
+    const subtotal = cart.reduce((s, i) => s + i.pricePerUnit * i.quantity, 0);
+    const totalGrams = cart.reduce((s, i) => s + i.grams * i.quantity, 0);
+    const delivery = getDeliveryFee(totalGrams);
+    const total = subtotal + delivery;
+    if (subtotalEl) subtotalEl.textContent = formatPrice(subtotal);
+    if (deliveryEl) deliveryEl.textContent = formatPrice(delivery);
     if (totalEl) totalEl.textContent = formatPrice(total);
     if (submitAmountEl) submitAmountEl.textContent = formatPrice(total);
   }
