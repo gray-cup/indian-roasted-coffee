@@ -24,10 +24,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
     <form id="checkout-form" hidden novalidate class="checkout-grid">
       <div class="checkout-grid__main">
-        <p class="section-label">Order summary</p>
-        <div class="checkout-items" id="checkout-items-list"></div>
-
-        <p class="section-label checkout-details-label">Billing type</p>
+        <p class="section-label">Billing type</p>
         <div class="type-toggle" role="group" aria-label="Individual or business">
           <button type="button" class="type-toggle__btn" data-type-btn="individual" aria-pressed="true">
             Individual
@@ -61,10 +58,26 @@ import BaseLayout from '../layouts/BaseLayout.astro';
           />
           <p class="field__hint">15-character GSTIN — required for business orders.</p>
         </div>
+
+        <p id="checkout-error" class="checkout-summary__error" hidden></p>
+
+        <button type="submit" class="btn-buy" id="checkout-submit">
+          Pay <span id="checkout-submit-amount">₹0</span>
+        </button>
+
+        <p class="checkout-summary__secure">
+          <svg width="12" height="14" viewBox="0 0 12 14" fill="none" aria-hidden="true">
+            <path d="M6 0L0 2.5V7c0 3.31 2.57 6.41 6 7 3.43-.59 6-3.69 6-7V2.5L6 0z" fill="currentColor" opacity=".5"/>
+          </svg>
+          Secured by Cashfree Payments
+        </p>
+
+        <a href="/cart/" class="checkout-summary__continue">Go Back to cart</a>
       </div>
 
       <div class="checkout-summary">
-        <p class="section-label">Total</p>
+        <p class="section-label">Your order</p>
+        <div class="checkout-items" id="checkout-items-list"></div>
 
         <div class="checkout-summary__row">
           <span>Subtotal</span>
@@ -81,21 +94,6 @@ import BaseLayout from '../layouts/BaseLayout.astro';
           <span>Total</span>
           <span id="checkout-total">₹0</span>
         </div>
-
-        <p id="checkout-error" class="checkout-summary__error" hidden></p>
-
-        <button type="submit" class="btn-buy" id="checkout-submit">
-          Pay <span id="checkout-submit-amount">₹0</span> →
-        </button>
-
-        <p class="checkout-summary__secure">
-          <svg width="12" height="14" viewBox="0 0 12 14" fill="none" aria-hidden="true">
-            <path d="M6 0L0 2.5V7c0 3.31 2.57 6.41 6 7 3.43-.59 6-3.69 6-7V2.5L6 0z" fill="currentColor" opacity=".5"/>
-          </svg>
-          Secured by Cashfree Payments
-        </p>
-
-        <a href="/cart/" class="checkout-summary__continue">← Back to cart</a>
       </div>
     </form>
   </div>
@@ -219,10 +217,6 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     text-transform: uppercase;
     letter-spacing: 0.08em;
     margin: 0 0 1rem;
-  }
-
-  .checkout-details-label {
-    margin-top: 0;
   }
 
   .type-toggle {
