@@ -140,7 +140,15 @@ export default defineConfig({
         "font-src 'self'",
 
         // Cashfree Payments SDK connects to sandbox and production APIs.
-        "connect-src 'self' https://sandbox.cashfree.com https://api.cashfree.com",
+        "connect-src 'self' https://sandbox.cashfree.com https://api.cashfree.com https://payments.cashfree.com https://payments-test.cashfree.com",
+
+        // Cashfree.js opens its checkout in an iframe internally even when
+        // redirectTarget is '_self' — without an explicit frame-src, this
+        // falls back to default-src 'self' and the browser silently blocks
+        // it (checkout hangs on "Opening payment page…", no JS error to
+        // catch). Required origins per Cashfree's own CSP guidance:
+        // https://github.com/cashfree/cashfree-js
+        "frame-src 'self' https://sdk.cashfree.com https://api.cashfree.com https://sandbox.cashfree.com https://payments.cashfree.com https://payments-test.cashfree.com",
 
         // Forms must submit to the same origin.
         // Extend if you send form data to a third-party service (e.g. a DKAN endpoint).

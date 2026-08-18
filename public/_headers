@@ -27,7 +27,11 @@
 
   # Restrict browser features your site does not use.
   # Remove a restriction only if a specific page feature requires it.
-  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=()
+  # payment is scoped to self + Cashfree's checkout domains — Cashfree.js
+  # embeds a payment iframe even in the redirect flow, and an empty
+  # allowlist (payment=()) blocks that delegation site-wide with no
+  # catchable JS error, silently stalling checkout.
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(self "https://sdk.cashfree.com" "https://api.cashfree.com" "https://sandbox.cashfree.com" "https://payments.cashfree.com" "https://payments-test.cashfree.com"), usb=()
 
   # Uncomment once you are confident the site is fully on HTTPS.
   # Start with a short max-age (300s) and increase to 31536000 after validating.
