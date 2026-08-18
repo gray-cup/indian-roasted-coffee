@@ -507,6 +507,7 @@ const states = [...STATES_CITIES].sort((a, b) => a.state.localeCompare(b.state))
 <script>
   import { $cart, type CartItem } from '../utils/cart';
   import { getDeliveryFee } from '../utils/pricing';
+  import { loadSavedCheckoutDetails, saveCheckoutDetails } from '../utils/checkoutDetails';
 
   function formatPrice(n: number) {
     return `₹${n.toLocaleString('en-IN')}`;
@@ -524,7 +525,49 @@ const states = [...STATES_CITIES].sort((a, b) => a.state.localeCompare(b.state))
   } else {
     form?.removeAttribute('hidden');
     renderSummary(cart);
+    prefillSavedDetails();
   }
+
+  // ── Remember delivery details for next time ─────────────────────────────
+  function prefillSavedDetails() {
+    const saved = loadSavedCheckoutDetails();
+    if (!saved || !form) return;
+
+    const nameInput = form.querySelector<HTMLInputElement>('[name="name"]');
+    const phoneInput = form.querySelector<HTMLInputElement>('[name="phone"]');
+    const addressInput = form.querySelector<HTMLTextAreaElement>('[name="address"]');
+    const stateSelect = form.querySelector<HTMLSelectElement>('[name="state"]');
+    const pincodeInput = form.querySelector<HTMLInputElement>('[name="pincode"]');
+
+    if (saved.name && nameInput) nameInput.value = saved.name;
+    if (saved.phone && phoneInput) phoneInput.value = saved.phone;
+    if (saved.address && addressInput) addressInput.value = saved.address;
+    if (saved.state && stateSelect) stateSelect.value = saved.state;
+    if (saved.pincode && pincodeInput) pincodeInput.value = saved.pincode;
+  }
+
+  function persistCurrentDetails() {
+    if (!form) return;
+    const data = new FormData(form);
+    const name = data.get('name')?.toString().trim() ?? '';
+    const phone = data.get('phone')?.toString().trim() ?? '';
+    const address = data.get('address')?.toString().trim() ?? '';
+    const state = data.get('state')?.toString().trim() ?? '';
+    const pincode = data.get('pincode')?.toString().trim() ?? '';
+
+    // Only worth remembering once there's something to remember.
+    if (!name && !phone && !address && !state && !pincode) return;
+    saveCheckoutDetails({ name, phone, address, state, pincode });
+  }
+
+  // Saves as the customer fills the form (on blur / selection change), not
+  // on every keystroke, and again on submit as a safety net.
+  form?.addEventListener('change', (e) => {
+    const target = e.target as HTMLElement;
+    if (target.matches('[name="name"], [name="phone"], [name="address"], [name="state"], [name="pincode"]')) {
+      persistCurrentDetails();
+    }
+  });
 
   function renderSummary(cart: readonly CartItem[]) {
     const list = document.getElementById('checkout-items-list');
@@ -590,6 +633,8 @@ const states = [...STATES_CITIES].sort((a, b) => a.state.localeCompare(b.state))
 
     const currentCart = $cart.get();
     if (currentCart.length === 0) return;
+
+    persistCurrentDetails();
 
     const formData = new FormData(form);
     const payload = {
