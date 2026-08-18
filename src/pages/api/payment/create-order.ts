@@ -2,7 +2,7 @@ import type { APIRoute } from 'astro';
 import { getCollection } from 'astro:content';
 import { db } from '../../../db/index';
 import { orders } from '../../../db/schema';
-import { getPrice, formatWeight, getDeliveryFee } from '../../../utils/pricing';
+import { resolveProductPrice, formatWeight, getDeliveryFee } from '../../../utils/pricing';
 import { idToSlug } from '../../../utils/content';
 
 export const prerender = false;
@@ -48,8 +48,8 @@ export const POST: APIRoute = async ({ request, redirect, url }) => {
   }
 
   const productName = product.data.title;
-  const subtotalInr = getPrice(weightGrams, product.data.priceMultiplier) * quantity;
-  const deliveryFeeInr = getDeliveryFee(weightGrams * quantity);
+  const subtotalInr = resolveProductPrice(weightGrams, product.data.priceMultiplier, product.data.packPricing) * quantity;
+  const deliveryFeeInr = getDeliveryFee([{ grams: weightGrams }]);
   const amountInr   = subtotalInr + deliveryFeeInr;
   const weightLabel = quantity > 1 ? `${quantity} × ${formatWeight(weightGrams)}` : formatWeight(weightGrams);
   const orderId     = generateOrderId();

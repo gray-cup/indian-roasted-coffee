@@ -1,5 +1,6 @@
 ---
-import { getPrice, formatWeight, type PackPrice } from '../utils/pricing';
+import { getProductPackOptions, type PackPrice } from '../utils/pricing';
+import { GRINDS } from '../utils/cart';
 
 interface Props {
   productSlug: string;
@@ -13,21 +14,9 @@ interface Props {
 
 const { productSlug, productName, priceMultiplier = 1, packPricing, imageSrc } = Astro.props;
 
-// Pack-size buttons — structure/style inspired by fast.graycup.in's product page.
-const PACK_GRAMS = [250, 1000, 3000, 5000, 10000];
-const packOptions = packPricing && packPricing.length > 0
-  ? [...packPricing].sort((a, b) => a.grams - b.grams).map((p) => ({
-      grams: p.grams,
-      label: formatWeight(p.grams),
-      priceInr: p.priceInr,
-    }))
-  : PACK_GRAMS.map((grams) => ({
-      grams,
-      label: formatWeight(grams),
-      priceInr: getPrice(grams, priceMultiplier),
-    }));
-
-const GRINDS = ['Whole Bean', 'Coarse (French Press)', 'Medium (Filter/Pour-over)', 'Fine (Espresso)'];
+// Pack-size buttons — always includes the 200 g sample; structure/style
+// inspired by fast.graycup.in's product page.
+const packOptions = getProductPackOptions(priceMultiplier, packPricing);
 ---
 
 <div

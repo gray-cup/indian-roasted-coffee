@@ -40,3 +40,14 @@ export const orders = sqliteTable('orders', {
 
 export type Order = typeof orders.$inferSelect;
 export type NewOrder = typeof orders.$inferInsert;
+
+/** Scratch table written/read by /test-database to verify the deployed Worker can reach Turso. */
+export const dbHealthChecks = sqliteTable('db_health_checks', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  message: text('message').notNull(),
+  createdAt: integer('created_at', { mode: 'timestamp' })
+    .notNull()
+    .$defaultFn(() => new Date()),
+});
+
+export type DbHealthCheck = typeof dbHealthChecks.$inferSelect;

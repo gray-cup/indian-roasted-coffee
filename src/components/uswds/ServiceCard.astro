@@ -32,7 +32,7 @@ interface Props {
 
 import type { Locale } from '../../i18n/utils';
 import { useTranslations, withBase } from '../../i18n/utils';
-import { getPrice, formatWeight, type PackPrice } from '../../utils/pricing';
+import { getProductPackOptions, formatWeight, SAMPLE_GRAMS, type PackPrice } from '../../utils/pricing';
 
 const {
   title,
@@ -54,14 +54,11 @@ const resolvedHref = withBase(href);
 const resolvedCta = ctaText ?? t('home.learnMore');
 const isProduct = Boolean(productSlug);
 
-// Smallest pack size — matches BuyWidget's default. Full size/grind
+// The 200 g sample — matches BuyWidget's smallest option. Full size/grind
 // selection happens on the product page; the card is a quick-add shortcut.
-const DEFAULT_GRAMS = 250;
-const smallestPack = packPricing && packPricing.length > 0
-  ? [...packPricing].sort((a, b) => a.grams - b.grams)[0]
-  : null;
-const defaultPrice = smallestPack ? smallestPack.priceInr : getPrice(DEFAULT_GRAMS, priceMultiplier);
-const defaultGrams = smallestPack ? smallestPack.grams : DEFAULT_GRAMS;
+const defaultGrams = SAMPLE_GRAMS;
+const defaultPrice = getProductPackOptions(priceMultiplier, packPricing)
+  .find((p) => p.grams === defaultGrams)!.priceInr;
 const defaultLabel = formatWeight(defaultGrams);
 
 const addToCartLabel = locale === 'es' ? 'Añadir' : 'Add to cart';

@@ -9,7 +9,7 @@ export const prerender = false;
 
 import { getCollection } from 'astro:content';
 import { idToSlug } from '../../utils/content';
-import { getPrice, formatWeight } from '../../utils/pricing';
+import { resolveProductPrice, formatWeight } from '../../utils/pricing';
 import { decodeShareItems, GRINDS, type CartItem } from '../../utils/cart';
 
 const { slug } = Astro.params;
@@ -22,8 +22,7 @@ const resolvedItems: CartItem[] = shareItems.flatMap((item) => {
   if (!entry) return [];
 
   const grindLabel = GRINDS[item.grindIndex] ?? GRINDS[0];
-  const pack = entry.data.packPricing?.find((p) => p.grams === item.grams);
-  const pricePerUnit = pack ? pack.priceInr : getPrice(item.grams, entry.data.priceMultiplier);
+  const pricePerUnit = resolveProductPrice(item.grams, entry.data.priceMultiplier, entry.data.packPricing);
 
   return [{
     id: item.productId,

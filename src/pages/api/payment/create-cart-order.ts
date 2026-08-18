@@ -2,7 +2,7 @@ import type { APIRoute } from 'astro';
 import { getCollection } from 'astro:content';
 import { db } from '../../../db/index';
 import { orders } from '../../../db/schema';
-import { getPrice, formatWeight, getDeliveryFee } from '../../../utils/pricing';
+import { resolveProductPrice, formatWeight, getDeliveryFee } from '../../../utils/pricing';
 import { idToSlug } from '../../../utils/content';
 import { STATES_CITIES } from '../../../utils/geo';
 
@@ -113,13 +113,13 @@ export const POST: APIRoute = async ({ request, url }) => {
       grams: item.grams,
       grind: typeof item.grind === 'string' && item.grind ? item.grind : 'Whole Bean',
       quantity,
-      unitPrice: getPrice(item.grams, product.data.priceMultiplier),
+      unitPrice: resolveProductPrice(item.grams, product.data.priceMultiplier, product.data.packPricing),
     });
   }
 
   const subtotalInr = lines.reduce((sum, l) => sum + l.unitPrice * l.quantity, 0);
   const totalGrams  = lines.reduce((sum, l) => sum + l.grams * l.quantity, 0);
-  const deliveryFeeInr = getDeliveryFee(totalGrams);
+  const deliveryFeeInr = getDeliveryFee(lines);
   const amountInr   = subtotalInr + deliveryFeeInr;
   const orderId     = generateOrderId();
   const siteUrl   = process.env.SITE ?? url.origin;

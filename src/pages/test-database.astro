@@ -1,0 +1,256 @@
+---
+export const prerender = false;
+
+// Round-trips a write + read (+ cleanup) against Turso through the deployed
+// Worker, so you can confirm the production deployment can actually reach
+// and mutate the database — not just that the build succeeded. Gated behind
+// admin auth in src/middleware.ts since it performs a real write.
+
+import { db } from '../db/index';
+import { dbHealthChecks } from '../db/schema';
+import { desc, sql } from 'drizzle-orm';
+
+interface StepResult {
+  label: string;
+  ok: boolean;
+  detail: string;
+  ms: number;
+}
+
+const steps: StepResult[] = [];
+let overallOk = true;
+let recentChecks: { id: number; message: string; createdAt: Date }[] = [];
+let errorDetail: string | null = null;
+
+const connectionUrl = process.env.TURSO_CONNECTION_URL ?? '';
+const hasAuthToken = Boolean(process.env.TURSO_AUTH_TOKEN);
+let connectionHost = '(not set)';
+try {
+  connectionHost = connectionUrl ? new URL(connectionUrl).host : '(not set)';
+} catch {
+  connectionHost = connectionUrl ? '(unparseable URL)' : '(not set)';
+}
+
+async function timed<T>(label: string, fn: () => Promise<T>): Promise<T | null> {
+  const start = Date.now();
+  try {
+    const result = await fn();
+    steps.push({ label, ok: true, detail: 'OK', ms: Date.now() - start });
+    return result;
+  } catch (err) {
+    overallOk = false;
+    const message = err instanceof Error ? err.message : String(err);
+    steps.push({ label, ok: false, detail: message, ms: Date.now() - start });
+    errorDetail = message;
+    return null;
+  }
+}
+
+const testMessage = `Health check from test-database at ${new Date().toISOString()}`;
+
+if (!connectionUrl) {
+  overallOk = false;
+  steps.push({ label: 'Environment', ok: false, detail: 'TURSO_CONNECTION_URL is not set', ms: 0 });
+} else {
+  await timed('Write (INSERT)', async () => {
+    await db.insert(dbHealthChecks).values({ message: testMessage });
+  });
+
+  const inserted = await timed('Read (SELECT)', async () => {
+    return db
+      .select()
+      .from(dbHealthChecks)
+      .where(sql`${dbHealthChecks.message} = ${testMessage}`)
+      .limit(1);
+  });
+
+  if (inserted && inserted.length === 0) {
+    overallOk = false;
+    errorDetail = 'Row was written but could not be read back';
+  }
+
+  // Keep the table small — delete everything except the 20 most recent checks.
+  await timed('Cleanup (DELETE old rows)', async () => {
+    const all = await db.select({ id: dbHealthChecks.id }).from(dbHealthChecks).orderBy(desc(dbHealthChecks.id));
+    const staleIds = all.slice(20).map((r) => r.id);
+    for (const id of staleIds) {
+      await db.delete(dbHealthChecks).where(sql`${dbHealthChecks.id} = ${id}`);
+    }
+  });
+
+  const latest = await timed('Read recent rows', async () => {
+    return db.select().from(dbHealthChecks).orderBy(desc(dbHealthChecks.id)).limit(10);
+  });
+  if (latest) recentChecks = latest;
+}
+---
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Database Test — IRC Admin</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: system-ui, -apple-system, sans-serif; background: #f4f6f9; min-height: 100vh; color: #111; }
+
+    header {
+      background: #1a1a2e; color: #fff;
+      padding: 0 1.5rem;
+      height: 56px; display: flex; align-items: center; justify-content: space-between;
+      position: sticky; top: 0; z-index: 10;
+    }
+    .brand { font-size: 0.875rem; font-weight: 700; letter-spacing: 0.02em; }
+    .nav-links { display: flex; align-items: center; gap: 1.25rem; }
+    .nav-links a { color: rgba(255,255,255,0.75); text-decoration: none; font-size: 0.8rem; }
+    .nav-links a:hover { color: #fff; }
+    .sign-out {
+      background: transparent; border: 1px solid rgba(255,255,255,0.35);
+      color: #fff; padding: 0.35rem 0.9rem; border-radius: 5px;
+      font-size: 0.8rem; cursor: pointer;
+    }
+    .sign-out:hover { background: rgba(255,255,255,0.1); }
+
+    main { padding: 1.5rem; max-width: 900px; margin: 0 auto; }
+    h1 { font-size: 1.15rem; margin-bottom: 0.25rem; }
+    .subtitle { font-size: 0.85rem; color: #777; margin-bottom: 1.5rem; }
+
+    .banner {
+      display: flex; align-items: center; gap: 0.6rem;
+      padding: 1rem 1.25rem; border-radius: 8px; font-weight: 700; font-size: 0.95rem;
+      margin-bottom: 1.5rem;
+    }
+    .banner--ok { background: #dcfce7; color: #166534; }
+    .banner--fail { background: #fee2e2; color: #991b1b; }
+
+    .card { background: #fff; border-radius: 8px; box-shadow: 0 1px 4px rgba(0,0,0,0.07); overflow: hidden; margin-bottom: 1.5rem; }
+    .card-header { padding: 1rem 1.25rem; border-bottom: 1px solid #f0f0f0; }
+    .card-header h2 { font-size: 0.95rem; font-weight: 700; }
+    .card-body { padding: 0; }
+
+    table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+    th {
+      padding: 0.65rem 1.25rem; text-align: left;
+      background: #fafafa; border-bottom: 1.5px solid #eee;
+      font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em;
+      color: #777; white-space: nowrap; font-weight: 600;
+    }
+    td { padding: 0.75rem 1.25rem; border-bottom: 1px solid #f4f4f4; vertical-align: middle; }
+    tr:last-child td { border-bottom: none; }
+    .mono { font-family: monospace; font-size: 0.78rem; }
+    .muted { color: #777; font-size: 0.8rem; }
+
+    .badge {
+      display: inline-block; padding: 0.2rem 0.65rem; border-radius: 99px;
+      font-size: 0.72rem; font-weight: 700; letter-spacing: 0.04em;
+    }
+    .badge--ok { background: #dcfce7; color: #166534; }
+    .badge--fail { background: #fee2e2; color: #991b1b; }
+
+    .env-grid { padding: 1.25rem; display: grid; grid-template-columns: auto 1fr; gap: 0.5rem 1.5rem; font-size: 0.85rem; }
+    .env-grid dt { color: #777; font-weight: 600; }
+    .env-grid dd { font-family: monospace; }
+
+    .error-box {
+      margin: 0 1.25rem 1.25rem; padding: 0.9rem 1rem; background: #fef2f2; border: 1px solid #fca5a5;
+      border-radius: 6px; color: #991b1b; font-family: monospace; font-size: 0.8rem; white-space: pre-wrap; word-break: break-word;
+    }
+
+    .empty { text-align: center; padding: 2rem; color: #aaa; font-size: 0.9rem; }
+    .refresh-btn {
+      display: inline-block; margin-top: 0.25rem; background: #2e6e37; color: #fff; border: none;
+      border-radius: 6px; padding: 0.6rem 1.1rem; font-size: 0.85rem; font-weight: 700; cursor: pointer; text-decoration: none;
+    }
+    .refresh-btn:hover { background: #255c2e; }
+  </style>
+</head>
+<body>
+  <header>
+    <span class="brand">Indian Roasted Coffee — Admin</span>
+    <div class="nav-links">
+      <a href="/admin/orders">Orders</a>
+      <a href="/cart-builder">Cart builder</a>
+      <a href="/test-database">Database test</a>
+      <form method="POST" action="/api/admin/logout" style="margin:0">
+        <button class="sign-out" type="submit">Sign out</button>
+      </form>
+    </div>
+  </header>
+
+  <main>
+    <h1>Database connectivity test</h1>
+    <p class="subtitle">Runs a real write + read + cleanup against Turso on every load, through this deployed Worker — not a mock.</p>
+
+    <div class:list={['banner', overallOk ? 'banner--ok' : 'banner--fail']}>
+      {overallOk ? '✓ Database is reachable and writable' : '✗ Database check failed — see details below'}
+    </div>
+
+    <div class="card">
+      <div class="card-header"><h2>Connection</h2></div>
+      <dl class="env-grid">
+        <dt>TURSO_CONNECTION_URL host</dt>
+        <dd>{connectionHost}</dd>
+        <dt>TURSO_AUTH_TOKEN set</dt>
+        <dd>{hasAuthToken ? 'yes' : 'no'}</dd>
+        <dt>Client</dt>
+        <dd>@libsql/client/web (HTTP-based — safe for Cloudflare Workers, no native bindings)</dd>
+      </dl>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><h2>Steps</h2></div>
+      <div class="card-body">
+        <table>
+          <thead>
+            <tr><th>Step</th><th>Result</th><th>Time</th><th>Detail</th></tr>
+          </thead>
+          <tbody>
+            {steps.map((step) => (
+              <tr>
+                <td>{step.label}</td>
+                <td><span class:list={['badge', step.ok ? 'badge--ok' : 'badge--fail']}>{step.ok ? 'OK' : 'FAILED'}</span></td>
+                <td class="muted">{step.ms} ms</td>
+                <td class="mono">{step.detail}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    {errorDetail && (
+      <div class="card">
+        <div class="card-header"><h2>Error detail</h2></div>
+        <div class="error-box">{errorDetail}</div>
+      </div>
+    )}
+
+    <div class="card">
+      <div class="card-header"><h2>Recent health-check rows</h2></div>
+      <div class="card-body">
+        {recentChecks.length === 0 ? (
+          <p class="empty">No rows yet.</p>
+        ) : (
+          <table>
+            <thead>
+              <tr><th>ID</th><th>Message</th><th>Written at</th></tr>
+            </thead>
+            <tbody>
+              {recentChecks.map((row) => (
+                <tr>
+                  <td class="mono">{row.id}</td>
+                  <td class="mono">{row.message}</td>
+                  <td class="muted">{new Date(row.createdAt).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
+    </div>
+
+    <a class="refresh-btn" href="/test-database">Run again</a>
+  </main>
+</body>
+</html>

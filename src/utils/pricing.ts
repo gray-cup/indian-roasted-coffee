@@ -54,15 +54,65 @@ export function getWeightOptions(multiplier = 1): WeightOption[] {
   }));
 }
 
-// ─── Delivery fee ───────────────────────────────────────────────────────────
-// Flat ₹80 up to 500 g; beyond that, ₹80 base + ₹55 per kg of the order's
-// total weight (e.g. 1 kg → ₹80 + ₹55 = ₹135).
-const DELIVERY_BASE_FEE = 80;
-const DELIVERY_BASE_THRESHOLD_GRAMS = 500;
-const DELIVERY_RATE_PER_KG = 55;
+// ─── Sample size ────────────────────────────────────────────────────────────
+// A 200 g "try it first" size, offered on every product alongside its normal
+// pack sizes — priced off the same rate as the rest of that product's sizes,
+// so 3 samples from different products cost the same as buying 600 g of any
+// one of them.
+export const SAMPLE_GRAMS = 200;
 
-export function getDeliveryFee(totalGrams: number): number {
-  if (totalGrams <= DELIVERY_BASE_THRESHOLD_GRAMS) return DELIVERY_BASE_FEE;
-  const kg = totalGrams / 1000;
-  return Math.round(DELIVERY_BASE_FEE + DELIVERY_RATE_PER_KG * kg);
+/**
+ * The authoritative price for a specific weight of a specific product —
+ * used everywhere a price is shown or charged (buy widget, cart builder,
+ * share links, checkout) so they can never disagree.
+ *
+ * When the product has fixed `packPricing` (see content.config.ts) and
+ * `grams` isn't one of those exact sizes — e.g. the 200 g sample — the price
+ * is derived from the smallest defined pack's implied per-kg rate rather
+ * than the generic multiplier formula, since packPricing exists precisely
+ * because this product's real pricing isn't a flat rate per kg.
+ */
+export function resolveProductPrice(
+  grams: number,
+  priceMultiplier: number | undefined,
+  packPricing: readonly PackPrice[] | undefined
+): number {
+  if (packPricing && packPricing.length > 0) {
+    const exact = packPricing.find((p) => p.grams === grams);
+    if (exact) return exact.priceInr;
+    const smallest = [...packPricing].sort((a, b) => a.grams - b.grams)[0];
+    const ratePerKg = smallest.priceInr / (smallest.grams / 1000);
+    return Math.round((grams / 1000) * ratePerKg);
+  }
+  return getPrice(grams, priceMultiplier ?? 1);
+}
+
+/** Full set of buyable pack sizes for a product, always including the 200 g sample. */
+export function getProductPackOptions(
+  priceMultiplier: number | undefined,
+  packPricing: readonly PackPrice[] | undefined
+): WeightOption[] {
+  const gramsList = packPricing && packPricing.length > 0
+    ? [...new Set([SAMPLE_GRAMS, ...packPricing.map((p) => p.grams)])].sort((a, b) => a - b)
+    : [SAMPLE_GRAMS, 1_000, 3_000, 5_000, 10_000];
+
+  return gramsList.map((grams) => ({
+    grams,
+    label: formatWeight(grams),
+    priceInr: resolveProductPrice(grams, priceMultiplier, packPricing),
+  }));
+}
+
+// ─── Delivery fee ───────────────────────────────────────────────────────────
+// ₹50 delivery for every cart line under 1 kg (e.g. three 200 g samples in
+// one line is still ₹50, not ₹150 — the charge is per line, not per unit).
+// Lines of 1 kg or more ship free.
+const DELIVERY_FEE_PER_LINE = 50;
+const DELIVERY_FREE_THRESHOLD_GRAMS = 1_000;
+
+export function getDeliveryFee(lines: readonly { grams: number }[]): number {
+  return lines.reduce(
+    (sum, line) => sum + (line.grams < DELIVERY_FREE_THRESHOLD_GRAMS ? DELIVERY_FEE_PER_LINE : 0),
+    0
+  );
 }

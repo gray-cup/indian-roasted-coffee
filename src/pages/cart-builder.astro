@@ -3,24 +3,15 @@ export const prerender = false;
 
 import { getCollection } from 'astro:content';
 import { idToSlug } from '../utils/content';
-import { getPrice, formatWeight } from '../utils/pricing';
+import { getProductPackOptions } from '../utils/pricing';
 import { GRINDS } from '../utils/cart';
-
-const DEFAULT_GRAMS = [250, 500, 1000, 2000, 5000];
 
 const services = (await getCollection('services', ({ data }) => !data.draft))
   .sort((a, b) => a.data.order - b.data.order);
 
 const products = services.map((entry) => {
   const slug = idToSlug(entry.id);
-  const packs = entry.data.packPricing && entry.data.packPricing.length > 0
-    ? [...entry.data.packPricing].sort((a, b) => a.grams - b.grams)
-        .map((p) => ({ grams: p.grams, label: formatWeight(p.grams), priceInr: p.priceInr }))
-    : DEFAULT_GRAMS.map((grams) => ({
-        grams,
-        label: formatWeight(grams),
-        priceInr: getPrice(grams, entry.data.priceMultiplier),
-      }));
+  const packs = getProductPackOptions(entry.data.priceMultiplier, entry.data.packPricing);
 
   return {
     slug,

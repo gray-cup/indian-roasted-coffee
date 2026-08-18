@@ -43,6 +43,13 @@
       "when": 1786768351687,
       "tag": "0005_thankful_lilith",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1787037866028,
+      "tag": "0006_right_warpath",
+      "breakpoints": true
     }
   ]
 }
