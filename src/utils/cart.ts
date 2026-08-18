@@ -64,3 +64,26 @@ export function removeFromCart(id: string, grams: number, grind: string): void {
 export function clearCart(): void {
   $cart.set([]);
 }
+
+/**
+ * Encode a cart as a URL-safe base64 string, for building shareable
+ * "buy this exact cart" links (see the cart builder at /admin/cart-builder).
+ */
+export function encodeSharedCart(items: readonly CartItem[]): string {
+  const json = JSON.stringify(items);
+  const base64 = btoa(unescape(encodeURIComponent(json)));
+  return base64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+
+/** Decode a cart previously produced by `encodeSharedCart`. Returns null if invalid. */
+export function decodeSharedCart(encoded: string): CartItem[] | null {
+  try {
+    const base64 = encoded.replace(/-/g, '+').replace(/_/g, '/');
+    const json = decodeURIComponent(escape(atob(base64)));
+    const data = JSON.parse(json);
+    if (!Array.isArray(data)) return null;
+    return data as CartItem[];
+  } catch {
+    return null;
+  }
+}

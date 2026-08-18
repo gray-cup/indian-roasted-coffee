@@ -18,11 +18,15 @@ export async function GET() {
     .sort((a, b) => a.data.order - b.data.order)
     .map((entry) => {
       const slug = idToSlug(entry.id);
-      const variants = RETAIL_GRAMS.map((grams) => ({
-        label: formatWeight(grams),
-        weightGrams: grams,
-        price: getPrice(grams),
-      }));
+      const variants = entry.data.packPricing && entry.data.packPricing.length > 0
+        ? [...entry.data.packPricing]
+            .sort((a, b) => a.grams - b.grams)
+            .map((p) => ({ label: formatWeight(p.grams), weightGrams: p.grams, price: p.priceInr }))
+        : RETAIL_GRAMS.map((grams) => ({
+            label: formatWeight(grams),
+            weightGrams: grams,
+            price: getPrice(grams, entry.data.priceMultiplier),
+          }));
       const prices = variants.map((v) => v.price);
 
       return {

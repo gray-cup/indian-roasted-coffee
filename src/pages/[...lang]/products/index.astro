@@ -82,6 +82,7 @@ const services = (await getCollection('services', ({ data }) => !data.draft))
           locale={locale}
           productSlug={idToSlug(service.id)}
           priceMultiplier={service.data.priceMultiplier}
+          packPricing={service.data.packPricing}
           class="tablet:grid-col-6 desktop:grid-col-4"
         />
       ))}

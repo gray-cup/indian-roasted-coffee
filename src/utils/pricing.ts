@@ -4,6 +4,12 @@ export interface WeightOption {
   priceInr: number;
 }
 
+/** A fixed price for one pack size — see `packPricing` in content.config.ts. */
+export interface PackPrice {
+  grams: number;
+  priceInr: number;
+}
+
 // ─── Pricing tiers ────────────────────────────────────────────────────────────
 // Price per kg in INR. Update these values to match your actual rates.
 const TIERS = [

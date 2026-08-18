@@ -21,6 +21,15 @@ const services = defineCollection({
     imageAlt: z.string().optional(),
     /** Multiplies the base per-kg rate in utils/pricing.ts. 1 = standard rate. */
     priceMultiplier: z.number().default(1),
+    /**
+     * Fixed prices for specific pack sizes, overriding the multiplier-based
+     * tier formula — use when a product's real pricing isn't a flat rate per kg
+     * (e.g. a discount for buying 1 kg vs. two 500 g packs). When set, the buy
+     * widget and product listings offer exactly these pack sizes.
+     */
+    packPricing: z.array(
+      z.object({ grams: z.number(), priceInr: z.number() })
+    ).optional(),
     acceptingApplications: z.boolean().default(true),
     order: z.number().default(0),
     draft: z.boolean().default(false),
