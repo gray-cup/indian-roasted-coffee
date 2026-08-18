@@ -1,6 +1,7 @@
 ---
 export const prerender = false;
 
+import BaseLayout from '../layouts/BaseLayout.astro';
 import { getCollection } from 'astro:content';
 import { idToSlug } from '../utils/content';
 import { getProductPackOptions } from '../utils/pricing';
@@ -21,273 +22,523 @@ const products = services.map((entry) => {
   };
 });
 ---
-<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Cart Builder — Indian Roasted Coffee</title>
-  <meta name="description" content="Build a coffee order and share the link — the recipient gets the cart pre-filled and can pay directly." />
-  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: system-ui, -apple-system, sans-serif; background: #f4f6f9; min-height: 100vh; color: #111; }
 
-    header {
-      background: #1a1a2e; color: #fff;
-      padding: 0 1.5rem;
-      height: 56px; display: flex; align-items: center; justify-content: space-between;
-      position: sticky; top: 0; z-index: 10;
-    }
-    .brand { font-size: 0.875rem; font-weight: 700; letter-spacing: 0.02em; text-decoration: none; color: #fff; }
-    .nav-links { display: flex; align-items: center; gap: 1.25rem; }
-    .nav-links a { color: rgba(255,255,255,0.75); text-decoration: none; font-size: 0.8rem; }
-    .nav-links a:hover { color: #fff; }
-
-    main { padding: 1.5rem; max-width: 1400px; margin: 0 auto; }
-    h1 { font-size: 1.15rem; margin-bottom: 0.25rem; }
-    .subtitle { font-size: 0.85rem; color: #777; margin-bottom: 1.5rem; }
-
-    .layout { display: grid; grid-template-columns: 1.4fr 1fr; gap: 1.5rem; align-items: start; }
-    @media (max-width: 900px) { .layout { grid-template-columns: 1fr; } }
-
-    .card { background: #fff; border-radius: 8px; box-shadow: 0 1px 4px rgba(0,0,0,0.07); overflow: hidden; }
-    .card-header { padding: 1rem 1.25rem; border-bottom: 1px solid #f0f0f0; }
-    .card-header h2 { font-size: 0.95rem; font-weight: 700; }
-    .card-body { padding: 1rem 1.25rem; }
-
-    .product-row {
-      display: grid;
-      grid-template-columns: 2.2fr 1fr 1.4fr auto auto;
-      gap: 0.6rem;
-      align-items: center;
-      padding: 0.65rem 0;
-      border-bottom: 1px solid #f4f4f4;
-      font-size: 0.85rem;
-    }
-    .product-row:last-child { border-bottom: none; }
-    .product-row__title { font-weight: 500; }
-    .product-row select, .product-row input[type="number"] {
-      width: 100%; padding: 0.4rem 0.5rem; border: 1.5px solid #ddd; border-radius: 5px; font-size: 0.82rem;
-    }
-    .add-btn {
-      background: #2e6e37; color: #fff; border: none; border-radius: 5px;
-      padding: 0.45rem 0.9rem; font-size: 0.8rem; font-weight: 600; cursor: pointer; white-space: nowrap;
-    }
-    .add-btn:hover { background: #255c2e; }
-
-    .cart-list { min-height: 2rem; }
-    .cart-item {
-      display: flex; justify-content: space-between; align-items: center;
-      padding: 0.6rem 0; border-bottom: 1px solid #f4f4f4; font-size: 0.85rem;
-    }
-    .cart-item:last-child { border-bottom: none; }
-    .cart-item__meta { color: #888; font-size: 0.78rem; }
-    .cart-item__remove { background: none; border: none; color: #dc2626; cursor: pointer; font-size: 0.78rem; }
-    .cart-empty { color: #aaa; font-size: 0.85rem; padding: 1rem 0; text-align: center; }
-
-    .total-row { display: flex; justify-content: space-between; font-weight: 700; padding-top: 0.75rem; margin-top: 0.5rem; border-top: 1.5px solid #eee; }
-
-    .link-box { margin-top: 1rem; }
-    .link-row { display: flex; gap: 0.5rem; }
-    .link-row input {
-      flex: 1; padding: 0.6rem 0.75rem; border: 1.5px solid #ddd; border-radius: 5px; font-size: 0.8rem; font-family: monospace;
-    }
-    .copy-btn {
-      background: #1a1a2e; color: #fff; border: none; border-radius: 5px;
-      padding: 0 1rem; font-size: 0.8rem; font-weight: 600; cursor: pointer;
-    }
-    .copy-btn:hover { background: #26264a; }
-    .generate-btn {
-      width: 100%; margin-top: 1rem; padding: 0.75rem; background: #2e6e37; color: #fff;
-      border: none; border-radius: 6px; font-size: 0.9rem; font-weight: 700; cursor: pointer;
-    }
-    .generate-btn:hover { background: #255c2e; }
-    .generate-btn:disabled { background: #ccc; cursor: not-allowed; }
-    .hint { font-size: 0.75rem; color: #999; margin-top: 0.5rem; }
-  </style>
-</head>
-<body>
-  <header>
-    <a class="brand" href="/">Indian Roasted Coffee</a>
-    <div class="nav-links">
-      <a href="/products/">Products</a>
-      <a href="/cart/">Cart</a>
+<BaseLayout
+  title="Cart Builder"
+  description="Build a coffee order and share the link — the recipient gets the cart pre-filled and can pay directly."
+  noindex={true}
+>
+  <div class="checkout-page">
+    <div class="checkout-page__crumb">
+      <a href="/">Home</a><span>/</span><span>Cart builder</span>
     </div>
-  </header>
+    <h1 class="checkout-page__heading">Cart builder</h1>
+    <p class="cart-builder__subtitle">
+      Pick products and pack sizes, then generate a link — whoever opens it gets this exact cart pre-filled and can pay directly, no account needed.
+    </p>
 
-  <main>
-    <h1>Cart builder</h1>
-    <p class="subtitle">Build an order and share the link — whoever opens it gets the cart pre-filled and can pay directly.</p>
-
-    <div class="layout">
-      <div class="card">
-        <div class="card-header"><h2>Products</h2></div>
-        <div class="card-body">
+    <div class="checkout-grid">
+      <div class="checkout-grid__main">
+        <p class="section-label">Products</p>
+        <div class="cart-builder__products">
           {products.map((p) => (
-            <div class="product-row" data-product data-slug={p.slug} data-title={p.title} data-image={p.image}>
-              <span class="product-row__title">{p.title}</span>
-              <select class="pack-select">
-                {p.packs.map((pack) => (
-                  <option value={pack.grams} data-price={pack.priceInr} data-label={pack.label}>
-                    {pack.label} — ₹{pack.priceInr.toLocaleString('en-IN')}
-                  </option>
-                ))}
-              </select>
-              <select class="grind-select">
-                {GRINDS.map((g) => <option value={g}>{g}</option>)}
-              </select>
-              <input type="number" class="qty-input" value="1" min="1" max="20" />
-              <button type="button" class="add-btn">Add</button>
+            <div class="builder-row" data-product data-slug={p.slug} data-title={p.title} data-image={p.image}>
+              <div class="builder-row__img">
+                {p.image && <img src={p.image} alt={p.title} loading="lazy" />}
+              </div>
+              <div class="builder-row__body">
+                <p class="builder-row__title">{p.title}</p>
+                <div class="builder-row__controls">
+                  <select class="pack-select">
+                    {p.packs.map((pack) => (
+                      <option value={pack.grams} data-price={pack.priceInr} data-label={pack.label}>
+                        {pack.label} — ₹{pack.priceInr.toLocaleString('en-IN')}
+                      </option>
+                    ))}
+                  </select>
+                  <select class="grind-select">
+                    {GRINDS.map((g) => <option value={g}>{g}</option>)}
+                  </select>
+                  <input type="number" class="qty-input" value="1" min="1" max="20" aria-label="Quantity" />
+                  <button type="button" class="add-btn">Add</button>
+                </div>
+              </div>
             </div>
           ))}
         </div>
       </div>
 
-      <div class="card">
-        <div class="card-header"><h2>Cart for this link</h2></div>
-        <div class="card-body">
-          <div class="cart-list" id="builder-cart-list">
-            <p class="cart-empty" id="builder-cart-empty">No items added yet.</p>
-          </div>
-          <div class="total-row">
-            <span>Total</span>
-            <span id="builder-cart-total">₹0</span>
-          </div>
+      <div class="checkout-summary">
+        <p class="section-label">Cart for this link</p>
 
-          <button type="button" class="generate-btn" id="generate-link-btn" disabled>Generate shareable link</button>
+        <div class="cart-builder__list" id="builder-cart-list">
+          <p class="cart-builder__empty" id="builder-cart-empty">No items added yet.</p>
+        </div>
 
-          <div class="link-box" id="link-box" hidden>
-            <div class="link-row">
-              <input type="text" id="link-output" readonly />
-              <button type="button" class="copy-btn" id="copy-link-btn">Copy</button>
-            </div>
-            <p class="hint">Anyone who opens this link gets this exact cart and can pay directly — no login needed.</p>
+        <div class="checkout-summary__row checkout-summary__row--total">
+          <span>Total</span>
+          <span id="builder-cart-total">₹0</span>
+        </div>
+
+        <button type="button" class="btn-buy" id="generate-link-btn" disabled>Generate shareable link</button>
+
+        <div class="cart-builder__link-box" id="link-box" hidden>
+          <div class="cart-builder__link-row">
+            <input type="text" id="link-output" readonly aria-label="Shareable cart link" />
+            <button type="button" class="cart-builder__copy-btn" id="copy-link-btn">Copy</button>
           </div>
+          <p class="cart-builder__hint">Anyone who opens this link gets this exact cart and can pay directly — no login needed.</p>
         </div>
       </div>
     </div>
-  </main>
+  </div>
+</BaseLayout>
 
-  <script>
-    import { encodeShareItems, GRINDS, type CartItem } from '../utils/cart';
+<style>
+  .checkout-page {
+    max-width: 72rem;
+    margin: 0 auto;
+    padding: 2rem 1.25rem 4rem;
+    overflow-x: hidden;
+    box-sizing: border-box;
+  }
 
-    interface BuilderItem extends CartItem {}
+  .checkout-page,
+  .checkout-page *,
+  .checkout-page *::before,
+  .checkout-page *::after {
+    box-sizing: border-box;
+  }
 
-    let builderCart: BuilderItem[] = [];
+  .checkout-page__crumb {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #9ca3af;
+    margin-bottom: 0.75rem;
+  }
 
-    function formatPrice(n: number) {
-      return `₹${n.toLocaleString('en-IN')}`;
+  .checkout-page__crumb a {
+    color: #9ca3af;
+    text-decoration: none;
+  }
+
+  .checkout-page__crumb a:hover {
+    color: #1c1917;
+  }
+
+  .checkout-page__heading {
+    font-size: 1.75rem;
+    font-weight: 900;
+    color: #111827;
+    letter-spacing: -0.01em;
+    margin: 0 0 0.5rem;
+  }
+
+  .cart-builder__subtitle {
+    font-size: 0.9rem;
+    color: #6b7280;
+    max-width: 42rem;
+    line-height: 1.6;
+    margin: 0 0 2rem;
+  }
+
+  .checkout-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 2.5rem;
+  }
+
+  @media (min-width: 64em) {
+    .checkout-grid {
+      grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+      align-items: start;
     }
+  }
 
-    function renderCart() {
-      const list = document.getElementById('builder-cart-list');
-      const empty = document.getElementById('builder-cart-empty');
-      const totalEl = document.getElementById('builder-cart-total');
-      const generateBtn = document.getElementById('generate-link-btn') as HTMLButtonElement | null;
-      if (!list || !totalEl || !generateBtn) return;
+  .checkout-grid__main,
+  .checkout-summary {
+    min-width: 0;
+  }
 
-      list.querySelectorAll('.cart-item').forEach((el) => el.remove());
+  .section-label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #374151;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin: 0 0 1rem;
+  }
 
-      if (builderCart.length === 0) {
-        if (empty) empty.hidden = false;
-        generateBtn.disabled = true;
-      } else {
-        if (empty) empty.hidden = true;
-        generateBtn.disabled = false;
-        builderCart.forEach((item, index) => {
-          const row = document.createElement('div');
-          row.className = 'cart-item';
-          row.innerHTML = `
-            <div>
-              <div>${item.title}</div>
-              <div class="cart-item__meta">${item.size} · ${item.grind} × ${item.quantity}</div>
-            </div>
-            <div style="display:flex; align-items:center; gap:0.75rem;">
-              <span>${formatPrice(item.pricePerUnit * item.quantity)}</span>
-              <button type="button" class="cart-item__remove" data-index="${index}">Remove</button>
-            </div>
-          `;
-          list.appendChild(row);
-        });
-      }
+  /* ── Product picker rows ────────────────────────────────────────────── */
 
-      const total = builderCart.reduce((s, i) => s + i.pricePerUnit * i.quantity, 0);
-      totalEl.textContent = formatPrice(total);
+  .cart-builder__products {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
 
-      // Cart changed — invalidate any previously generated link.
-      const linkBox = document.getElementById('link-box');
-      if (linkBox) linkBox.hidden = true;
+  .builder-row {
+    display: flex;
+    gap: 1rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 1rem;
+    padding: 0.85rem;
+    align-items: center;
+  }
 
-      list.querySelectorAll<HTMLButtonElement>('.cart-item__remove').forEach((btn) => {
-        btn.addEventListener('click', () => {
-          const idx = Number(btn.dataset.index);
-          builderCart = builderCart.filter((_, i) => i !== idx);
-          renderCart();
-        });
+  .builder-row__img {
+    flex-shrink: 0;
+    width: 4rem;
+    height: 4rem;
+    border-radius: 0.65rem;
+    overflow: hidden;
+    background: #f5f5f4;
+  }
+
+  .builder-row__img img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .builder-row__body {
+    min-width: 0;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+  }
+
+  .builder-row__title {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #1c1917;
+    margin: 0;
+  }
+
+  .builder-row__controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .builder-row__controls select,
+  .builder-row__controls input[type="number"] {
+    padding: 0.5rem 0.6rem;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 0.6rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #1c1917;
+    background: #fff;
+    font-family: inherit;
+  }
+
+  .builder-row__controls select:focus,
+  .builder-row__controls input[type="number"]:focus {
+    outline: none;
+    border-color: #1c1917;
+  }
+
+  .builder-row__controls .qty-input {
+    width: 4rem;
+  }
+
+  .add-btn {
+    background: #1c1917;
+    color: #fff;
+    border: none;
+    border-radius: 0.6rem;
+    padding: 0.5rem 1rem;
+    font-size: 0.8rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.15s;
+    margin-left: auto;
+  }
+
+  .add-btn:hover {
+    background: #292524;
+  }
+
+  /* ── Order summary ──────────────────────────────────────────────────── */
+
+  .checkout-summary {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 1.25rem;
+    padding: 1.5rem;
+  }
+
+  @media (min-width: 64em) {
+    .checkout-summary {
+      position: sticky;
+      top: 1.5rem;
+    }
+  }
+
+  .cart-builder__list {
+    min-height: 2rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .cart-builder__empty {
+    color: #9ca3af;
+    font-size: 0.85rem;
+    padding: 1rem 0;
+    text-align: center;
+  }
+
+  .checkout-summary__row--total {
+    display: flex;
+    justify-content: space-between;
+    padding-top: 0.9rem;
+    border-top: 1px solid #e5e7eb;
+    font-size: 1.1rem;
+    font-weight: 900;
+    color: #111827;
+    margin-bottom: 1.25rem;
+  }
+
+  .btn-buy {
+    display: block;
+    width: 100%;
+    padding: 1.1rem 1rem;
+    background: #1c1917;
+    color: #fff;
+    border: none;
+    border-radius: 1rem;
+    font-size: 1.05rem;
+    font-weight: 900;
+    cursor: pointer;
+    text-align: center;
+    text-decoration: none;
+    transition: all 0.2s;
+    box-sizing: border-box;
+  }
+
+  .btn-buy:hover {
+    background: #292524;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+    transform: translateY(-1px);
+  }
+
+  .btn-buy:disabled {
+    background: #d1d5db;
+    cursor: not-allowed;
+    box-shadow: none;
+    transform: none;
+  }
+
+  .cart-builder__link-box {
+    margin-top: 1.25rem;
+  }
+
+  .cart-builder__link-row {
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  .cart-builder__link-row input {
+    flex: 1;
+    min-width: 0;
+    padding: 0.65rem 0.8rem;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 0.65rem;
+    font-size: 0.78rem;
+    font-family: monospace;
+    color: #1c1917;
+  }
+
+  .cart-builder__copy-btn {
+    background: #1c1917;
+    color: #fff;
+    border: none;
+    border-radius: 0.65rem;
+    padding: 0 1.1rem;
+    font-size: 0.8rem;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  .cart-builder__copy-btn:hover {
+    background: #292524;
+  }
+
+  .cart-builder__hint {
+    font-size: 0.75rem;
+    color: #9ca3af;
+    line-height: 1.5;
+    margin: 0.6rem 0 0;
+  }
+</style>
+
+<style is:global>
+  /* Cart items are built at runtime via innerHTML, so Astro's scoped
+     styles (which rely on a build-time data-astro-cid attribute) never
+     reach them — same reasoning as the item cards on /cart. */
+  .cart-builder__row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.6rem 0;
+    border-bottom: 1px solid #f4f4f4;
+    font-size: 0.85rem;
+  }
+
+  .cart-builder__row:last-child {
+    border-bottom: none;
+  }
+
+  .cart-builder__row-title {
+    color: #1c1917;
+    font-weight: 600;
+  }
+
+  .cart-builder__row-meta {
+    color: #9ca3af;
+    font-size: 0.78rem;
+  }
+
+  .cart-builder__row-price {
+    color: #111827;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+
+  .cart-builder__row-remove {
+    background: none;
+    border: none;
+    color: #dc2626;
+    cursor: pointer;
+    font-size: 0.78rem;
+    padding: 0;
+  }
+</style>
+
+<script>
+  import { encodeShareItems, GRINDS, type CartItem } from '../utils/cart';
+
+  interface BuilderItem extends CartItem {}
+
+  let builderCart: BuilderItem[] = [];
+
+  function formatPrice(n: number) {
+    return `₹${n.toLocaleString('en-IN')}`;
+  }
+
+  function renderCart() {
+    const list = document.getElementById('builder-cart-list');
+    const empty = document.getElementById('builder-cart-empty');
+    const totalEl = document.getElementById('builder-cart-total');
+    const generateBtn = document.getElementById('generate-link-btn') as HTMLButtonElement | null;
+    if (!list || !totalEl || !generateBtn) return;
+
+    list.querySelectorAll('.cart-builder__row').forEach((el) => el.remove());
+
+    if (builderCart.length === 0) {
+      if (empty) empty.hidden = false;
+      generateBtn.disabled = true;
+    } else {
+      if (empty) empty.hidden = true;
+      generateBtn.disabled = false;
+      builderCart.forEach((item, index) => {
+        const row = document.createElement('div');
+        row.className = 'cart-builder__row';
+        row.innerHTML = `
+          <div>
+            <div class="cart-builder__row-title">${item.title}</div>
+            <div class="cart-builder__row-meta">${item.size} · ${item.grind} × ${item.quantity}</div>
+          </div>
+          <div style="display:flex; align-items:center; gap:0.75rem;">
+            <span class="cart-builder__row-price">${formatPrice(item.pricePerUnit * item.quantity)}</span>
+            <button type="button" class="cart-builder__row-remove" data-index="${index}">Remove</button>
+          </div>
+        `;
+        list.appendChild(row);
       });
     }
 
-    document.querySelectorAll<HTMLElement>('[data-product]').forEach((row) => {
-      const addBtn = row.querySelector<HTMLButtonElement>('.add-btn');
-      const packSelect = row.querySelector<HTMLSelectElement>('.pack-select');
-      const grindSelect = row.querySelector<HTMLSelectElement>('.grind-select');
-      const qtyInput = row.querySelector<HTMLInputElement>('.qty-input');
-      if (!addBtn || !packSelect || !grindSelect || !qtyInput) return;
+    const total = builderCart.reduce((s, i) => s + i.pricePerUnit * i.quantity, 0);
+    totalEl.textContent = formatPrice(total);
 
-      addBtn.addEventListener('click', () => {
-        const slug = row.dataset.slug ?? '';
-        const title = row.dataset.title ?? '';
-        const image = row.dataset.image || undefined;
-        const opt = packSelect.selectedOptions[0];
-        const grams = Number(packSelect.value);
-        const pricePerUnit = Number(opt?.dataset.price ?? 0);
-        const size = opt?.dataset.label ?? '';
-        const grind = grindSelect.value;
-        const quantity = Math.max(1, Math.min(20, Math.round(Number(qtyInput.value) || 1)));
+    // Cart changed — invalidate any previously generated link.
+    const linkBox = document.getElementById('link-box');
+    if (linkBox) linkBox.hidden = true;
 
-        const existing = builderCart.find(
-          (i) => i.id === slug && i.grams === grams && i.grind === grind
-        );
-        if (existing) {
-          existing.quantity += quantity;
-        } else {
-          builderCart.push({ id: slug, title, grams, size, grind, quantity, pricePerUnit, image });
-        }
+    list.querySelectorAll<HTMLButtonElement>('.cart-builder__row-remove').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const idx = Number(btn.dataset.index);
+        builderCart = builderCart.filter((_, i) => i !== idx);
         renderCart();
       });
     });
+  }
 
-    document.getElementById('generate-link-btn')?.addEventListener('click', () => {
-      const shareItems = builderCart.map((item) => ({
-        productId: item.id,
-        grams: item.grams,
-        grindIndex: Math.max(0, GRINDS.indexOf(item.grind as (typeof GRINDS)[number])),
-        quantity: item.quantity,
-      }));
-      const encoded = encodeShareItems(shareItems);
-      const url = `${window.location.origin}/o/${encodeURIComponent(encoded)}`;
-      const linkBox = document.getElementById('link-box');
-      const output = document.getElementById('link-output') as HTMLInputElement | null;
-      if (linkBox) linkBox.hidden = false;
-      if (output) {
-        output.value = url;
-        output.focus();
-        output.select();
-      }
-    });
+  document.querySelectorAll<HTMLElement>('[data-product]').forEach((row) => {
+    const addBtn = row.querySelector<HTMLButtonElement>('.add-btn');
+    const packSelect = row.querySelector<HTMLSelectElement>('.pack-select');
+    const grindSelect = row.querySelector<HTMLSelectElement>('.grind-select');
+    const qtyInput = row.querySelector<HTMLInputElement>('.qty-input');
+    if (!addBtn || !packSelect || !grindSelect || !qtyInput) return;
 
-    document.getElementById('copy-link-btn')?.addEventListener('click', async () => {
-      const output = document.getElementById('link-output') as HTMLInputElement | null;
-      const copyBtn = document.getElementById('copy-link-btn');
-      if (!output) return;
-      await navigator.clipboard.writeText(output.value);
-      if (copyBtn) {
-        const original = copyBtn.textContent;
-        copyBtn.textContent = 'Copied ✓';
-        window.setTimeout(() => { copyBtn.textContent = original ?? 'Copy'; }, 1500);
+    addBtn.addEventListener('click', () => {
+      const slug = row.dataset.slug ?? '';
+      const title = row.dataset.title ?? '';
+      const image = row.dataset.image || undefined;
+      const opt = packSelect.selectedOptions[0];
+      const grams = Number(packSelect.value);
+      const pricePerUnit = Number(opt?.dataset.price ?? 0);
+      const size = opt?.dataset.label ?? '';
+      const grind = grindSelect.value;
+      const quantity = Math.max(1, Math.min(20, Math.round(Number(qtyInput.value) || 1)));
+
+      const existing = builderCart.find(
+        (i) => i.id === slug && i.grams === grams && i.grind === grind
+      );
+      if (existing) {
+        existing.quantity += quantity;
+      } else {
+        builderCart.push({ id: slug, title, grams, size, grind, quantity, pricePerUnit, image });
       }
+      renderCart();
     });
-  </script>
-</body>
-</html>
+  });
+
+  document.getElementById('generate-link-btn')?.addEventListener('click', () => {
+    const shareItems = builderCart.map((item) => ({
+      productId: item.id,
+      grams: item.grams,
+      grindIndex: Math.max(0, GRINDS.indexOf(item.grind as (typeof GRINDS)[number])),
+      quantity: item.quantity,
+    }));
+    const encoded = encodeShareItems(shareItems);
+    const url = `${window.location.origin}/o/${encodeURIComponent(encoded)}`;
+    const linkBox = document.getElementById('link-box');
+    const output = document.getElementById('link-output') as HTMLInputElement | null;
+    if (linkBox) linkBox.hidden = false;
+    if (output) {
+      output.value = url;
+      output.focus();
+      output.select();
+    }
+  });
+
+  document.getElementById('copy-link-btn')?.addEventListener('click', async () => {
+    const output = document.getElementById('link-output') as HTMLInputElement | null;
+    const copyBtn = document.getElementById('copy-link-btn');
+    if (!output) return;
+    await navigator.clipboard.writeText(output.value);
+    if (copyBtn) {
+      const original = copyBtn.textContent;
+      copyBtn.textContent = 'Copied ✓';
+      window.setTimeout(() => { copyBtn.textContent = original ?? 'Copy'; }, 1500);
+    }
+  });
+</script>
