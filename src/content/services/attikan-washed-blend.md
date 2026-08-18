@@ -35,7 +35,7 @@ keyFacts:
   - label: Roasted
     value: Only after your order is placed — no pre-roasted stock
   - label: Ships In
-    value: 48 hours after roasting
+    value: 3–5 days after roasting (rested 24–48h to degas first)
 related:
   - attikan-honey-blend
   - chikmagalur-robusta

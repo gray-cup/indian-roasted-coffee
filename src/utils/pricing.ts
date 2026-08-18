@@ -104,15 +104,13 @@ export function getProductPackOptions(
 }
 
 // ─── Delivery fee ───────────────────────────────────────────────────────────
-// ₹50 delivery for every cart line under 1 kg (e.g. three 200 g samples in
-// one line is still ₹50, not ₹150 — the charge is per line, not per unit).
-// Lines of 1 kg or more ship free.
-const DELIVERY_FEE_PER_LINE = 50;
+// Flat ₹50 delivery for the whole order if any line is under 1 kg — one
+// ₹50 charge total, not per line. An order where every line is 1 kg or
+// more ships free.
+const DELIVERY_FLAT_FEE = 50;
 const DELIVERY_FREE_THRESHOLD_GRAMS = 1_000;
 
 export function getDeliveryFee(lines: readonly { grams: number }[]): number {
-  return lines.reduce(
-    (sum, line) => sum + (line.grams < DELIVERY_FREE_THRESHOLD_GRAMS ? DELIVERY_FEE_PER_LINE : 0),
-    0
-  );
+  const hasSubKgLine = lines.some((line) => line.grams < DELIVERY_FREE_THRESHOLD_GRAMS);
+  return hasSubKgLine ? DELIVERY_FLAT_FEE : 0;
 }

@@ -14,7 +14,7 @@ const { entry } = Astro.props;
 const { state, top_cities } = entry;
 
 const title = `Roasted Indian Coffee in ${state}`;
-const description = `Order fresh roasted Indian coffee beans delivered to ${state}. Single-origin lots from Coorg, Chikmagalur, Wayanad, Nilgiris, and more — roasted to order, shipped within 48 hours.`;
+const description = `Order fresh roasted Indian coffee beans delivered to ${state}. Single-origin lots from Coorg, Chikmagalur, Wayanad, Nilgiris, and more — roasted to order, rested to degas, and shipped within 3–5 days.`;
 const canonicalUrl = `https://${siteConfig.domain}/${toSlug(state)}/roasted-indian-coffee`;
 ---
 
@@ -59,7 +59,7 @@ const canonicalUrl = `https://${siteConfig.domain}/${toSlug(state)}/roasted-indi
 
           <h2>Shipping to {state}</h2>
           <p>
-            We ship to all cities in {state} including {top_cities.join(', ')}. Orders are dispatched within 48 hours of roasting via tracked courier. Minimum order is 300 g; bulk orders (1 kg and above) qualify for tiered pricing.
+            We ship to all cities in {state} including {top_cities.join(', ')}. Orders are roasted to order, rested 24–48h to degas, and dispatched within 3–5 days via tracked courier. Minimum order is 300 g; bulk orders (1 kg and above) qualify for tiered pricing.
           </p>
 
           <h2>Bulk orders for businesses in {state}</h2>
