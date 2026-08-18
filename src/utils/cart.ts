@@ -65,25 +65,46 @@ export function clearCart(): void {
   $cart.set([]);
 }
 
+/** Grind options offered across the buy widget, cart builder, and share links — index into this array is what gets encoded in a share link. */
+export const GRINDS = [
+  'Whole Bean',
+  'Coarse (French Press)',
+  'Medium (Filter/Pour-over)',
+  'Fine (Espresso)',
+] as const;
+
 /**
- * Encode a cart as a URL-safe base64 string, for building shareable
- * "buy this exact cart" links (see the cart builder at /admin/cart-builder).
+ * Self-describing "productId:grams:grindIndex:qty" encoding for the /o/[slug]
+ * share link built by the cart builder (see /cart-builder). The slug IS the
+ * cart — no database or storage involved. Price and title are deliberately
+ * left out and re-resolved from the product catalog when the link is opened,
+ * so a shared link can't be edited to claim a different price.
  */
-export function encodeSharedCart(items: readonly CartItem[]): string {
-  const json = JSON.stringify(items);
-  const base64 = btoa(unescape(encodeURIComponent(json)));
-  return base64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+export interface ShareItem {
+  productId: string;
+  grams: number;
+  grindIndex: number;
+  quantity: number;
 }
 
-/** Decode a cart previously produced by `encodeSharedCart`. Returns null if invalid. */
-export function decodeSharedCart(encoded: string): CartItem[] | null {
-  try {
-    const base64 = encoded.replace(/-/g, '+').replace(/_/g, '/');
-    const json = decodeURIComponent(escape(atob(base64)));
-    const data = JSON.parse(json);
-    if (!Array.isArray(data)) return null;
-    return data as CartItem[];
-  } catch {
-    return null;
-  }
+export function encodeShareItem(it: ShareItem): string {
+  const parts = [String(it.productId), String(it.grams), String(it.grindIndex), it.quantity > 1 ? String(it.quantity) : ''];
+  while (parts.length > 3 && parts[parts.length - 1] === '') parts.pop();
+  return parts.join(':');
+}
+
+export function encodeShareItems(items: readonly ShareItem[]): string {
+  return items.map(encodeShareItem).join(',');
+}
+
+export function decodeShareItems(param: string): ShareItem[] {
+  if (!param) return [];
+  return param.split(',').flatMap((entry) => {
+    const [productId, gramsStr, grindStr, qtyStr] = entry.split(':');
+    const grams = Number(gramsStr);
+    const grindIndex = Number(grindStr);
+    if (!productId || !Number.isFinite(grams) || !Number.isFinite(grindIndex)) return [];
+    const quantity = qtyStr ? Math.max(1, Math.floor(Number(qtyStr)) || 1) : 1;
+    return [{ productId, grams, grindIndex, quantity }];
+  });
 }

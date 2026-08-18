@@ -418,21 +418,8 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 </style>
 
 <script>
-  import { $cart, clearCart, decodeSharedCart, type CartItem } from '../utils/cart';
+  import { $cart, clearCart, type CartItem } from '../utils/cart';
   import { getDeliveryFee } from '../utils/pricing';
-
-  // A cart link built at /admin/cart-builder lands here as ?share=<encoded cart>.
-  // Loading it replaces the visitor's cart so they can check out immediately.
-  const sharedParam = new URLSearchParams(window.location.search).get('share');
-  if (sharedParam) {
-    const shared = decodeSharedCart(sharedParam);
-    if (shared && shared.length > 0) {
-      $cart.set(shared);
-    }
-    const url = new URL(window.location.href);
-    url.searchParams.delete('share');
-    window.history.replaceState({}, '', url.pathname + url.search);
-  }
 
   function formatPrice(n: number) {
     return `₹${n.toLocaleString('en-IN')}`;
