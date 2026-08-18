@@ -39,11 +39,27 @@ async function timed<T>(label: string, fn: () => Promise<T>): Promise<T | null> 
     return result;
   } catch (err) {
     overallOk = false;
-    const message = err instanceof Error ? err.message : String(err);
+    const message = describeError(err);
     steps.push({ label, ok: false, detail: message, ms: Date.now() - start });
     errorDetail = message;
     return null;
   }
+}
+
+/**
+ * Drizzle wraps the underlying libSQL error in a generic "Failed query: ..."
+ * message — the useful bit (e.g. "no such table: db_health_checks", meaning
+ * a migration hasn't been applied yet) is on `.cause`. Surface that chain.
+ */
+function describeError(err: unknown): string {
+  if (!(err instanceof Error)) return String(err);
+  const parts = [err.message];
+  let cause = (err as { cause?: unknown }).cause;
+  while (cause instanceof Error) {
+    parts.push(cause.message);
+    cause = (cause as { cause?: unknown }).cause;
+  }
+  return parts.join(' → caused by → ');
 }
 
 const testMessage = `Health check from test-database at ${new Date().toISOString()}`;
