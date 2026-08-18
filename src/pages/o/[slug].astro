@@ -35,14 +35,29 @@ const resolvedItems: CartItem[] = shareItems.flatMap((item) => {
     image: entry.data.image,
   }];
 });
+
+const isValid = resolvedItems.length > 0;
+const pageTitle = isValid
+  ? 'Cart link generated for you — Indian Roasted Coffee'
+  : 'Invalid cart link — Indian Roasted Coffee';
+const pageDescription = isValid
+  ? `A coffee order (${resolvedItems.length} item${resolvedItems.length === 1 ? '' : 's'}) was generated for you at indianroastedcoffee.com/cart-builder. Open this link to review it and pay directly — no account needed.`
+  : "This cart link was generated at indianroastedcoffee.com/cart-builder but is no longer valid — it may be malformed or reference a product that's been removed.";
+const pageUrl = Astro.url.href;
 ---
 <!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Loading your order — Indian Roasted Coffee</title>
+  <title>{pageTitle}</title>
+  <meta name="description" content={pageDescription} />
   <meta name="robots" content="noindex, nofollow" />
+  <meta property="og:title" content={pageTitle} />
+  <meta property="og:description" content={pageDescription} />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content={pageUrl} />
+  <meta property="og:site_name" content="Indian Roasted Coffee" />
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
