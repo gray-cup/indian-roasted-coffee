@@ -14,9 +14,13 @@ export const POST: APIRoute = async ({ request }) => {
   const secret = process.env.CASHFREE_SECRET_KEY;
   if (!secret) return new Response('Server misconfigured', { status: 500 });
 
-  // Verify HMAC-SHA256 signature
+  // Verify HMAC-SHA256 signature — Cashfree signs `timestamp + rawBody`
+  // concatenated directly, with no separator between them. (Confirmed
+  // against https://www.cashfree.com/docs/api-reference/payments/latest/subscription/webhook-signature —
+  // every one of their reference implementations does `ts + body`, not
+  // `ts + "." + body`.)
   const expected = createHmac('sha256', secret)
-    .update(`${timestamp}.${rawBody}`)
+    .update(`${timestamp}${rawBody}`)
     .digest('base64');
 
   if (expected !== signature) {
