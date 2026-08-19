@@ -3,6 +3,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import { STATES_CITIES } from '../utils/geo';
 
 const states = [...STATES_CITIES].sort((a, b) => a.state.localeCompare(b.state));
+const cashfreeMode = process.env.CASHFREE_ENV === 'production' ? 'production' : 'sandbox';
 ---
 
 <BaseLayout
@@ -25,7 +26,7 @@ const states = [...STATES_CITIES].sort((a, b) => a.state.localeCompare(b.state))
       <a href="/products/" class="checkout-page__empty-btn">Browse products</a>
     </div>
 
-    <form id="checkout-form" hidden novalidate class="checkout-grid">
+    <form id="checkout-form" hidden novalidate class="checkout-grid" data-cashfree-mode={cashfreeMode}>
       <div class="checkout-grid__main">
         <p class="section-label">Billing type</p>
         <div class="type-toggle" role="group" aria-label="Individual or business">
@@ -508,6 +509,7 @@ const states = [...STATES_CITIES].sort((a, b) => a.state.localeCompare(b.state))
   import { $cart, type CartItem } from '../utils/cart';
   import { getDeliveryFee } from '../utils/pricing';
   import { loadSavedCheckoutDetails, saveCheckoutDetails } from '../utils/checkoutDetails';
+  import { getCashfree } from '../utils/cashfreeClient';
 
   function formatPrice(n: number) {
     return `₹${n.toLocaleString('en-IN')}`;
@@ -652,7 +654,7 @@ const states = [...STATES_CITIES].sort((a, b) => a.state.localeCompare(b.state))
     const originalLabel = submitBtn?.innerHTML;
     if (submitBtn) {
       submitBtn.disabled = true;
-      submitBtn.textContent = 'Redirecting to payment…';
+      submitBtn.textContent = 'Processing…';
     }
 
     try {
@@ -668,7 +670,18 @@ const states = [...STATES_CITIES].sort((a, b) => a.state.localeCompare(b.state))
       }
 
       const data = await res.json() as { sid: string; oid: string };
-      window.location.href = `/checkout?sid=${encodeURIComponent(data.sid)}&oid=${encodeURIComponent(data.oid)}`;
+
+      // Open Cashfree's checkout directly from here — no hand-off page in
+      // between. A failure (SDK blocked, session expired, etc.) now shows
+      // right on this form instead of stranding the customer on a separate
+      // "Opening payment page…" screen they can't easily recover from.
+      const mode = form.dataset.cashfreeMode === 'production' ? 'production' : 'sandbox';
+      const cashfree = await getCashfree(mode);
+      const result = await cashfree.checkout({
+        paymentSessionId: data.sid,
+        returnUrl: `${window.location.origin}/payment-result?order_id=${encodeURIComponent(data.oid)}`,
+      });
+      if (result?.error) throw new Error(result.error.message || 'Payment failed to start.');
     } catch (err) {
       if (errorEl) {
         errorEl.hidden = false;

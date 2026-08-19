@@ -152,7 +152,13 @@ export default defineConfig({
 
         // Forms must submit to the same origin.
         // Extend if you send form data to a third-party service (e.g. a DKAN endpoint).
-        "form-action 'self'",
+        //
+        // Cashfree's checkout navigates to its hosted payment page by
+        // submitting a real HTML form POST to api.cashfree.com (confirmed
+        // by observing the actual blocked request in a browser) — without
+        // these origins here, that POST is silently blocked and checkout
+        // just hangs with no catchable JS error.
+        "form-action 'self' https://api.cashfree.com https://sandbox.cashfree.com https://payments.cashfree.com https://payments-test.cashfree.com",
 
         // Prevent attackers from injecting a <base> tag to redirect relative URLs.
         "base-uri 'self'",
