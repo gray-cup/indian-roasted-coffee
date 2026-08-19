@@ -115,11 +115,11 @@ export default defineConfig({
   //   • Full directive reference: https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP
   //
   // STATIC SITE LIMITATION:
-  //   frame-ancestors is included below but browsers only enforce it via an HTTP
-  //   response header — it is silently ignored inside a <meta> tag per the CSP spec.
-  //   For static deployments also set it in your hosting config.
-  //   See public/_headers for a Netlify / Cloudflare Pages example;
-  //   translate to vercel.json "headers" for Vercel deployments.
+  //   frame-ancestors is deliberately left out of the directives array below —
+  //   browsers only enforce it via an HTTP response header and ignore (with a
+  //   console warning) any copy found inside a <meta> tag per the CSP spec.
+  //   It's set for real in public/_headers instead (a Netlify / Cloudflare
+  //   Pages example — translate to vercel.json "headers" for Vercel).
   //
   // TESTING:
   //   CSP is NOT enforced during `astro dev`. Always test with `astro build && astro preview`.
@@ -166,9 +166,11 @@ export default defineConfig({
         // Block plugins (Flash, Java applets). No government site should need these.
         "object-src 'none'",
 
-        // Prevent the site from being embedded in iframes on other domains (clickjacking).
-        // Only enforced via HTTP header — see the note above and public/_headers.
-        "frame-ancestors 'none'",
+        // frame-ancestors is deliberately NOT listed here — per the CSP spec
+        // browsers ignore it entirely inside a <meta> tag (and log a console
+        // warning for it), so including it here would only be dead weight.
+        // The real, enforced version lives in public/_headers as an actual
+        // HTTP response header, which is the only place this directive works.
       ],
 
       // script-src: USWDS JS is loaded from /uswds/js/uswds.min.js (same origin).

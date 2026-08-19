@@ -1,13 +1,14 @@
 /**
  * Remembers the customer's delivery details in the browser (localStorage) so
- * returning visitors don't have to retype name/phone/address/state/pincode
- * on their next order. Never touches email, GST, or business/individual
- * type — those are left for the customer to re-confirm each time.
+ * returning visitors don't have to retype name/phone/email/address/state/pincode
+ * on their next order. Never touches GST or business/individual type — those
+ * are left for the customer to re-confirm each time.
  */
 
 export interface SavedCheckoutDetails {
   name: string;
   phone: string;
+  email: string;
   address: string;
   state: string;
   pincode: string;
@@ -32,8 +33,8 @@ export function loadSavedCheckoutDetails(): Partial<SavedCheckoutDetails> | null
       return null;
     }
 
-    const { name, phone, address, state, pincode } = data;
-    return { name, phone, address, state, pincode };
+    const { name, phone, email, address, state, pincode } = data;
+    return { name, phone, email, address, state, pincode };
   } catch {
     return null;
   }

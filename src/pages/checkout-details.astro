@@ -537,12 +537,14 @@ const cashfreeMode = process.env.CASHFREE_ENV === 'production' ? 'production' : 
 
     const nameInput = form.querySelector<HTMLInputElement>('[name="name"]');
     const phoneInput = form.querySelector<HTMLInputElement>('[name="phone"]');
+    const emailInput = form.querySelector<HTMLInputElement>('[name="email"]');
     const addressInput = form.querySelector<HTMLTextAreaElement>('[name="address"]');
     const stateSelect = form.querySelector<HTMLSelectElement>('[name="state"]');
     const pincodeInput = form.querySelector<HTMLInputElement>('[name="pincode"]');
 
     if (saved.name && nameInput) nameInput.value = saved.name;
     if (saved.phone && phoneInput) phoneInput.value = saved.phone;
+    if (saved.email && emailInput) emailInput.value = saved.email;
     if (saved.address && addressInput) addressInput.value = saved.address;
     if (saved.state && stateSelect) stateSelect.value = saved.state;
     if (saved.pincode && pincodeInput) pincodeInput.value = saved.pincode;
@@ -553,20 +555,21 @@ const cashfreeMode = process.env.CASHFREE_ENV === 'production' ? 'production' : 
     const data = new FormData(form);
     const name = data.get('name')?.toString().trim() ?? '';
     const phone = data.get('phone')?.toString().trim() ?? '';
+    const email = data.get('email')?.toString().trim() ?? '';
     const address = data.get('address')?.toString().trim() ?? '';
     const state = data.get('state')?.toString().trim() ?? '';
     const pincode = data.get('pincode')?.toString().trim() ?? '';
 
     // Only worth remembering once there's something to remember.
-    if (!name && !phone && !address && !state && !pincode) return;
-    saveCheckoutDetails({ name, phone, address, state, pincode });
+    if (!name && !phone && !email && !address && !state && !pincode) return;
+    saveCheckoutDetails({ name, phone, email, address, state, pincode });
   }
 
   // Saves as the customer fills the form (on blur / selection change), not
   // on every keystroke, and again on submit as a safety net.
   form?.addEventListener('change', (e) => {
     const target = e.target as HTMLElement;
-    if (target.matches('[name="name"], [name="phone"], [name="address"], [name="state"], [name="pincode"]')) {
+    if (target.matches('[name="name"], [name="phone"], [name="email"], [name="address"], [name="state"], [name="pincode"]')) {
       persistCurrentDetails();
     }
   });
