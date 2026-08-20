@@ -171,7 +171,15 @@ export const POST: APIRoute = async ({ request, url }) => {
       return new Response('Payment setup failed', { status: 502 });
     }
 
-    const data = await res.json() as { payment_session_id: string };
+    const data = await res.json() as { payment_session_id?: string };
+    if (!data.payment_session_id) {
+      // Cashfree returned 200 but no usable session — surfacing this as a
+      // 502 (rather than handing the client an empty sid) is what makes the
+      // client-side retry in checkout-details.astro kick in instead of the
+      // Cashfree SDK failing later with "Payment session id is not present".
+      console.error('Cashfree order creation succeeded but returned no payment_session_id:', JSON.stringify(data));
+      return new Response('Payment setup failed', { status: 502 });
+    }
     paymentSessionId = data.payment_session_id;
   } catch (err) {
     console.error('Cashfree fetch error:', err);

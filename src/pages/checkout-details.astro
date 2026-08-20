@@ -660,7 +660,10 @@ const cashfreeMode = process.env.CASHFREE_ENV === 'production' ? 'production' : 
       submitBtn.textContent = 'Processing…';
     }
 
-    try {
+    // Creates a fresh Cashfree order and returns its session id. Every call
+    // gets a brand-new order_id server-side, so calling this twice is safe —
+    // used both for the normal path and the one-shot retry below.
+    async function createPaymentSession(): Promise<{ sid: string; oid: string }> {
       const res = await fetch('/api/payment/create-cart-order', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -672,7 +675,23 @@ const cashfreeMode = process.env.CASHFREE_ENV === 'production' ? 'production' : 
         throw new Error(text || 'Checkout failed');
       }
 
-      const data = await res.json() as { sid: string; oid: string };
+      const data = await res.json() as { sid?: string; oid?: string };
+      if (!data.sid || !data.oid) throw new Error('Payment session id is not present');
+      return { sid: data.sid, oid: data.oid };
+    }
+
+    try {
+      // Payment session ids can occasionally come back missing (a transient
+      // Cashfree hiccup, or the very rare case the server hands back a good
+      // response with no session attached) — retry once with a brand-new
+      // order before giving up and showing the customer an error.
+      let session: { sid: string; oid: string };
+      try {
+        session = await createPaymentSession();
+      } catch (firstErr) {
+        console.warn('Payment session creation failed, retrying once:', firstErr);
+        session = await createPaymentSession();
+      }
 
       // Open Cashfree's checkout directly from here — no hand-off page in
       // between. A failure (SDK blocked, session expired, etc.) now shows
@@ -681,8 +700,8 @@ const cashfreeMode = process.env.CASHFREE_ENV === 'production' ? 'production' : 
       const mode = form.dataset.cashfreeMode === 'production' ? 'production' : 'sandbox';
       const cashfree = await getCashfree(mode);
       const result = await cashfree.checkout({
-        paymentSessionId: data.sid,
-        returnUrl: `${window.location.origin}/payment-result?order_id=${encodeURIComponent(data.oid)}`,
+        paymentSessionId: session.sid,
+        returnUrl: `${window.location.origin}/payment-result?order_id=${encodeURIComponent(session.oid)}`,
       });
       if (result?.error) throw new Error(result.error.message || 'Payment failed to start.');
     } catch (err) {
