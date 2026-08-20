@@ -2,6 +2,7 @@ import type { APIRoute } from 'astro';
 import { db } from '../../../db/index';
 import { orders } from '../../../db/schema';
 import { eq } from 'drizzle-orm';
+import { updateOrderStatusInGraycupD1, nowUnixSeconds } from '../../../lib/graycupOrdersD1';
 
 export const prerender = false;
 
@@ -11,7 +12,7 @@ function cashfreeBase() {
     : 'https://api.cashfree.com/pg';
 }
 
-export const GET: APIRoute = async ({ url }) => {
+export const GET: APIRoute = async ({ url, locals }) => {
   const orderId = url.searchParams.get('order_id');
   if (!orderId) {
     return Response.json({ error: 'Missing order_id' }, { status: 400 });
@@ -37,6 +38,7 @@ export const GET: APIRoute = async ({ url }) => {
         if (data.order_status === 'PAID') {
           await db.update(orders).set({ status: 'PAID', updatedAt: new Date() }).where(eq(orders.orderId, orderId));
           order.status = 'PAID';
+          await updateOrderStatusInGraycupD1((locals as any).runtime?.env, orderId, 'PAID', null, nowUnixSeconds());
         }
       }
     } catch (err) {

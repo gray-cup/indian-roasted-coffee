@@ -12,7 +12,19 @@
   ],
   "observability": {
     "enabled": true
-  }
+  },
+
+  // Same D1 database orders-graycup reads its admin dashboard from (binding
+  // "DB" there). Bound here as a live mirror target — orders is written here
+  // in addition to Turso (the source of truth) so new orders show up in the
+  // orders-graycup dashboard without polling. See src/lib/graycupOrdersD1.ts.
+  "d1_databases": [
+    {
+      "binding": "GRAYCUP_ORDERS_DB",
+      "database_name": "graycup-orders",
+      "database_id": "c761625d-96b2-40a9-b1a3-4d9a58cae436"
+    }
+  ]
 
   // `main` and `assets` are filled in automatically by @astrojs/cloudflare
   // at build time — do not set them here.

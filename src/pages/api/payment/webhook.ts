@@ -3,10 +3,11 @@ import { createHmac } from 'crypto';
 import { db } from '../../../db/index';
 import { orders } from '../../../db/schema';
 import { eq } from 'drizzle-orm';
+import { updateOrderStatusInGraycupD1, nowUnixSeconds } from '../../../lib/graycupOrdersD1';
 
 export const prerender = false;
 
-export const POST: APIRoute = async ({ request }) => {
+export const POST: APIRoute = async ({ request, locals }) => {
   const rawBody  = await request.text();
   const timestamp = request.headers.get('x-webhook-timestamp') ?? '';
   const signature = request.headers.get('x-webhook-signature') ?? '';
@@ -48,6 +49,8 @@ export const POST: APIRoute = async ({ request }) => {
     .update(orders)
     .set({ status, webhookData: rawBody, updatedAt: new Date() })
     .where(eq(orders.orderId, orderId));
+
+  await updateOrderStatusInGraycupD1((locals as any).runtime?.env, orderId, status, rawBody, nowUnixSeconds());
 
   return new Response('OK', { status: 200 });
 };

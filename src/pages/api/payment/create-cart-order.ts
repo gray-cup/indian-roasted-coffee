@@ -5,6 +5,7 @@ import { orders } from '../../../db/schema';
 import { resolveProductPrice, formatWeight, getDeliveryFee } from '../../../utils/pricing';
 import { idToSlug } from '../../../utils/content';
 import { STATES_CITIES } from '../../../utils/geo';
+import { upsertOrderInGraycupD1, nowUnixSeconds } from '../../../lib/graycupOrdersD1';
 
 export const prerender = false;
 
@@ -46,7 +47,7 @@ function generateOrderId(): string {
   return `IRC-${ts}-${rand}`;
 }
 
-export const POST: APIRoute = async ({ request, url }) => {
+export const POST: APIRoute = async ({ request, url, locals }) => {
   let body: RequestBody;
   try {
     body = await request.json();
@@ -206,6 +207,33 @@ export const POST: APIRoute = async ({ request, url }) => {
     cartItemsJson: JSON.stringify(lines),
     deliveryFeeInr,
     amountInr,
+  });
+
+  const now = nowUnixSeconds();
+  await upsertOrderInGraycupD1((locals as any).runtime?.env, {
+    orderId,
+    cashfreeOrderId: orderId,
+    paymentSessionId,
+    customerName: name,
+    customerEmail: email,
+    customerPhone: phone,
+    customerAddress: address,
+    customerState: state,
+    customerPincode: pincode,
+    customerType,
+    gstNumber: customerType === 'business' ? gstNumber ?? null : null,
+    productSlug: 'cart',
+    productName: `Cart order (${lines.length} item${lines.length === 1 ? '' : 's'})`,
+    weightGrams: totalGrams,
+    weightLabel: `${lines.length} item${lines.length === 1 ? '' : 's'}`,
+    quantity: 1,
+    grind: null,
+    cartItemsJson: JSON.stringify(lines),
+    deliveryFeeInr,
+    amountInr,
+    status: 'PENDING',
+    createdAt: now,
+    updatedAt: now,
   });
 
   return Response.json({ sid: paymentSessionId, oid: orderId });
