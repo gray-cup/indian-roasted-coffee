@@ -34,7 +34,9 @@
   // following with `wrangler secret put <NAME>` (or in the Cloudflare
   // dashboard → Workers → Settings → Variables) before deploying:
   //   CASHFREE_APP_ID, CASHFREE_SECRET_KEY, CASHFREE_ENV,
-  //   TURSO_CONNECTION_URL, TURSO_AUTH_TOKEN, ADMIN_PASSWORD, SITE
+  //   TURSO_CONNECTION_URL, TURSO_AUTH_TOKEN, ADMIN_PASSWORD, SITE,
+  //   INTERNAL_RECONCILE_SECRET (shared with orders-graycup's cron job —
+  //   see src/pages/api/internal/reconcile-pending-orders.ts)
   // For local `wrangler dev`, put the same keys/values in a `.dev.vars` file
   // (see .dev.vars.example).
 }
