@@ -35,9 +35,9 @@ const PINCODE_PATTERN = /^[1-9][0-9]{5}$/;
 const GSTIN_PATTERN = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][1-9A-Z][Z][0-9A-Z]$/;
 
 function cashfreeBase() {
-  return process.env.CASHFREE_ENV === 'production'
-    ? 'https://api.cashfree.com/pg'
-    : 'https://sandbox.cashfree.com/pg';
+  return process.env.CASHFREE_ENV === 'sandbox'
+    ? 'https://sandbox.cashfree.com/pg'
+    : 'https://api.cashfree.com/pg';
 }
 
 function generateOrderId(): string {

@@ -3,7 +3,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import { STATES_CITIES } from '../utils/geo';
 
 const states = [...STATES_CITIES].sort((a, b) => a.state.localeCompare(b.state));
-const cashfreeMode = process.env.CASHFREE_ENV === 'production' ? 'production' : 'sandbox';
+const cashfreeMode = process.env.CASHFREE_ENV === 'sandbox' ? 'sandbox' : 'production';
 ---
 
 <BaseLayout
@@ -697,7 +697,7 @@ const cashfreeMode = process.env.CASHFREE_ENV === 'production' ? 'production' : 
       // between. A failure (SDK blocked, session expired, etc.) now shows
       // right on this form instead of stranding the customer on a separate
       // "Opening payment page…" screen they can't easily recover from.
-      const mode = form.dataset.cashfreeMode === 'production' ? 'production' : 'sandbox';
+      const mode = form.dataset.cashfreeMode === 'sandbox' ? 'sandbox' : 'production';
       const cashfree = await getCashfree(mode);
       const result = await cashfree.checkout({
         paymentSessionId: session.sid,
