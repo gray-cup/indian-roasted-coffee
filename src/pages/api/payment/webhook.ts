@@ -50,7 +50,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     .set({ status, webhookData: rawBody, updatedAt: new Date() })
     .where(eq(orders.orderId, orderId));
 
-  await updateOrderStatusInGraycupD1((locals as any).runtime?.env, orderId, status, rawBody, nowUnixSeconds());
+  await updateOrderStatusInGraycupD1(orderId, status, rawBody, nowUnixSeconds());
 
   return new Response('OK', { status: 200 });
 };
