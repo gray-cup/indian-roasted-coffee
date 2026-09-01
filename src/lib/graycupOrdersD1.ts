@@ -6,14 +6,14 @@
  * breaks checkout, payment verification, or the webhook.
  */
 
+// Astro v6 removed `Astro.locals.runtime.env` — bindings now come from the
+// Workers runtime module. `env` is undefined outside a Worker (e.g. tests).
+import { env } from 'cloudflare:workers';
+
 interface D1Like {
   prepare(query: string): {
     bind(...values: unknown[]): { run(): Promise<unknown> };
   };
-}
-
-interface GraycupOrdersEnv {
-  GRAYCUP_ORDERS_DB?: D1Like;
 }
 
 export interface OrderForD1 {
@@ -47,8 +47,8 @@ export function nowUnixSeconds(): number {
 }
 
 /** Insert (or update on retry) the full order row — called at order creation. */
-export async function upsertOrderInGraycupD1(env: GraycupOrdersEnv | undefined, order: OrderForD1): Promise<void> {
-  const d1 = env?.GRAYCUP_ORDERS_DB;
+export async function upsertOrderInGraycupD1(order: OrderForD1): Promise<void> {
+  const d1 = (env as { GRAYCUP_ORDERS_DB?: D1Like } | undefined)?.GRAYCUP_ORDERS_DB;
   if (!d1) return;
   try {
     await d1
@@ -99,13 +99,12 @@ export async function upsertOrderInGraycupD1(env: GraycupOrdersEnv | undefined, 
 
 /** Status-only update — called from payment verify and the Cashfree webhook. */
 export async function updateOrderStatusInGraycupD1(
-  env: GraycupOrdersEnv | undefined,
   orderId: string,
   status: string,
   webhookData: string | null,
   updatedAt: number
 ): Promise<void> {
-  const d1 = env?.GRAYCUP_ORDERS_DB;
+  const d1 = (env as { GRAYCUP_ORDERS_DB?: D1Like } | undefined)?.GRAYCUP_ORDERS_DB;
   if (!d1) return;
   try {
     await d1
