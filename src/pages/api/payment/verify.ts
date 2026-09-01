@@ -38,7 +38,7 @@ export const GET: APIRoute = async ({ url, locals }) => {
         if (data.order_status === 'PAID') {
           await db.update(orders).set({ status: 'PAID', updatedAt: new Date() }).where(eq(orders.orderId, orderId));
           order.status = 'PAID';
-          await updateOrderStatusInGraycupD1((locals as any).runtime?.env, orderId, 'PAID', null, nowUnixSeconds());
+          await updateOrderStatusInGraycupD1(orderId, 'PAID', null, nowUnixSeconds());
         }
       }
     } catch (err) {

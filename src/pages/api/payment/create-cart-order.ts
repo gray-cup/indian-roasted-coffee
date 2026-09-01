@@ -210,7 +210,7 @@ export const POST: APIRoute = async ({ request, url, locals }) => {
   });
 
   const now = nowUnixSeconds();
-  await upsertOrderInGraycupD1((locals as any).runtime?.env, {
+  await upsertOrderInGraycupD1({
     orderId,
     cashfreeOrderId: orderId,
     paymentSessionId,
