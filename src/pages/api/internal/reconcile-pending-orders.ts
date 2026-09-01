@@ -75,7 +75,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
       if (newStatus) {
         const now = new Date();
         await db.update(orders).set({ status: newStatus, updatedAt: now }).where(eq(orders.orderId, order.orderId));
-        await updateOrderStatusInGraycupD1((locals as any).runtime?.env, order.orderId, newStatus, null, nowUnixSeconds());
+        await updateOrderStatusInGraycupD1(order.orderId, newStatus, null, nowUnixSeconds());
         updated++;
       }
     } catch (err) {
