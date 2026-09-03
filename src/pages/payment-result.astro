@@ -107,7 +107,8 @@ const isFailed  = order?.status === 'FAILED' || order?.status === 'EXPIRED';
           <div class="row"><span class="label">Amount paid</span><span class="val">₹{order!.amountInr.toLocaleString('en-IN')}</span></div>
           <div class="row"><span class="label">Delivery to</span><span class="val" style="max-width:60%;text-align:right">{order!.customerAddress}</span></div>
         </div>
-        <a href="/products/" class="btn">Continue shopping</a>
+        <a href={`/invoice?order_id=${encodeURIComponent(order!.orderId)}`} class="btn">Download invoice</a>
+        <a href="/products/" class="btn" style="background:#eee;color:#333">Continue shopping</a>
       </>
     )}
 

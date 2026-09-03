@@ -1,0 +1,215 @@
+---
+export const prerender = false;
+
+// Printable tax invoice for a paid order. No PDF library — the "Download"
+// button just calls window.print(), which every browser turns into
+// Save-as-PDF. Linked from /payment-result once an order is PAID.
+
+import { db } from '../db/index';
+import { orders } from '../db/schema';
+import { eq } from 'drizzle-orm';
+import type { Order } from '../db/schema';
+import { formatWeight } from '../utils/pricing';
+
+// Seller details — Gray Cup Enterprises (brand: Indian Roasted Coffee).
+// Source: https://graycup.org/impressum
+const SELLER = {
+  legalName: 'Gray Cup Enterprises Private Limited',
+  brand: 'Indian Roasted Coffee',
+  address: 'Harsha Bhawan, 4th Floor, 13/29 E-Block, Connaught Place, New Delhi - 110001',
+  gstin: '06AAMCG4985H1Z4',
+  state: 'Haryana', // GSTIN state code 06 — determines intra/inter-state GST
+  cin: 'U47211DL2025PTC457808',
+  fssai: '23326008000195',
+  email: 'office@graycup.org',
+} as const;
+
+// Roasted coffee is taxed at 5% GST in India, and displayed prices are
+// GST-inclusive — so the tax is backed out of the charged total here.
+const GST_RATE = 0.05;
+
+const orderId = Astro.url.searchParams.get('order_id');
+
+let order: Order | null = null;
+let pageError: string | null = null;
+
+if (!orderId) {
+  pageError = 'No order ID provided.';
+} else {
+  try {
+    const [row] = await db.select().from(orders).where(eq(orders.orderId, orderId));
+    if (!row) pageError = 'Order not found.';
+    else if (row.status !== 'PAID') pageError = 'An invoice is available only once payment is confirmed.';
+    else order = row;
+  } catch (err) {
+    console.error('invoice error:', err);
+    pageError = 'Could not load this invoice. Please contact us.';
+  }
+}
+
+interface Line { title: string; grams: number; grind: string | null; quantity: number; unitPrice: number; }
+
+let lines: Line[] = [];
+if (order) {
+  try {
+    lines = order.cartItemsJson ? JSON.parse(order.cartItemsJson) as Line[] : [];
+  } catch { lines = []; }
+  if (lines.length === 0) {
+    // Fallback for orders without a stored cart breakdown.
+    lines = [{
+      title: order.productName,
+      grams: order.weightGrams,
+      grind: order.grind,
+      quantity: order.quantity ?? 1,
+      unitPrice: order.amountInr - order.deliveryFeeInr,
+    }];
+  }
+}
+
+const subtotal = lines.reduce((s, l) => s + l.unitPrice * l.quantity, 0);
+const delivery = order?.deliveryFeeInr ?? 0;
+const grandTotal = order?.amountInr ?? subtotal + delivery;
+const taxable = Math.round(grandTotal / (1 + GST_RATE));
+const gstTotal = grandTotal - taxable;
+const intraState = order?.customerState === SELLER.state;
+
+const inr = (n: number) => `₹${n.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+const invoiceDate = order
+  ? new Date(order.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })
+  : '';
+---
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Invoice {orderId} — Indian Roasted Coffee</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: system-ui, -apple-system, sans-serif; background: #f4f6f9; color: #1a1a1a; padding: 2rem 1rem; }
+    .sheet { background: #fff; max-width: 720px; margin: 0 auto; padding: 2.5rem; box-shadow: 0 4px 24px rgba(0,0,0,0.08); border-radius: 8px; }
+    .toolbar { max-width: 720px; margin: 0 auto 1rem; text-align: right; }
+    .btn { display: inline-block; padding: 0.6rem 1.25rem; background: #2e6e37; color: #fff; border: 0; border-radius: 6px; font-weight: 600; font-size: 0.9rem; cursor: pointer; text-decoration: none; }
+    .btn:hover { background: #255c2e; }
+    .btn.secondary { background: #eee; color: #333; margin-left: 0.5rem; }
+    h1 { font-size: 1.5rem; letter-spacing: 0.02em; }
+    .muted { color: #666; }
+    .head { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem; border-bottom: 2px solid #2e6e37; padding-bottom: 1.25rem; margin-bottom: 1.25rem; }
+    .head .brand { font-weight: 700; color: #2e6e37; font-size: 1.05rem; }
+    .parties { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 1.5rem; font-size: 0.85rem; line-height: 1.6; margin-bottom: 1.5rem; }
+    .parties h2 { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em; color: #888; margin-bottom: 0.35rem; }
+    .parties > div { flex: 1; min-width: 220px; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.85rem; margin-bottom: 1.25rem; }
+    th, td { text-align: left; padding: 0.6rem 0.5rem; border-bottom: 1px solid #eee; }
+    th { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; color: #888; }
+    td.num, th.num { text-align: right; }
+    .totals { margin-left: auto; width: 300px; font-size: 0.88rem; }
+    .totals .row { display: flex; justify-content: space-between; padding: 0.4rem 0; }
+    .totals .grand { border-top: 2px solid #1a1a1a; margin-top: 0.35rem; padding-top: 0.6rem; font-weight: 700; font-size: 1rem; }
+    .foot { margin-top: 2rem; padding-top: 1rem; border-top: 1px solid #eee; font-size: 0.75rem; line-height: 1.7; color: #666; }
+    @media print {
+      body { background: #fff; padding: 0; }
+      .toolbar { display: none; }
+      .sheet { box-shadow: none; border-radius: 0; max-width: none; padding: 0; }
+    }
+  </style>
+</head>
+<body>
+  {pageError ? (
+    <div class="sheet">
+      <h1>Invoice unavailable</h1>
+      <p class="muted" style="margin-top:0.75rem">{pageError}</p>
+      <p style="margin-top:1.5rem"><a class="btn" href="/">Return home</a></p>
+    </div>
+  ) : (
+    <>
+      <div class="toolbar">
+        <button class="btn" onclick="window.print()">Download / Print invoice</button>
+        <a class="btn secondary" href={`/payment-result?order_id=${encodeURIComponent(order!.orderId)}`}>Back to order</a>
+      </div>
+      <div class="sheet">
+        <div class="head">
+          <div>
+            <h1>Tax Invoice</h1>
+            <div class="muted" style="font-size:0.85rem;margin-top:0.4rem">
+              Invoice / Order No: <strong>{order!.orderId}</strong><br />
+              Date: {invoiceDate}
+            </div>
+          </div>
+          <div style="text-align:right;font-size:0.82rem;line-height:1.6">
+            <div class="brand">{SELLER.brand}</div>
+            <div>{SELLER.legalName}</div>
+            <div class="muted">{SELLER.address}</div>
+            <div class="muted">GSTIN: {SELLER.gstin}</div>
+          </div>
+        </div>
+
+        <div class="parties">
+          <div>
+            <h2>Billed to</h2>
+            <strong>{order!.customerName}</strong><br />
+            {order!.customerAddress}<br />
+            {order!.customerState}{order!.customerPincode ? ` – ${order!.customerPincode}` : ''}<br />
+            {order!.customerEmail}<br />
+            {order!.customerPhone}
+            {order!.customerType === 'business' && order!.gstNumber && (
+              <><br />GSTIN: {order!.gstNumber}</>
+            )}
+          </div>
+          <div>
+            <h2>Place of supply</h2>
+            {order!.customerState ?? '—'}<br />
+            <span class="muted">{intraState ? 'Intra-state (CGST + SGST)' : 'Inter-state (IGST)'}</span>
+          </div>
+        </div>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Description</th>
+              <th class="num">Qty</th>
+              <th class="num">Rate</th>
+              <th class="num">Amount</th>
+            </tr>
+          </thead>
+          <tbody>
+            {lines.map((l) => (
+              <tr>
+                <td>
+                  {l.title}
+                  <span class="muted"> — {formatWeight(l.grams)}{l.grind ? `, ${l.grind}` : ''}</span>
+                </td>
+                <td class="num">{l.quantity}</td>
+                <td class="num">{inr(l.unitPrice)}</td>
+                <td class="num">{inr(l.unitPrice * l.quantity)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+
+        <div class="totals">
+          <div class="row"><span>Subtotal</span><span>{inr(subtotal)}</span></div>
+          <div class="row"><span>Delivery</span><span>{delivery === 0 ? 'Free' : inr(delivery)}</span></div>
+          <div class="row muted"><span>Taxable value</span><span>{inr(taxable)}</span></div>
+          {intraState ? (
+            <>
+              <div class="row muted"><span>CGST @ 2.5%</span><span>{inr(gstTotal / 2)}</span></div>
+              <div class="row muted"><span>SGST @ 2.5%</span><span>{inr(gstTotal / 2)}</span></div>
+            </>
+          ) : (
+            <div class="row muted"><span>IGST @ 5%</span><span>{inr(gstTotal)}</span></div>
+          )}
+          <div class="row grand"><span>Total paid</span><span>{inr(grandTotal)}</span></div>
+        </div>
+
+        <div class="foot">
+          Prices are inclusive of GST @ 5% on roasted coffee. Payment received in full via Cashfree.<br />
+          {SELLER.legalName} · CIN {SELLER.cin} · FSSAI {SELLER.fssai} · {SELLER.email}<br />
+          This is a computer-generated invoice and does not require a signature.
+        </div>
+      </div>
+    </>
+  )}
+</body>
+</html>
