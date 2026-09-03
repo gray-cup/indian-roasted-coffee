@@ -114,10 +114,10 @@ export function getProductPackOptions(
 }
 
 // ─── Delivery fee ───────────────────────────────────────────────────────────
-// Flat ₹50 delivery for the whole order if any line is under 1 kg — one
-// ₹50 charge total, not per line. An order where every line is 1 kg or
+// Flat ₹90 delivery for the whole order if any line is under 1 kg — one
+// ₹90 charge total, not per line. An order where every line is 1 kg or
 // more ships free.
-const DELIVERY_FLAT_FEE = 50;
+const DELIVERY_FLAT_FEE = 90;
 const DELIVERY_FREE_THRESHOLD_GRAMS = 1_000;
 
 export function getDeliveryFee(lines: readonly { grams: number }[]): number {
