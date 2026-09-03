@@ -9,7 +9,7 @@ import { db } from '../db/index';
 import { orders } from '../db/schema';
 import { eq } from 'drizzle-orm';
 import type { Order } from '../db/schema';
-import { formatWeight } from '../utils/pricing';
+import { formatWeight, isGreenCoffee } from '../utils/pricing';
 
 // Seller details — Gray Cup Enterprises (brand: Indian Roasted Coffee).
 // Source: https://graycup.org/impressum
@@ -24,9 +24,10 @@ const SELLER = {
   email: 'office@graycup.org',
 } as const;
 
-// Roasted coffee is taxed at 5% GST in India, and displayed prices are
-// GST-inclusive — so the tax is backed out of the charged total here.
-const GST_RATE = 0.05;
+// Roasted coffee (HSN 0901.21) is taxed at 5% GST in India; unroasted green
+// beans (HSN 0901.11) are nil-rated. Displayed prices are GST-inclusive, so
+// tax is backed out of the charged line totals per their roast state.
+const GST_RATE_ROASTED = 0.05;
 
 const orderId = Astro.url.searchParams.get('order_id');
 
@@ -69,8 +70,16 @@ if (order) {
 const subtotal = lines.reduce((s, l) => s + l.unitPrice * l.quantity, 0);
 const delivery = order?.deliveryFeeInr ?? 0;
 const grandTotal = order?.amountInr ?? subtotal + delivery;
-const taxable = Math.round(grandTotal / (1 + GST_RATE));
-const gstTotal = grandTotal - taxable;
+
+// GST backed out per line — nil on green beans, 5% (inclusive) on roasted.
+// Delivery follows the order's overall rate (5% if any roasted line).
+const anyRoasted = lines.some((l) => !isGreenCoffee(l.grind));
+const gstTotal = lines.reduce((s, l) => {
+  if (isGreenCoffee(l.grind)) return s;
+  const gross = l.unitPrice * l.quantity;
+  return s + (gross - Math.round(gross / (1 + GST_RATE_ROASTED)));
+}, 0) + (anyRoasted ? delivery - Math.round(delivery / (1 + GST_RATE_ROASTED)) : 0);
+const taxable = grandTotal - gstTotal;
 const intraState = order?.customerState === SELLER.state;
 
 const inr = (n: number) => `₹${n.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
@@ -192,19 +201,21 @@ const invoiceDate = order
           <div class="row"><span>Subtotal</span><span>{inr(subtotal)}</span></div>
           <div class="row"><span>Delivery</span><span>{delivery === 0 ? 'Free' : inr(delivery)}</span></div>
           <div class="row muted"><span>Taxable value</span><span>{inr(taxable)}</span></div>
-          {intraState ? (
+          {gstTotal === 0 ? (
+            <div class="row muted"><span>GST</span><span>Nil-rated (green beans)</span></div>
+          ) : intraState ? (
             <>
-              <div class="row muted"><span>CGST @ 2.5%</span><span>{inr(gstTotal / 2)}</span></div>
-              <div class="row muted"><span>SGST @ 2.5%</span><span>{inr(gstTotal / 2)}</span></div>
+              <div class="row muted"><span>CGST</span><span>{inr(gstTotal / 2)}</span></div>
+              <div class="row muted"><span>SGST</span><span>{inr(gstTotal / 2)}</span></div>
             </>
           ) : (
-            <div class="row muted"><span>IGST @ 5%</span><span>{inr(gstTotal)}</span></div>
+            <div class="row muted"><span>IGST</span><span>{inr(gstTotal)}</span></div>
           )}
           <div class="row grand"><span>Total paid</span><span>{inr(grandTotal)}</span></div>
         </div>
 
         <div class="foot">
-          Prices are inclusive of GST @ 5% on roasted coffee. Payment received in full via Cashfree.<br />
+          Prices are inclusive of GST — 5% on roasted coffee (HSN 0901.21), nil on unroasted green beans (HSN 0901.11). Payment received in full via Cashfree.<br />
           {SELLER.legalName} · CIN {SELLER.cin} · FSSAI {SELLER.fssai} · {SELLER.email}<br />
           This is a computer-generated invoice and does not require a signature.
         </div>

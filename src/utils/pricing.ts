@@ -8,6 +8,13 @@ export interface WeightOption {
 export interface PackPrice {
   grams: number;
   priceInr: number;
+  /** Price for unroasted green beans of this pack size (always < priceInr). */
+  greenInr?: number;
+}
+
+/** True when a grind selection means "don't roast it" — see GRINDS in utils/cart.ts. */
+export function isGreenCoffee(grind: string | null | undefined): boolean {
+  return !!grind && grind.toLowerCase().includes('green');
 }
 
 // ─── Pricing tiers ────────────────────────────────────────────────────────────
@@ -75,15 +82,18 @@ export const SAMPLE_GRAMS = 200;
 export function resolveProductPrice(
   grams: number,
   priceMultiplier: number | undefined,
-  packPricing: readonly PackPrice[] | undefined
+  packPricing: readonly PackPrice[] | undefined,
+  green = false
 ): number {
+  const pick = (p: PackPrice) => (green && p.greenInr != null ? p.greenInr : p.priceInr);
   if (packPricing && packPricing.length > 0) {
     const exact = packPricing.find((p) => p.grams === grams);
-    if (exact) return exact.priceInr;
+    if (exact) return pick(exact);
     const smallest = [...packPricing].sort((a, b) => a.grams - b.grams)[0];
-    const ratePerKg = smallest.priceInr / (smallest.grams / 1000);
+    const ratePerKg = pick(smallest) / (smallest.grams / 1000);
     return Math.round((grams / 1000) * ratePerKg);
   }
+  // No packPricing → green pricing isn't defined for this product; roasted rate.
   return getPrice(grams, priceMultiplier ?? 1);
 }
 

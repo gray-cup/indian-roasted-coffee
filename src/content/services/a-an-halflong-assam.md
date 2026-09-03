@@ -13,13 +13,17 @@ pubDate: 2026-09-03
 updatedDate: 2026-09-03
 packPricing:
   - grams: 150
-    priceInr: 180
+    priceInr: 210
+    greenInr: 180
   - grams: 250
-    priceInr: 300
+    priceInr: 350
+    greenInr: 300
   - grams: 500
-    priceInr: 600
+    priceInr: 700
+    greenInr: 600
   - grams: 1000
-    priceInr: 1200
+    priceInr: 1400
+    greenInr: 1200
 eligibility:
   - label: Origin
     value: Haflong, Dima Hasao, Assam

@@ -28,7 +28,10 @@ const services = defineCollection({
      * widget and product listings offer exactly these pack sizes.
      */
     packPricing: z.array(
-      z.object({ grams: z.number(), priceInr: z.number() })
+      // priceInr = roasted price; greenInr = price for unroasted green beans
+      // of the same pack size (always lower — no roasting labour). Optional:
+      // omit greenInr on products not sold as green beans.
+      z.object({ grams: z.number(), priceInr: z.number(), greenInr: z.number().optional() })
     ).optional(),
     acceptingApplications: z.boolean().default(true),
     order: z.number().default(0),

@@ -2,7 +2,7 @@ import type { APIRoute } from 'astro';
 import { getCollection } from 'astro:content';
 import { db } from '../../../db/index';
 import { orders } from '../../../db/schema';
-import { resolveProductPrice, formatWeight, getDeliveryFee } from '../../../utils/pricing';
+import { resolveProductPrice, formatWeight, getDeliveryFee, isGreenCoffee } from '../../../utils/pricing';
 import { idToSlug } from '../../../utils/content';
 import { STATES_CITIES } from '../../../utils/geo';
 import { upsertOrderInGraycupD1, nowUnixSeconds } from '../../../lib/graycupOrdersD1';
@@ -108,13 +108,14 @@ export const POST: APIRoute = async ({ request, url, locals }) => {
       return new Response(`Unknown product: ${item.id}`, { status: 400 });
     }
     const quantity = Math.max(1, Math.min(100, Math.round(item.quantity)));
+    const grind = typeof item.grind === 'string' && item.grind ? item.grind : 'Whole Bean';
     lines.push({
       slug: item.id,
       title: product.data.title,
       grams: item.grams,
-      grind: typeof item.grind === 'string' && item.grind ? item.grind : 'Whole Bean',
+      grind,
       quantity,
-      unitPrice: resolveProductPrice(item.grams, product.data.priceMultiplier, product.data.packPricing),
+      unitPrice: resolveProductPrice(item.grams, product.data.priceMultiplier, product.data.packPricing, isGreenCoffee(grind)),
     });
   }
 

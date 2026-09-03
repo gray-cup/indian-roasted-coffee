@@ -13,13 +13,17 @@ pubDate: 2026-09-03
 updatedDate: 2026-09-03
 packPricing:
   - grams: 150
-    priceInr: 160
+    priceInr: 215
+    greenInr: 160
   - grams: 250
-    priceInr: 267
+    priceInr: 358
+    greenInr: 267
   - grams: 500
-    priceInr: 533
+    priceInr: 717
+    greenInr: 533
   - grams: 1000
-    priceInr: 1067
+    priceInr: 1433
+    greenInr: 1067
 eligibility:
   - label: Origin
     value: Brown Valley, Odisha

@@ -1,5 +1,5 @@
 ---
-import { getProductPackOptions, type PackPrice } from '../utils/pricing';
+import { getProductPackOptions, resolveProductPrice, type PackPrice } from '../utils/pricing';
 import { GRINDS } from '../utils/cart';
 
 interface Props {
@@ -16,7 +16,12 @@ const { productSlug, productName, priceMultiplier = 1, packPricing, imageSrc } =
 
 // Pack-size buttons — always includes the 200 g sample; structure/style
 // inspired by fast.graycup.in's product page.
-const packOptions = getProductPackOptions(priceMultiplier, packPricing);
+const packOptions = getProductPackOptions(priceMultiplier, packPricing).map((opt) => ({
+  ...opt,
+  // Green-bean price for the same pack, when this product offers it.
+  greenInr: resolveProductPrice(opt.grams, priceMultiplier, packPricing, true),
+}));
+const hasGreenOption = packPricing?.some((p) => p.greenInr != null) ?? false;
 ---
 
 <div
@@ -43,6 +48,7 @@ const packOptions = getProductPackOptions(priceMultiplier, packPricing);
           class="pack-pill"
           data-grams={opt.grams}
           data-price={opt.priceInr}
+          data-price-green={opt.greenInr}
           data-label={opt.label}
           aria-pressed={i === 0 ? 'true' : 'false'}
         >
@@ -56,10 +62,15 @@ const packOptions = getProductPackOptions(priceMultiplier, packPricing);
   <div class="buy-panel__section">
     <p class="buy-panel__label">Grind</p>
     <select id="bw-grind" class="buy-panel__select">
-      {GRINDS.map((g, i) => (
-        <option value={g} selected={i === 0}>{g}</option>
-      ))}
+      {GRINDS
+        .filter((g) => hasGreenOption || !g.toLowerCase().includes('green'))
+        .map((g, i) => (
+          <option value={g} selected={i === 0}>{g}</option>
+        ))}
     </select>
+    {hasGreenOption && (
+      <p class="buy-panel__price-note" style="margin-top:0.5rem">Green (unroasted) beans are priced lower — selected via Grind.</p>
+    )}
   </div>
 
   <div class="buy-panel__section">
@@ -320,23 +331,40 @@ const packOptions = getProductPackOptions(priceMultiplier, packPricing);
     return Array.from(pills).find((p) => p.getAttribute('aria-pressed') === 'true');
   }
 
+  function isGreen(): boolean {
+    return (grindSelect?.value ?? '').toLowerCase().includes('green');
+  }
+
+  function unitPrice(pill: HTMLButtonElement): number {
+    const green = isGreen() ? Number(pill.dataset.priceGreen) : NaN;
+    return Number.isFinite(green) ? green : Number(pill.dataset.price ?? 0);
+  }
+
   function updateDisplay() {
     const pill = selectedPill();
     if (!pill || !weightInput || !qtyInput) return;
 
-    const price = Number(pill.dataset.price ?? 0);
     const label = pill.dataset.label ?? '';
     const qty = Number(qtyInput.value) || 1;
-    const total = price * qty;
+    const total = unitPrice(pill) * qty;
+    const state = isGreen() ? 'green beans' : 'roasted to order';
+
+    // Keep each pack pill's sub-label price in sync with roasted/green choice.
+    pills.forEach((p) => {
+      const el = p.querySelector('.pack-pill__price');
+      if (el) el.textContent = `₹${unitPrice(p).toLocaleString('en-IN')}`;
+    });
 
     if (totalPriceEl) totalPriceEl.textContent = `₹${total.toLocaleString('en-IN')}`;
     if (buyPriceEl) buyPriceEl.textContent = `₹${total.toLocaleString('en-IN')}`;
     if (priceNoteEl) {
       priceNoteEl.textContent = qty > 1
-        ? `${qty} × ${label} · roasted to order`
-        : `${label} · roasted to order`;
+        ? `${qty} × ${label} · ${state}`
+        : `${label} · ${state}`;
     }
   }
+
+  grindSelect?.addEventListener('change', updateDisplay);
 
   pills.forEach((pill) => {
     pill.addEventListener('click', () => {
@@ -366,7 +394,7 @@ const packOptions = getProductPackOptions(priceMultiplier, packPricing);
     const productName = panel.dataset.productName ?? '';
     const productImage = panel.dataset.productImage ?? undefined;
     const grams = Number(weightInput.value);
-    const pricePerUnit = Number(pill.dataset.price ?? 0);
+    const pricePerUnit = unitPrice(pill);
     const quantity = Math.max(1, Math.min(20, Math.round(Number(qtyInput.value) || 1)));
     const grind = grindSelect?.value ?? 'Whole Bean';
     const weightLabel = pill.dataset.label ?? '';
