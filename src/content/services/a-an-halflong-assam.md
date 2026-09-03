@@ -13,17 +13,29 @@ pubDate: 2026-09-03
 updatedDate: 2026-09-03
 packPricing:
   - grams: 150
-    priceInr: 210
-    greenInr: 180
-  - grams: 250
     priceInr: 350
-    greenInr: 300
+    greenInr: 263
+  - grams: 250
+    priceInr: 585
+    greenInr: 438
   - grams: 500
-    priceInr: 700
-    greenInr: 600
+    priceInr: 1170
+    greenInr: 875
   - grams: 1000
-    priceInr: 1400
-    greenInr: 1200
+    priceInr: 2345
+    greenInr: 1750
+  - grams: 5000
+    priceInr: 11055
+    greenInr: 8250
+  - grams: 10000
+    priceInr: 21440
+    greenInr: 16000
+  - grams: 15000
+    priceInr: 31155
+    greenInr: 23250
+  - grams: 20000
+    priceInr: 40200
+    greenInr: 30000
 eligibility:
   - label: Origin
     value: Haflong, Dima Hasao, Assam
@@ -41,7 +53,7 @@ keyFacts:
   - label: Flavour Notes
     value: Ripe Berries, Sweet, Slight Sour Tang
   - label: Available Sizes
-    value: 150 g, 250 g, 500 g, 1 kg
+    value: 150 g, 250 g, 500 g, 1 kg, 5 kg, 10 kg, 15 kg, 20 kg
   - label: Freshness
     value: Best within 45 days of roast date
   - label: Roasted

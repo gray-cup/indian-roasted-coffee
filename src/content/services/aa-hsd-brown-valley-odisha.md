@@ -13,17 +13,29 @@ pubDate: 2026-09-03
 updatedDate: 2026-09-03
 packPricing:
   - grams: 150
-    priceInr: 215
-    greenInr: 160
+    priceInr: 310
+    greenInr: 233
   - grams: 250
-    priceInr: 358
-    greenInr: 267
+    priceInr: 520
+    greenInr: 388
   - grams: 500
-    priceInr: 717
-    greenInr: 533
+    priceInr: 1040
+    greenInr: 775
   - grams: 1000
-    priceInr: 1433
-    greenInr: 1067
+    priceInr: 2075
+    greenInr: 1550
+  - grams: 5000
+    priceInr: 9715
+    greenInr: 7250
+  - grams: 10000
+    priceInr: 18760
+    greenInr: 14000
+  - grams: 15000
+    priceInr: 27135
+    greenInr: 20250
+  - grams: 20000
+    priceInr: 34840
+    greenInr: 26000
 eligibility:
   - label: Origin
     value: Brown Valley, Odisha
@@ -41,7 +53,7 @@ keyFacts:
   - label: Acidity
     value: Medium
   - label: Available Sizes
-    value: 150 g, 250 g, 500 g, 1 kg
+    value: 150 g, 250 g, 500 g, 1 kg, 5 kg, 10 kg, 15 kg, 20 kg
   - label: Freshness
     value: Best within 30 days of roast date
   - label: Roasted
