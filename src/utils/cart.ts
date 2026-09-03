@@ -65,12 +65,18 @@ export function clearCart(): void {
   $cart.set([]);
 }
 
-/** Grind options offered across the buy widget, cart builder, and share links — index into this array is what gets encoded in a share link. */
+/**
+ * Grind options offered across the buy widget, cart builder, and share links —
+ * the index into this array is what gets encoded in a share link, so only ever
+ * APPEND to this list; never reorder or remove entries.
+ */
 export const GRINDS = [
   'Whole Bean',
   'Coarse (French Press)',
   'Medium (Filter/Pour-over)',
   'Fine (Espresso)',
+  'Moka Pot',
+  'South Indian Filter',
 ] as const;
 
 /**
