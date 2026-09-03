@@ -77,6 +77,8 @@ export const GRINDS = [
   'Fine (Espresso)',
   'Moka Pot',
   'South Indian Filter',
+  'Roasted Coffee (Whole Bean)',
+  'Green Coffee (Unroasted Beans)',
 ] as const;
 
 /**
