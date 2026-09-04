@@ -642,6 +642,17 @@ const cashfreeMode = process.env.CASHFREE_ENV === 'sandbox' ? 'sandbox' : 'produ
     persistCurrentDetails();
 
     const formData = new FormData(form);
+
+    // Indian PIN codes are exactly 6 digits, first digit 1-9.
+    const pin = (formData.get('pincode')?.toString() ?? '').trim();
+    if (!/^[1-9][0-9]{5}$/.test(pin)) {
+      if (errorEl) {
+        errorEl.textContent = 'Enter a valid 6-digit PIN code';
+        errorEl.hidden = false;
+      }
+      return;
+    }
+
     const payload = {
       name: formData.get('name'),
       email: formData.get('email'),
