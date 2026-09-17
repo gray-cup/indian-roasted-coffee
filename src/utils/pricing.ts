@@ -114,13 +114,22 @@ export function getProductPackOptions(
 }
 
 // ─── Delivery fee ───────────────────────────────────────────────────────────
-// Flat ₹90 delivery for the whole order if any line is under 1 kg — one
-// ₹90 charge total, not per line. An order where every line is 1 kg or
-// more ships free.
-const DELIVERY_FLAT_FEE = 90;
-const DELIVERY_FREE_THRESHOLD_GRAMS = 1_000;
+// Tiered by total order weight. Above 3 kg, ₹35/kg is added on top of the
+// ₹220 3 kg rate.
+const DELIVERY_TIERS = [
+  { maxGrams: 500,    fee: 60 },
+  { maxGrams: 999,    fee: 100 },
+  { maxGrams: 1_000,  fee: 120 },
+  { maxGrams: 2_000,  fee: 180 },
+  { maxGrams: 3_000,  fee: 220 },
+] as const;
+const DELIVERY_PER_KG_ABOVE = 35;
+const DELIVERY_BASE_GRAMS = 3_000;
+const DELIVERY_BASE_FEE = 220;
 
-export function getDeliveryFee(lines: readonly { grams: number }[]): number {
-  const hasSubKgLine = lines.some((line) => line.grams < DELIVERY_FREE_THRESHOLD_GRAMS);
-  return hasSubKgLine ? DELIVERY_FLAT_FEE : 0;
+export function getDeliveryFee(lines: readonly { grams: number; quantity?: number }[]): number {
+  const totalGrams = lines.reduce((sum, line) => sum + line.grams * (line.quantity ?? 1), 0);
+  const tier = DELIVERY_TIERS.find((t) => totalGrams <= t.maxGrams);
+  if (tier) return tier.fee;
+  return Math.round(DELIVERY_BASE_FEE + ((totalGrams - DELIVERY_BASE_GRAMS) / 1000) * DELIVERY_PER_KG_ABOVE);
 }
