@@ -104,7 +104,7 @@ export function getProductPackOptions(
 ): WeightOption[] {
   const gramsList = packPricing && packPricing.length > 0
     ? [...new Set([SAMPLE_GRAMS, ...packPricing.map((p) => p.grams)])].sort((a, b) => a - b)
-    : [SAMPLE_GRAMS, 1_000, 3_000, 5_000, 10_000];
+    : [SAMPLE_GRAMS, 500, 1_000, 3_000, 5_000, 10_000];
 
   return gramsList.map((grams) => ({
     grams,
@@ -129,6 +129,7 @@ const DELIVERY_BASE_FEE = 220;
 
 export function getDeliveryFee(lines: readonly { grams: number; quantity?: number }[]): number {
   const totalGrams = lines.reduce((sum, line) => sum + line.grams * (line.quantity ?? 1), 0);
+
   const tier = DELIVERY_TIERS.find((t) => totalGrams <= t.maxGrams);
   if (tier) return tier.fee;
   return Math.round(DELIVERY_BASE_FEE + ((totalGrams - DELIVERY_BASE_GRAMS) / 1000) * DELIVERY_PER_KG_ABOVE);
