@@ -117,8 +117,6 @@ src/
 scripts/
 ├── init-agency.mjs             # One-time agency setup wizard
 ├── setup-uswds.mjs             # Copies USWDS assets to public/uswds/
-├── plain-language.mjs          # Flesch-Kincaid readability gate (avg grade ≤ 8)
-├── compliance-check.mjs        # USWDS compliance check on built HTML
 └── check.sh                    # Runs all local quality gates
 ```
 
@@ -166,48 +164,19 @@ bash scripts/check.sh --verbose # same, with per-file output
 | Accessibility | `@axe-core/cli` (CI only) | 0 violations |
 | Lighthouse | `@lhci/cli` (CI only) | perf ≥ 90, a11y = 100, BP ≥ 90, SEO ≥ 90 |
 | Links | `linkinator` (CI only) | 0 broken internal links |
-| Plain language | `scripts/plain-language.mjs` | avg Flesch-Kincaid grade ≤ 8 |
-| USWDS compliance | `scripts/compliance-check.mjs` | banner + identifier + skip nav present |
 
 ---
 
 ## Deploy
 
-### GitHub Pages (included)
+Production runs on **Cloudflare Workers** (server routes for checkout and the
+D1 orders database live in the worker). Deploys happen automatically through
+**Cloudflare Workers Builds**, which is connected to this repo in the
+Cloudflare dashboard — every push to `main` builds and ships.
 
-Push to `main`. The workflow in `.github/workflows/deploy-pages.yml` deploys automatically.
-Enable Pages: **Settings → Pages → Source: GitHub Actions**.
+To deploy manually from your machine: `bun run deploy`.
 
-> **⚠️ Security headers:** GitHub Pages does **not** support custom HTTP response
-> headers, so the headers in `public/_headers` (clickjacking protection via
-> `frame-ancestors`, `X-Frame-Options`, HSTS, etc.) are silently ignored on
-> GitHub Pages. They only take effect on Netlify or Cloudflare Pages. If you need
-> these protections — and production government sites should have them — deploy
-> to a host that supports response headers, or put a CDN/reverse proxy (e.g.
-> CloudFront) in front of Pages and set the headers there.
-
-### Cloud.gov Pages
-
-```yaml
-# federalist.json
-{
-  "build": {
-    "command": "pnpm install && pnpm build",
-    "destination": "dist"
-  }
-}
-```
-
-### Netlify / Vercel
-
-Both auto-detect Astro. Set **build command** to `pnpm build` and **publish directory** to `dist`.
-
-### Any static host (S3, CloudFront, Azure Blob)
-
-```bash
-pnpm build   # outputs to dist/
-```
-Upload the contents of `dist/` to your bucket or CDN origin.
+GitHub Actions (`.github/workflows/ci.yml`) only verifies; it does not deploy.
 
 ---
 

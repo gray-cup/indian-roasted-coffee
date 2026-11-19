@@ -46,7 +46,7 @@
   },
   "footer": {
     "contactUs": "Contáctenos",
-    "phone": "+91‑85-2791‑4317",
+    "phone": "+91‑85‑2791‑4317",
     "email": "office@graycup.org",
     "hours": "Lunes a sábado, 9 a.m.–6 p.m. IST",
     "returnToTop": "Volver arriba"
@@ -72,6 +72,6 @@
     "heading": "Página no encontrada",
     "body": "No podemos encontrar la página que busca. Es posible que se haya movido o ya no exista.",
     "homeCta": "Volver a la página principal",
-    "helpCta": "Visitar nuestro centro de ayuda"
+    "helpCta": "Ver nuestros cafés"
   }
 }

@@ -1,7 +1,6 @@
 ---
 /**
- * Footer — usa-footer
- * https://designsystem.digital.gov/components/footer/
+ * Footer — dark, minimal site footer.
  */
 
 import type { Locale } from '../../i18n/utils';
@@ -20,14 +19,12 @@ interface FooterColumn {
 
 interface Props {
   locale?: Locale;
-  variant?: 'slim' | 'medium' | 'big';
   columns?: FooterColumn[];
   class?: string;
 }
 
 const {
   locale = 'en',
-  variant = 'medium',
   columns,
   class: className,
 } = Astro.props;
@@ -108,73 +105,99 @@ const defaultColumns: FooterColumn[] =
       ];
 
 const resolvedColumns = columns ?? defaultColumns;
+const year = new Date().getFullYear();
 ---
 
-<footer class:list={['usa-footer', `usa-footer--${variant}`, className]}>
-  {variant !== 'slim' && (
-    <div class="grid-container usa-footer__return-to-top">
-      <a href="#">{t('footer.returnToTop')}</a>
+<footer class:list={['site-footer', className]}>
+  <div class="site-footer__inner">
+    <div class="site-footer__brand">
+      <p class="site-footer__name">{siteConfig.name}</p>
+      <p class="site-footer__tag">{t('site.tagline')}</p>
+      <p class="site-footer__contact">
+        <a href={telHref(t('footer.phone'))}>{t('footer.phone')}</a><br />
+        <a href={`mailto:${t('footer.email')}`}>{t('footer.email')}</a>
+      </p>
     </div>
-  )}
 
-  {resolvedColumns.length > 0 && (
-    <div class="usa-footer__primary-section">
-      <div class="grid-container padding-y-4">
-        <div class="grid-row grid-gap">
-          {resolvedColumns.map((col) => (
-            <div class="mobile-lg:grid-col-6 desktop:grid-col-3">
-              <section class="usa-footer__primary-content usa-footer__primary-content--collapsible">
-                <h2 class="usa-footer__primary-link">{col.heading}</h2>
-                <ul class="usa-list usa-list--unstyled">
-                  {col.links.map((link) => (
-                    <li class="usa-footer__secondary-link">
-                      <a href={withBase(link.href)}>{link.label}</a>
-                    </li>
-                  ))}
-                </ul>
-              </section>
-            </div>
+    {resolvedColumns.map((col) => (
+      <div class="site-footer__col">
+        <h2>{col.heading}</h2>
+        <ul>
+          {col.links.map((link) => (
+            <li><a href={withBase(link.href)}>{link.label}</a></li>
           ))}
-        </div>
+        </ul>
       </div>
-    </div>
-  )}
+    ))}
+  </div>
 
-  <div class="usa-footer__secondary-section">
-    <div class="grid-container">
-      <div class="grid-row grid-gap">
-        <div class="usa-footer__logo grid-row mobile-lg:grid-col-6 mobile-lg:grid-gap-2">
-          <div class="mobile-lg:grid-col-auto">
-            <p class="usa-footer__logo-heading">{siteConfig.name}</p>
-            <p class="usa-footer__contact-info">
-              Operated by{' '}
-              <a href="https://graycup.com" rel="dofollow" target="_blank">
-                Gray Cup
-              </a>
-            </p>
-          </div>
-        </div>
-        <div class="usa-footer__contact-links mobile-lg:grid-col-6">
-          <h2 class="usa-footer__contact-heading">
-            {t('footer.contactUs')}
-          </h2>
-          <address class="usa-footer__address">
-            <div class="usa-footer__contact-info grid-row grid-gap">
-              <div class="grid-col-auto">
-                <a href={telHref(t('footer.phone'))}>
-                  {t('footer.phone')}
-                </a>
-              </div>
-              <div class="grid-col-auto">
-                <a href={`mailto:${t('footer.email')}`}>
-                  {t('footer.email')}
-                </a>
-              </div>
-            </div>
-          </address>
-        </div>
-      </div>
-    </div>
+  <div class="site-footer__bottom">
+    <p>© {year} {siteConfig.name}. Operated by <a href="https://graycup.com" target="_blank" rel="noopener">Gray Cup</a>.</p>
+    <a href="#">{t('footer.returnToTop')} ↑</a>
   </div>
 </footer>
 
+<style>
+  .site-footer {
+    background: var(--c-dark);
+    color: #9a9a9a;
+    font-size: 0.85rem;
+    margin-top: 3rem;
+  }
+
+  .site-footer a,
+  .site-footer a:visited {
+    color: #bdbdbd;
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+  .site-footer a:hover { color: #fff; }
+
+  .site-footer__inner {
+    max-width: var(--wrap);
+    margin: 0 auto;
+    padding: 4rem var(--gutter) 3rem;
+    display: grid;
+    grid-template-columns: 1.6fr repeat(4, 1fr);
+    gap: 2.5rem;
+  }
+
+  .site-footer__name {
+    font-family: var(--f-head);
+    color: #fff;
+    font-size: 1rem;
+    margin: 0 0 0.5rem;
+  }
+  .site-footer__tag { margin: 0 0 1.5rem; max-width: 22rem; }
+  .site-footer__contact { margin: 0; line-height: 1.9; }
+
+  .site-footer__col h2 {
+    font-family: var(--f-body);
+    color: #fff;
+    font-size: 0.75rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    margin: 0 0 1rem;
+  }
+  .site-footer__col ul { list-style: none; margin: 0; padding: 0; }
+  .site-footer__col li { margin: 0 0 0.6rem; }
+
+  .site-footer__bottom {
+    max-width: var(--wrap);
+    margin: 0 auto;
+    padding: 1.5rem var(--gutter);
+    border-top: 1px solid #333;
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+    font-size: 0.8rem;
+  }
+  .site-footer__bottom p { margin: 0; }
+  .site-footer__bottom p a { text-decoration: underline; text-underline-offset: 3px; }
+
+  @media (max-width: 60rem) {
+    .site-footer__inner { grid-template-columns: 1fr 1fr; }
+    .site-footer__brand { grid-column: 1 / -1; }
+  }
+</style>

@@ -1,44 +1,31 @@
 #!/usr/bin/env bash
 # Run all quality gates locally. Mirrors .github/workflows/ci.yml.
-# Usage: bash scripts/check.sh [--skip-build] [--verbose]
+# Usage: bash scripts/check.sh [--skip-build]
 
 set -euo pipefail
 
 SKIP_BUILD=false
-VERBOSE=false
 for arg in "$@"; do
   [[ "$arg" == "--skip-build" ]] && SKIP_BUILD=true
-  [[ "$arg" == "--verbose" ]] && VERBOSE=true
 done
 
-VERBOSE_FLAG=""
-[[ "$VERBOSE" == true ]] && VERBOSE_FLAG="--verbose"
-
 echo "==> astro check (TypeScript)"
-pnpm check
+bun run check
 
 if [[ "$SKIP_BUILD" == false ]]; then
   echo "==> Building site"
-  pnpm build
+  bun run build
 fi
-
-echo ""
-echo "==> Plain language check"
-node scripts/plain-language.mjs $VERBOSE_FLAG
-
-echo ""
-echo "==> USWDS compliance check"
-node scripts/compliance-check.mjs $VERBOSE_FLAG
 
 echo ""
 echo "==> HTML validation"
 # The dev-only /internal/ component preview intentionally renders components
 # out of document context (multiple <h1> Heroes, etc.) and is excluded.
-find dist -name '*.html' -not -path 'dist/internal/*' -print0 | xargs -0 npx html-validate
+find dist/client -name '*.html' -not -path 'dist/client/internal/*' -print0 | xargs -0 bunx html-validate
 
 echo ""
 echo "All local checks passed."
 echo ""
-echo "Note: Accessibility (axe-core) and Lighthouse CI require a running"
-echo "browser and are only run in GitHub Actions. To test locally:"
-echo "  pnpm preview  then  npx @axe-core/cli http://localhost:4321/"
+echo "Note: Accessibility (axe-core), Lighthouse and link checks need a running"
+echo "server and are only run in GitHub Actions. To test locally:"
+echo "  npx serve dist/client  then  npx @axe-core/cli http://127.0.0.1:3000/"

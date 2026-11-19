@@ -19,81 +19,171 @@ const { locale = 'en', currentPath = '/' } = Astro.props;
 const t = useTranslations(locale);
 const base = import.meta.env.BASE_URL;
 
+const is = (p: string) => currentPath === p || currentPath === `/es${p}`;
+
 const navLinks: NavLink[] = [
   {
-    label: locale === 'es' ? 'Productos' : 'Products',
+    label: locale === 'es' ? 'Tienda' : 'Shop',
     href: localizeUrl('/products/', locale),
     current: currentPath.startsWith('/products') || currentPath.startsWith('/es/products'),
   },
-  {
-    label: locale === 'es' ? 'Mayorista' : 'Wholesale',
-    href: localizeUrl('/wholesale/', locale),
-    current: currentPath === '/wholesale/' || currentPath === '/es/wholesale/',
-  },
-  {
-    label: locale === 'es' ? 'Contacto' : 'Contact',
-    href: localizeUrl('/contact/', locale),
-    current: currentPath === '/contact/' || currentPath === '/es/contact/',
-  },
-  {
-    label: locale === 'es' ? 'Acerca de' : 'About',
-    href: localizeUrl('/about/', locale),
-    current: currentPath === '/about/' || currentPath === '/es/about/',
-  },
+  { label: locale === 'es' ? 'Mayorista' : 'Wholesale', href: localizeUrl('/wholesale/', locale), current: is('/wholesale/') },
+  { label: locale === 'es' ? 'Acerca de' : 'About', href: localizeUrl('/about/', locale), current: is('/about/') },
+  { label: locale === 'es' ? 'Contacto' : 'Contact', href: localizeUrl('/contact/', locale), current: is('/contact/') },
 ];
 ---
 
-<header class="usa-header usa-header--basic">
-  <div class="usa-nav-container">
-    <div class="usa-navbar">
-      <div class="usa-logo">
-        <em class="usa-logo__text">
-          <a href={localizeUrl('/', locale)} title={t('site.name')} aria-label={t('site.name')}>
-            {siteConfig.name}
-          </a>
-        </em>
-      </div>
-      <button
-        type="button"
-        class="usa-menu-btn"
-        aria-label={t('nav.menu')}
-      >
-        {t('nav.menu')}
-      </button>
-    </div>
+<header class="site-header">
+  <div class="site-header__inner">
+    <a href={localizeUrl('/', locale)} class="site-header__logo" aria-label={t('site.name')}>
+      <img src={`${base}graycup-logo.svg`} alt="" width="30" height="29" class="site-header__mark" />
+      <span>{siteConfig.name}</span>
+    </a>
 
-    <nav
-      aria-label={t('nav.primary')}
-      class="usa-nav"
-    >
-      <button type="button" class="usa-nav__close" aria-label={t('nav.close')}>
-        <img src={`${base}uswds/img/usa-icons/close.svg`} role="img" alt="" />
-      </button>
-
-      <ul class="usa-nav__primary usa-accordion">
+    <nav class="site-header__nav" id="site-nav" aria-label={t('nav.primary')}>
+      <ul>
         {navLinks.map((link) => (
-          <li class="usa-nav__primary-item">
-            <a
-              href={link.href}
-              class:list={['usa-nav-link', { 'usa-current': link.current }]}
-              aria-current={link.current ? 'page' : undefined}
-            >
-              <span>{link.label}</span>
-            </a>
+          <li>
+            <a href={link.href} aria-current={link.current ? 'page' : undefined}>{link.label}</a>
           </li>
         ))}
-        <li class="usa-nav__primary-item nav-cart-item">
-          <CartButton locale={locale} />
-        </li>
       </ul>
     </nav>
+
+    <div class="site-header__actions">
+      <CartButton locale={locale} />
+      <button
+        type="button"
+        class="site-header__toggle"
+        aria-controls="site-nav"
+        aria-expanded="false"
+        aria-label={t('nav.menu')}
+      >
+        <span></span><span></span>
+      </button>
+    </div>
   </div>
 </header>
 
 <style>
-  .nav-cart-item {
+  .site-header {
+    position: sticky;
+    top: 0;
+    z-index: 40;
+    background: rgba(255, 255, 255, 0.96);
+    backdrop-filter: saturate(180%) blur(8px);
+    border-bottom: 1px solid var(--c-line);
+  }
+
+  .site-header__inner {
+    max-width: var(--wrap);
+    margin: 0 auto;
+    padding: 0 var(--gutter);
+    height: 4.25rem;
     display: flex;
     align-items: center;
+    gap: 3rem;
+  }
+
+  .site-header__logo {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    color: var(--c-ink);
+    text-decoration: none;
+    font-family: var(--f-head);
+    font-size: 1rem;
+    letter-spacing: -0.01em;
+    white-space: nowrap;
+  }
+  .site-header__logo:visited { color: var(--c-ink); }
+  .site-header__mark { display: block; width: 30px; height: auto; }
+
+  .site-header__nav ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    gap: 2rem;
+  }
+
+  .site-header__nav a {
+    color: var(--c-ink);
+    text-decoration: none;
+    font-size: 0.9rem;
+    padding: 0.25rem 0;
+    border-bottom: 1px solid transparent;
+    transition: border-color 0.2s;
+  }
+  .site-header__nav a:hover,
+  .site-header__nav a[aria-current='page'] { border-bottom-color: var(--c-ink); }
+
+  .site-header__actions {
     margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .site-header__toggle {
+    display: none;
+    width: 2.5rem;
+    height: 2.5rem;
+    border: 0;
+    background: none;
+    cursor: pointer;
+    position: relative;
+    padding: 0;
+  }
+  .site-header__toggle span {
+    position: absolute;
+    left: 0.6rem;
+    right: 0.6rem;
+    height: 1px;
+    background: var(--c-ink);
+    transition: transform 0.25s, top 0.25s;
+  }
+  .site-header__toggle span:first-child { top: 1rem; }
+  .site-header__toggle span:last-child { top: 1.45rem; }
+  .site-header__toggle[aria-expanded='true'] span:first-child { top: 1.25rem; transform: rotate(45deg); }
+  .site-header__toggle[aria-expanded='true'] span:last-child { top: 1.25rem; transform: rotate(-45deg); }
+
+  @media (max-width: 52rem) {
+    .site-header__inner { gap: 1rem; }
+    .site-header__toggle { display: block; }
+
+    .site-header__nav {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background: #fff;
+      border-bottom: 1px solid var(--c-line);
+      display: none;
+    }
+    .site-header__nav.is-open { display: block; }
+
+    .site-header__nav ul {
+      flex-direction: column;
+      gap: 0;
+      padding: 0.5rem var(--gutter) 1.25rem;
+    }
+    .site-header__nav a {
+      display: block;
+      padding: 0.85rem 0;
+      font-size: 1.05rem;
+      border-bottom: 1px solid var(--c-line);
+    }
+    .site-header__nav li:last-child a { border-bottom: 0; }
   }
 </style>
+
+<script>
+  const toggle = document.querySelector<HTMLButtonElement>('.site-header__toggle');
+  const nav = document.getElementById('site-nav');
+  toggle?.addEventListener('click', () => {
+    const open = toggle.getAttribute('aria-expanded') !== 'true';
+    toggle.setAttribute('aria-expanded', String(open));
+    nav?.classList.toggle('is-open', open);
+  });
+</script>

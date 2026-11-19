@@ -1,39 +1,308 @@
 /*
- * Global styles: Tailwind utilities + site-wide custom properties.
+ * Global styles: minimal storefront design system.
  *
- * USWDS is imported separately (uswds.scss) and provides the design foundation.
- * Tailwind utilities are scoped to non-USWDS areas and never override USWDS tokens.
- * If a Tailwind utility conflicts with a USWDS style, USWDS wins.
+ * USWDS still ships underneath (some content pages use its grid/prose
+ * classes), but everything visible is re-skinned here: one neutral palette,
+ * Poppins for headings, Questrial for body, square black buttons, light grey
+ * image tiles. Loaded after uswds-theme.scss, so these rules win on ties.
  */
 
 /* Tailwind v4 — utilities layer only to avoid preflight conflicts with USWDS */
 @import "tailwindcss/utilities";
 
-/* Site-wide custom properties */
 :root {
   --site-max-width: 1440px;
-  --focus-outline: 0.25rem solid #2491ff;
-  --focus-outline-offset: 0;
+  --wrap: 80rem;
+  --gutter: clamp(1.25rem, 4vw, 2.5rem);
+
+  --c-ink: #1a1a1a;
+  --c-text: #555;
+  --c-muted: #6b6b6b;
+  --c-line: #e8e8e8;
+  --c-tile: #f4f4f4;
+  --c-bg: #fff;
+  --c-dark: #222;
+
+  --f-head: 'Poppins', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --f-body: 'Questrial', system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+  --focus-outline: 2px solid var(--c-ink);
+  --focus-outline-offset: 2px;
 }
 
-/* Skip navigation link — visually hidden until focused */
-.usa-skipnav {
-  &:focus {
-    outline: var(--focus-outline);
-    outline-offset: var(--focus-outline-offset);
-  }
+/* ─── Base ──────────────────────────────────────────────────────────────── */
+
+html { scroll-behavior: smooth; }
+
+body {
+  margin: 0;
+  background: var(--c-bg);
+  color: var(--c-text);
+  font-family: var(--f-body);
+  font-size: 15px;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
+
+h1, h2, h3, h4, h5, h6,
+.usa-prose > h1, .usa-prose > h2, .usa-prose > h3, .usa-prose > h4,
+.usa-hero__heading, .usa-summary-box__heading, .usa-card__heading,
+.usa-process-list__heading, .usa-accordion__button, .usa-site-alert .usa-alert__heading,
+.usa-alert__heading, .font-heading-xl, .font-heading-md {
+  font-family: var(--f-head);
+  font-weight: 400;
+  color: var(--c-ink);
+  letter-spacing: -0.01em;
+  line-height: 1.25;
+}
+
+h1 { font-size: clamp(1.75rem, 3vw, 2.25rem); }
+h2, .font-heading-xl, .usa-prose > h2 { font-size: clamp(1.25rem, 2vw, 1.5rem); }
+h3, .usa-prose > h3 { font-size: 1.1rem; }
+
+p, li, dd, dt, td, th, label, input, select, textarea, button,
+.usa-prose, .usa-prose > p, .usa-prose > ul li, .usa-prose > ol li,
+.usa-intro, .usa-hint, .usa-label, .usa-input, .usa-select, .usa-textarea,
+.usa-accordion__content, .usa-summary-box__text, .usa-alert__text, .usa-table {
+  font-family: var(--f-body);
+}
+
+.usa-prose > p, .usa-prose > ul li, .usa-prose > ol li { color: var(--c-text); line-height: 1.75; max-width: 68ch; }
+.usa-intro { font-size: 1.1rem; color: var(--c-text); font-family: var(--f-body); }
+
+a, .usa-link { color: var(--c-ink); text-underline-offset: 3px; text-decoration-thickness: 1px; }
+a:hover, .usa-link:hover { color: var(--c-ink); text-decoration-color: var(--c-muted); }
+.usa-link:visited { color: var(--c-ink); }
+
+/* USWDS paints a blue outline on every :focus (including mouse clicks) with
+   selectors like button:not([disabled]):focus — match its specificity so
+   the ring only shows for keyboard focus, in ink instead of blue. */
+*:focus:not(:focus-visible),
+[href]:focus:not(:focus-visible),
+[tabindex]:focus:not(:focus-visible),
+button:not([disabled]):focus:not(:focus-visible),
+input:not([disabled]):focus:not(:focus-visible),
+select:not([disabled]):focus:not(:focus-visible),
+textarea:not([disabled]):focus:not(:focus-visible) { outline: none; }
+
+*:focus-visible,
+[href]:focus-visible,
+[tabindex]:focus-visible,
+button:not([disabled]):focus-visible,
+input:not([disabled]):focus-visible,
+select:not([disabled]):focus-visible,
+textarea:not([disabled]):focus-visible { outline: var(--focus-outline); outline-offset: var(--focus-outline-offset); }
+
+::selection { background: var(--c-ink); color: #fff; }
+
+.wrap { max-width: var(--wrap); margin: 0 auto; padding: 0 var(--gutter); }
+
+/* Section heading pattern: small, centered, quiet. */
+.section-title {
+  text-align: center;
+  font-size: 1.25rem;
+  margin: 0 0 2.5rem;
+}
+
+.eyebrow {
+  font-family: var(--f-body);
+  font-size: 0.75rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--c-muted);
+  margin: 0 0 0.75rem;
+}
+
+/* ─── Buttons ───────────────────────────────────────────────────────────── */
+
+.btn,
+.usa-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.85rem 1.75rem;
+  border: 1px solid var(--c-ink);
+  border-radius: 0;
+  background: var(--c-ink);
+  color: #fff;
+  font-family: var(--f-body);
+  font-size: 0.875rem;
+  font-weight: 400;
+  letter-spacing: 0.04em;
+  line-height: 1.2;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 0.2s, color 0.2s, border-color 0.2s;
+}
+
+.btn:hover, .usa-button:hover,
+.btn:visited, .usa-button:visited { color: #fff; background: #000; text-decoration: none; }
+
+.btn--ghost,
+.usa-button--outline,
+.usa-button--secondary {
+  background: transparent;
+  color: var(--c-ink);
+  box-shadow: none;
+}
+
+.btn--ghost:hover, .usa-button--outline:hover { background: var(--c-ink); color: #fff; box-shadow: none; }
+.btn--ghost:visited { color: var(--c-ink); }
+
+.usa-button--outline.usa-button--inverse { color: #fff; border-color: #fff; box-shadow: none; }
+.usa-button--outline.usa-button--inverse:hover { background: #fff; color: var(--c-ink); }
+
+.usa-button--big { padding: 1rem 2rem; font-size: 0.9rem; }
+
+.usa-button--unstyled,
+.usa-button--unstyled:hover {
+  background: none; border: 0; padding: 0; color: var(--c-ink); text-decoration: underline;
+}
+
+/* ─── USWDS re-skin for content pages ───────────────────────────────────── */
+
+.grid-container { max-width: var(--wrap); padding-left: var(--gutter); padding-right: var(--gutter); }
+.usa-section { padding-top: 4rem; padding-bottom: 4rem; }
+
+.usa-breadcrumb { background: none; padding: 0; margin-bottom: 1.5rem; font-family: var(--f-body); font-size: 0.8rem; }
+.usa-breadcrumb__link, .usa-breadcrumb__link:visited { color: var(--c-muted); text-decoration: none; }
+.usa-breadcrumb__link:hover { color: var(--c-ink); }
+.usa-breadcrumb__list-item.usa-current { color: var(--c-ink); }
+
+.usa-summary-box {
+  background: var(--c-tile);
+  border: 0;
+  border-radius: 0;
+  padding: 1.5rem;
+}
+.usa-summary-box__heading { font-size: 1rem; margin-bottom: 0.75rem; }
+
+.usa-alert { border-radius: 0; background: var(--c-tile); border-left: 2px solid var(--c-ink); }
+.usa-site-alert .usa-alert { background: var(--c-ink); color: #fff; border: 0; }
+.usa-site-alert .usa-alert .usa-alert__heading,
+.usa-site-alert .usa-alert .usa-alert__text,
+.usa-site-alert .usa-alert a { color: #fff; }
+.usa-site-alert .usa-alert::before { display: none; }
+.usa-site-alert .usa-alert .usa-alert__body { padding-left: var(--gutter); }
+
+.usa-input, .usa-select, .usa-textarea, .usa-combo-box__input {
+  border: 1px solid #d0d0d0;
+  border-radius: 0;
+  font-size: 0.95rem;
+  max-width: none;
+}
+.usa-input:focus, .usa-select:focus, .usa-textarea:focus { border-color: var(--c-ink); }
+.usa-label { color: var(--c-ink); font-size: 0.875rem; }
+
+.usa-accordion__button {
+  background-color: transparent;
+  border-bottom: 1px solid var(--c-line);
+  font-size: 1rem;
+  padding: 1.1rem 3rem 1.1rem 0;
+  background-position: right 0.25rem center;
+}
+.usa-accordion__button:hover { background-color: transparent; }
+.usa-accordion__button[aria-expanded="false"] { background-color: transparent; }
+.usa-accordion__content { padding: 1rem 0 1.5rem; }
+
+.usa-tag { background: var(--c-tile); color: var(--c-muted); border-radius: 0; font-family: var(--f-body); }
+
+.usa-process-list__item { border-left-color: var(--c-line); }
+.usa-process-list__item::before { border-color: var(--c-ink); color: var(--c-ink); box-shadow: 0 0 0 0.25rem #fff; font-family: var(--f-head); }
+
+.usa-table th, .usa-table td { border-color: var(--c-line); }
+.usa-table thead th { background: var(--c-tile); }
+
+.bg-base-lightest { background-color: var(--c-tile) !important; }
+.bg-primary-darker { background-color: var(--c-dark) !important; }
+
+/* Skip navigation link — visually hidden until focused */
+.skipnav {
+  position: absolute;
+  left: -9999px;
+  top: 0.5rem;
+  z-index: 100;
+  background: var(--c-ink);
+  color: #fff;
+  padding: 0.6rem 1rem;
+}
+.skipnav:focus { left: 0.5rem; color: #fff; }
 
 /* Print styles */
 @media print {
-  .usa-banner,
-  .usa-header,
-  .usa-footer {
-    display: block;
-  }
-
-  .usa-nav,
-  .usa-banner__button {
-    display: none;
-  }
+  .site-header nav, .site-header__actions, .whatsapp-widget { display: none; }
 }
+
+/* ─── Product grid ──────────────────────────────────────────────────────── */
+
+.product-grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 3rem 1.5rem;
+}
+
+@media (max-width: 64rem) { .product-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (max-width: 48rem) { .product-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 2.25rem 1rem; } }
+
+/* ─── Tables inside prose ───────────────────────────────────────────────── */
+
+.usa-prose table,
+.usa-prose > table {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 0.9rem;
+  margin: 1rem 0 1.5rem;
+}
+.usa-prose table th,
+.usa-prose table td {
+  border: 0;
+  border-bottom: 1px solid var(--c-line);
+  padding: 0.7rem 1rem 0.7rem 0;
+  text-align: left;
+  background: none;
+  color: var(--c-text);
+}
+.usa-prose table th {
+  font-weight: 400;
+  color: var(--c-muted);
+  font-size: 0.75rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  border-bottom-color: var(--c-ink);
+}
+
+/* ─── Cards ─────────────────────────────────────────────────────────────── */
+
+.usa-card__container {
+  border: 1px solid var(--c-line);
+  border-radius: 0;
+  box-shadow: none;
+}
+.usa-card__img, .usa-card__media img { border-radius: 0; }
+.usa-card__heading { font-size: 1.05rem; }
+
+/* ─── State / city landing pages sidebar ───────────────────────────────── */
+
+.geo-aside { position: sticky; top: 5.5rem; }
+.geo-box { border: 1px solid var(--c-line); padding: 1.5rem; margin-bottom: 1rem; }
+.geo-box--tile { background: var(--c-tile); border-color: var(--c-tile); }
+.geo-box__label {
+  font-size: 0.75rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--c-muted);
+  margin: 0 0 0.75rem;
+}
+.geo-box__title { font-family: var(--f-head); color: var(--c-ink); font-size: 1rem; margin: 0 0 1rem; }
+.geo-list { list-style: none; margin: 0; padding: 0; font-size: 0.875rem; }
+.geo-list li { padding: 0.45rem 0; border-bottom: 1px solid var(--c-line); }
+.geo-box--tile .geo-list li { border-bottom-color: #e2e2e2; }
+.geo-list a { text-decoration: none; }
+.geo-list a:hover { text-decoration: underline; }
+.geo-box__btn { width: 100%; }
+.geo-box__note { font-size: 0.75rem; color: var(--c-muted); margin: 0.75rem 0 0; text-align: center; }

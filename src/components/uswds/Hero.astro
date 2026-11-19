@@ -1,9 +1,9 @@
 ---
 /**
- * Hero — usa-hero
- * https://designsystem.digital.gov/components/hero/
+ * Hero — minimal page intro.
  *
- * Full-width hero section for page headers and landing pages.
+ * Default: a light grey panel with copy on the left and a photo on the
+ * right. `small`: a quiet centered page header with no image.
  */
 
 interface Props {
@@ -17,7 +17,7 @@ interface Props {
   ctaText?: string;
   /** CTA button href */
   ctaHref?: string;
-  /** Background image URL (optional — USWDS provides default) */
+  /** Image shown on the right of the full hero */
   backgroundSrc?: string;
   /** Smaller variant with less vertical padding */
   small?: boolean;
@@ -39,30 +39,93 @@ const {
   label = 'Introduction',
   class: className,
 } = Astro.props;
+const imgSrc = backgroundSrc ?? '/images/IMG_9814.webp';
 ---
 
-<section
-  class:list={['usa-hero', small && 'usa-hero--small', className]}
-  aria-label={label}
-  style={backgroundSrc ? `background-image: url('${backgroundSrc}')` : undefined}
->
-  <div class="grid-container">
-    <div class="usa-hero__callout">
-      <h1 class="usa-hero__heading">
-        {headingSuffix ? (
-          <>
-            <span class="usa-hero__heading--alt">{heading}</span>
-            {headingSuffix}
-          </>
-        ) : heading}
-      </h1>
-      {subheading && <p>{subheading}</p>}
-      {ctaText && ctaHref && (
-        <a class="usa-button usa-button--big" href={withBase(ctaHref)}>
-          {ctaText}
-        </a>
-      )}
-      <slot />
+{small ? (
+  <section class:list={['page-head', className]} aria-label={label}>
+    <h1>{heading}{headingSuffix && <> {headingSuffix}</>}</h1>
+    {subheading && <p>{subheading}</p>}
+    <slot />
+  </section>
+) : (
+  <section class:list={['hero', className]} aria-label={label}>
+    <div class="hero__panel">
+      <div class="hero__copy">
+        <h1>
+          {heading}
+          {headingSuffix && <><br /><span>{headingSuffix}</span></>}
+        </h1>
+        {subheading && <p>{subheading}</p>}
+        {ctaText && ctaHref && (
+          <a class="btn" href={withBase(ctaHref)}>{ctaText}</a>
+        )}
+        <slot />
+      </div>
+      <div class="hero__media">
+        <img src={imgSrc} alt="" loading="eager" fetchpriority="high" />
+      </div>
     </div>
-  </div>
-</section>
+  </section>
+)}
+
+<style>
+  .page-head {
+    max-width: 44rem;
+    margin: 0 auto;
+    padding: 4.5rem var(--gutter) 3rem;
+    text-align: center;
+  }
+  .page-head h1 { margin: 0 0 1rem; }
+  .page-head p { margin: 0 auto; color: var(--c-text); max-width: 36rem; }
+
+  .hero {
+    max-width: var(--wrap);
+    margin: 0 auto;
+    padding: 1.5rem var(--gutter) 0;
+  }
+
+  .hero__panel {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: stretch;
+    background: var(--c-tile);
+    min-height: min(36rem, 72vh);
+  }
+
+  .hero__copy {
+    align-self: end;
+    padding: clamp(2rem, 5vw, 4rem);
+  }
+
+  .hero__copy h1 {
+    font-size: clamp(2rem, 4.2vw, 3.25rem);
+    font-weight: 300;
+    line-height: 1.1;
+    letter-spacing: -0.025em;
+    margin: 0 0 1.25rem;
+  }
+  .hero__copy h1 span { color: var(--c-muted); }
+
+  .hero__copy p {
+    max-width: 26rem;
+    margin: 0 0 2rem;
+    color: var(--c-text);
+  }
+
+  .hero__media { position: relative; overflow: hidden; }
+  .hero__media img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  @media (max-width: 48rem) {
+    .hero { padding: 0; }
+    .hero__panel { grid-template-columns: 1fr; min-height: 0; }
+    .hero__media { order: -1; aspect-ratio: 4 / 3; }
+    .hero__copy { padding: 2rem var(--gutter) 2.5rem; }
+  }
+</style>

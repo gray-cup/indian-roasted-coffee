@@ -23,14 +23,12 @@ const copy = {
   en: {
     title: 'Products',
     description: 'Browse our single-origin Indian coffee beans, roasted to order.',
-    heroHeading: 'Our products',
+    heroHeading: 'Shop coffee',
     heroSubheading: 'Single-origin lots from India\'s finest coffee estates — roasted fresh to order, rested to degas, and shipped within 3–5 days.',
     heroLabel: 'Products',
     showing: (n: number) => `Showing ${n} products`,
     notFoundLead: "Don't see what you need?",
-    notFoundHelp: 'help center',
-    notFoundOr: 'or',
-    notFoundContact: 'contact us',
+    notFoundContact: 'Contact us',
     benefitsBefore: 'You can also visit the',
     benefitsAfter: 'to learn about Indian coffee growing regions.',
     benefitsUrl: 'https://coffeeboard.gov.in/',
@@ -39,14 +37,12 @@ const copy = {
   es: {
     title: 'Productos',
     description: 'Explora nuestros granos de café India de origen único, tostados a pedido.',
-    heroHeading: 'Nuestros productos',
+    heroHeading: 'Comprar café',
     heroSubheading: 'Lotes de origen único de las mejores fincas cafeteras de India — tostados frescos a pedido, reposados para desgasificar, y enviados en 3–5 días.',
     heroLabel: 'Productos',
     showing: (n: number) => `Mostrando ${n} productos`,
     notFoundLead: '¿No encuentras lo que necesitas?',
-    notFoundHelp: 'centro de ayuda',
-    notFoundOr: 'o',
-    notFoundContact: 'contáctenos',
+    notFoundContact: 'Contáctenos',
     benefitsBefore: 'También puedes visitar el',
     benefitsAfter: 'para conocer las regiones cafeteras de India.',
     benefitsUrl: 'https://coffeeboard.gov.in/',
@@ -66,10 +62,10 @@ const services = (await getCollection('services', ({ data }) => !data.draft))
     small
   />
 
-  <div class="grid-container usa-section">
-    <p class="text-base font-sans-sm">{copy.showing(services.length)}</p>
+  <div class="wrap">
+    <p class="shop-count">{copy.showing(services.length)}</p>
 
-    <ul class="usa-card-group">
+    <ul class="product-grid">
       {services.map((service) => (
         <ServiceCard
           title={service.data.title}
@@ -83,22 +79,39 @@ const services = (await getCollection('services', ({ data }) => !data.draft))
           productSlug={idToSlug(service.id)}
           priceMultiplier={service.data.priceMultiplier}
           packPricing={service.data.packPricing}
-          class="tablet:grid-col-6 desktop:grid-col-4"
         />
       ))}
     </ul>
 
-    <div class="usa-prose margin-top-6">
+    <div class="shop-foot">
       <p>
-        <strong>{copy.notFoundLead}</strong> {locale === 'es' ? 'Visita nuestro' : 'Visit our'}{' '}
-        <a href={withBase(`${prefix}/help/`)} class="usa-link">{copy.notFoundHelp}</a> {copy.notFoundOr}{' '}
-        <a href={withBase(`${prefix}/contact/`)} class="usa-link">{copy.notFoundContact}</a>.
+        {copy.notFoundLead}{' '}
+        <a href={withBase(`${prefix}/contact/`)}>{copy.notFoundContact}</a>.
       </p>
       <p>
         {copy.benefitsBefore}{' '}
-        <a href={copy.benefitsUrl} class="usa-link" rel="noreferrer">{copy.benefitsLabel}</a>{' '}
+        <a href={copy.benefitsUrl} rel="noreferrer">{copy.benefitsLabel}</a>{' '}
         {copy.benefitsAfter}
       </p>
     </div>
   </div>
 </BaseLayout>
+
+<style>
+  .shop-count {
+    font-size: 0.8rem;
+    color: var(--c-muted);
+    border-bottom: 1px solid var(--c-line);
+    padding-bottom: 1rem;
+    margin: 0 0 2.5rem;
+  }
+  .shop-foot {
+    margin-top: 5rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--c-line);
+    text-align: center;
+    font-size: 0.875rem;
+    color: var(--c-muted);
+  }
+  .shop-foot p { margin: 0 0 0.5rem; }
+</style>

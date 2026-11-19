@@ -1,7 +1,6 @@
 ---
 import { getCollection, render } from 'astro:content';
 import ServiceLayout from '../../../layouts/ServiceLayout.astro';
-import SummaryBox from '../../../components/uswds/SummaryBox.astro';
 import BuyWidget from '../../../components/BuyWidget.astro';
 import { idToSlug } from '../../../utils/content';
 import type { Locale } from '../../../i18n/utils';
@@ -46,6 +45,7 @@ const copy = {
   applyHref={applyHref}
   imageSrc={service.data.image}
   imageAlt={service.data.imageAlt}
+  summary={service.data.summary}
 >
   <Content />
 
@@ -58,43 +58,59 @@ const copy = {
       imageSrc={service.data.image}
     />
 
-    {service.data.eligibility.length > 0 && (
-      <SummaryBox heading={copy.details} label={copy.details}>
+    {[
+      { heading: copy.details, items: service.data.eligibility },
+      { heading: copy.keyFacts, items: service.data.keyFacts },
+    ].filter((g) => g.items.length > 0).map((group) => (
+      <section class="spec">
+        <h2 class="spec__heading">{group.heading}</h2>
         <dl>
-          {service.data.eligibility.map((item) => (
-            <>
-              <dt class="text-bold">{item.label}</dt>
-              <dd class="margin-left-0 margin-bottom-1">{item.value}</dd>
-            </>
+          {group.items.map((item) => (
+            <div class="spec__row">
+              <dt>{item.label}</dt>
+              <dd>{item.value}</dd>
+            </div>
           ))}
         </dl>
-      </SummaryBox>
-    )}
-
-    {service.data.keyFacts.length > 0 && (
-      <SummaryBox heading={copy.keyFacts} class="margin-top-3">
-        <dl>
-          {service.data.keyFacts.map((fact) => (
-            <>
-              <dt class="text-bold">{fact.label}</dt>
-              <dd class="margin-left-0 margin-bottom-1">{fact.value}</dd>
-            </>
-          ))}
-        </dl>
-      </SummaryBox>
-    )}
+      </section>
+    ))}
 
     {service.data.related.length > 0 && (
-      <div class="margin-top-3">
-        <h2 class="font-heading-md">{copy.related}</h2>
-        <ul class="usa-list">
+      <section class="spec">
+        <h2 class="spec__heading">{copy.related}</h2>
+        <ul class="spec__related">
           {service.data.related.map((relSlug) => (
             <li>
-              <a href={withBase(`${prefix}/products/${relSlug}/`)} class="usa-link">{relSlug.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())}</a>
+              <a href={withBase(`${prefix}/products/${relSlug}/`)}>{relSlug.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())}</a>
             </li>
           ))}
         </ul>
-      </div>
+      </section>
     )}
   </Fragment>
 </ServiceLayout>
+
+<style>
+  .spec { margin-top: 2.75rem; }
+  .spec__heading {
+    font-family: var(--f-body);
+    font-size: 0.75rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--c-muted);
+    margin: 0 0 0.75rem;
+  }
+  .spec dl { margin: 0; border-top: 1px solid var(--c-line); }
+  .spec__row {
+    display: grid;
+    grid-template-columns: 9rem 1fr;
+    gap: 1rem;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid var(--c-line);
+    font-size: 0.9rem;
+  }
+  .spec dt { color: var(--c-muted); }
+  .spec dd { margin: 0; color: var(--c-ink); }
+  .spec__related { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 0.5rem 1.5rem; }
+  .spec__related a { font-size: 0.9rem; }
+</style>

@@ -2,9 +2,7 @@
 import BaseLayout from './BaseLayout.astro';
 import Breadcrumb from '../components/uswds/Breadcrumb.astro';
 import Alert from '../components/uswds/Alert.astro';
-import SummaryBox from '../components/uswds/SummaryBox.astro';
 import type { Locale } from '../i18n/utils';
-import { useTranslations } from '../i18n/utils';
 
 interface BreadcrumbItem {
   label: string;
@@ -20,6 +18,8 @@ interface Props {
   applyHref?: string;
   imageSrc?: string;
   imageAlt?: string;
+  /** Short lede shown under the title */
+  summary?: string;
 }
 
 const {
@@ -31,9 +31,9 @@ const {
   applyHref,
   imageSrc,
   imageAlt = '',
+  summary,
 } = Astro.props;
 
-const t = useTranslations(locale);
 const allCrumbs = [
   { label: locale === 'es' ? 'Inicio' : 'Home', href: locale === 'es' ? '/es/' : '/' },
   { label: locale === 'es' ? 'Productos' : 'Products', href: locale === 'es' ? '/es/products/' : '/products/' },
@@ -42,77 +42,88 @@ const allCrumbs = [
 ---
 
 <BaseLayout title={title} description={description} locale={locale}>
-  <div class="grid-container usa-section">
+  <div class="pdp">
     <Breadcrumb items={allCrumbs} wrap />
 
-    {!acceptingApplications && (
-      <Alert type="warning" slim>
-        {locale === 'es'
-          ? 'Este producto no está disponible actualmente.'
-          : 'This product is not currently available.'}
-      </Alert>
-    )}
-
-    <h1 class="service-layout__title">{title}</h1>
-
-    <div class="grid-row grid-gap service-layout__row">
-      <div class="grid-col-12 tablet:grid-col-8 service-layout__main">
-        {imageSrc && (
-          <img
-            src={imageSrc}
-            alt={imageAlt}
-            style="width: 100%; max-height: 160px; object-fit: cover; object-position: center; display: block; border-radius: 4px; margin-bottom: 1.5rem;"
-            loading="eager"
-          />
-        )}
-        <div class="usa-prose">
-          <slot />
-        </div>
+    <div class="pdp__top">
+      <div class="pdp__media">
+        {imageSrc
+          ? <img src={imageSrc} alt={imageAlt} loading="eager" fetchpriority="high" />
+          : <span class="pdp__placeholder"></span>}
       </div>
 
-      <div class="grid-col-12 tablet:grid-col-4 service-layout__sidebar">
+      <div class="pdp__info">
+        {!acceptingApplications && (
+          <Alert type="warning" slim>
+            {locale === 'es'
+              ? 'Este producto no está disponible actualmente.'
+              : 'This product is not currently available.'}
+          </Alert>
+        )}
+
+        <h1 class="pdp__title">{title}</h1>
+        {summary && <p class="pdp__summary">{summary}</p>}
+
         <slot name="sidebar" />
-
-        {applyHref && acceptingApplications && (
-          <SummaryBox
-            heading={locale === 'es' ? 'Listo para ordenar' : 'Ready to order?'}
-            label={locale === 'es' ? 'Listo para ordenar' : 'Ready to order?'}
-            class="margin-top-4"
-          >
-            <p>
-              {locale === 'es'
-                ? 'Tostado a pedido, reposado para desgasificar y enviado en 3–5 días.'
-                : 'Roasted to order, rested to degas, and shipped within 3–5 days.'}
-            </p>
-            <a href={applyHref} class="usa-button usa-button--big">
-              {t('home.applyNow')}
-            </a>
-          </SummaryBox>
-        )}
       </div>
+    </div>
+
+    <div class="pdp__content usa-prose">
+      <slot />
     </div>
   </div>
 </BaseLayout>
 
 <style>
-  /* On mobile, show the purchase widget right after the title —
-     not below the full article, which pushed it out of easy reach. */
-  .service-layout__row {
-    display: flex;
-    flex-wrap: wrap;
+  .pdp {
+    max-width: var(--wrap);
+    margin: 0 auto;
+    padding: 1.5rem var(--gutter) 2rem;
   }
 
-  .service-layout__sidebar {
-    order: -1;
+  .pdp__top {
+    display: grid;
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+    gap: clamp(2rem, 5vw, 5rem);
+    align-items: start;
   }
 
-  .service-layout__main {
-    order: 0;
+  .pdp__media {
+    position: sticky;
+    top: 5.5rem;
+    aspect-ratio: 4 / 5;
+    background: var(--c-tile);
+    overflow: hidden;
+  }
+  .pdp__media img,
+  .pdp__placeholder {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
   }
 
-  @media (min-width: 40em) {
-    .service-layout__sidebar {
-      order: 0;
-    }
+  .pdp__info { padding-top: 1rem; }
+
+  .pdp__title {
+    font-size: clamp(1.75rem, 3vw, 2.5rem);
+    font-weight: 300;
+    letter-spacing: -0.02em;
+    margin: 0 0 1rem;
+  }
+
+  .pdp__summary { margin: 0 0 2rem; max-width: 34rem; }
+
+  .pdp__content {
+    max-width: 44rem;
+    margin: 6rem auto 0;
+    padding-top: 3rem;
+    border-top: 1px solid var(--c-line);
+  }
+
+  @media (max-width: 48rem) {
+    .pdp__top { grid-template-columns: 1fr; }
+    .pdp__media { position: static; aspect-ratio: 1; margin: 0 calc(var(--gutter) * -1); }
+    .pdp__content { margin-top: 4rem; }
   }
 </style>

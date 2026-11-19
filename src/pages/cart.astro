@@ -87,22 +87,22 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     font-size: 0.75rem;
     text-transform: uppercase;
     letter-spacing: 0.08em;
-    color: #9ca3af;
+    color: var(--c-muted);
     margin-bottom: 0.75rem;
   }
 
   .checkout-page__crumb a {
-    color: #9ca3af;
+    color: var(--c-muted);
     text-decoration: none;
   }
 
   .checkout-page__crumb a:hover {
-    color: #1c1917;
+    color: #1a1a1a;
   }
 
   .checkout-page__heading {
     font-size: 1.75rem;
-    font-weight: 900;
+    font-weight: 500;
     color: #111827;
     letter-spacing: -0.01em;
     margin: 0 0 2rem;
@@ -166,9 +166,9 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   .checkout-clear-btn {
     background: none;
     border: none;
-    color: #9ca3af;
+    color: var(--c-muted);
     font-size: 0.78rem;
-    font-weight: 600;
+    font-weight: 400;
     text-decoration: underline;
     cursor: pointer;
     padding: 0;
@@ -182,7 +182,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
   .section-label {
     font-size: 0.72rem;
-    font-weight: 700;
+    font-weight: 400;
     color: #374151;
     text-transform: uppercase;
     letter-spacing: 0.08em;
@@ -192,7 +192,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   .checkout-summary {
     background: #fff;
     border: 1px solid #e5e7eb;
-    border-radius: 1.25rem;
+    border-radius: 0;
     padding: 1.5rem;
   }
 
@@ -213,7 +213,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
   .checkout-summary__note {
     font-size: 0.75rem;
-    color: #9ca3af;
+    color: var(--c-muted);
     line-height: 1.5;
     margin: 0.5rem 0 1rem;
   }
@@ -222,7 +222,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     padding-top: 0.9rem;
     border-top: 1px solid #e5e7eb;
     font-size: 1.1rem;
-    font-weight: 900;
+    font-weight: 500;
     color: #111827;
     margin-bottom: 1.25rem;
   }
@@ -236,7 +236,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     align-items: center;
     gap: 0.4rem;
     font-size: 0.72rem;
-    color: #9ca3af;
+    color: var(--c-muted);
     justify-content: center;
     margin: 0 0 1rem;
   }
@@ -245,13 +245,13 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     display: block;
     text-align: center;
     font-size: 0.8rem;
-    font-weight: 600;
+    font-weight: 400;
     color: #6b7280;
     text-decoration: none;
   }
 
   .checkout-summary__continue:hover {
-    color: #1c1917;
+    color: #1a1a1a;
     text-decoration: underline;
   }
 
@@ -260,12 +260,12 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     display: block;
     width: 100%;
     padding: 1.1rem 1rem;
-    background: #1c1917;
+    background: #1a1a1a;
     color: #fff;
     border: none;
-    border-radius: 1rem;
+    border-radius: 0;
     font-size: 1.05rem;
-    font-weight: 900;
+    font-weight: 500;
     cursor: pointer;
     text-align: center;
     text-decoration: none;
@@ -274,7 +274,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   }
 
   .btn-buy:hover {
-    background: #292524;
+    background: #000;
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
     transform: translateY(-1px);
   }
@@ -297,7 +297,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     display: flex;
     gap: 1rem;
     border: 1px solid #e5e7eb;
-    border-radius: 1rem;
+    border-radius: 0;
     padding: 0.9rem;
     box-sizing: border-box;
   }
@@ -306,7 +306,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     width: 4.5rem;
     height: 4.5rem;
     flex-shrink: 0;
-    border-radius: 0.75rem;
+    border-radius: 0;
     overflow: hidden;
     background: #f3f4f6;
   }
@@ -335,7 +335,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
   .item-card__title {
     font-size: 0.9rem;
-    font-weight: 700;
+    font-weight: 400;
     color: #111827;
     margin: 0 0 0.15rem;
     overflow-wrap: break-word;
@@ -343,7 +343,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
   .item-card__meta {
     font-size: 0.75rem;
-    color: #9ca3af;
+    color: var(--c-muted);
     margin: 0;
   }
 
@@ -351,9 +351,9 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     flex-shrink: 0;
     background: none;
     border: none;
-    color: #9ca3af;
+    color: var(--c-muted);
     font-size: 0.72rem;
-    font-weight: 600;
+    font-weight: 400;
     text-decoration: underline;
     cursor: pointer;
     padding: 0;
@@ -376,7 +376,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     align-items: center;
     flex-shrink: 0;
     border: 2px solid #e5e7eb;
-    border-radius: 0.6rem;
+    border-radius: 0;
     overflow: hidden;
   }
 
@@ -387,7 +387,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     align-items: center;
     justify-content: center;
     font-size: 0.95rem;
-    font-weight: 700;
+    font-weight: 400;
     color: #374151;
     background: #fff;
     border: none;
@@ -404,13 +404,13 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     width: 1.9rem;
     text-align: center;
     font-size: 0.85rem;
-    font-weight: 900;
+    font-weight: 500;
     color: #111827;
   }
 
   .item-card__price {
     font-size: 0.95rem;
-    font-weight: 900;
+    font-weight: 500;
     color: #111827;
     white-space: nowrap;
     margin: 0;

@@ -1,10 +1,9 @@
 ---
 /**
- * ServiceCard — usa-card variant for product listings
- * https://designsystem.digital.gov/components/card/
+ * ServiceCard — minimal product tile for listings.
  *
- * When `productSlug` is given, the card shows a starting price with
- * Add to cart / Buy now actions for the smallest pack size — full size and
+ * When `productSlug` is given, the card shows a starting price with a
+ * quick Add to cart action for the smallest pack size — full size and
  * grind selection lives on the product page itself. Without `productSlug`
  * it falls back to a plain link button — used by the internal component
  * style guide, which has no real product data.
@@ -62,38 +61,24 @@ const defaultPrice = getProductPackOptions(priceMultiplier, packPricing)
 const defaultLabel = formatWeight(defaultGrams);
 
 const addToCartLabel = locale === 'es' ? 'Añadir' : 'Add to cart';
-const buyNowLabel = locale === 'es' ? 'Comprar' : 'Buy now';
 ---
 
-<li class:list={['usa-card', 'service-card', className]}>
-  <div class="usa-card__container">
-    {imageSrc && (
-      <div class="usa-card__media service-card__media">
-        <div class="usa-card__img">
-          <img src={imageSrc} alt={imageAlt} loading="lazy" />
-        </div>
-      </div>
-    )}
-    <div class="usa-card__header service-card__header">
-      <h2 class="usa-card__heading service-card__heading">
-        <a href={resolvedHref} class="usa-link">{title}</a>
-      </h2>
-    </div>
-    <div class="usa-card__body service-card__body">
-      <p class="service-card__summary">{summary}</p>
-      {isProduct && (
-        <p class="service-card__price">
-          From <strong>₹{defaultPrice.toLocaleString('en-IN')}</strong>
-          <span class="service-card__price-unit"> / {defaultLabel}</span>
-        </p>
-      )}
-    </div>
-    <div class="usa-card__footer service-card__footer">
+<li class:list={['product-card', className]}>
+  <a href={resolvedHref} class="product-card__media" tabindex="-1" aria-hidden="true">
+    {imageSrc
+      ? <img src={imageSrc} alt={imageAlt} loading="lazy" />
+      : <span class="product-card__placeholder"></span>}
+  </a>
+  <div class="product-card__body">
+    <h2 class="product-card__title" title={title}><a href={resolvedHref}>{title}</a></h2>
+    {isProduct
+      ? <p class="product-card__price">From ₹{defaultPrice.toLocaleString('en-IN')} <span>/ {defaultLabel}</span></p>
+      : <p class="product-card__summary">{summary}</p>}
+    <div class="product-card__actions">
       {!acceptingApplications ? (
-        <span class="usa-tag">{t('serviceCard.notAccepting')}</span>
+        <span class="product-card__soldout">{t('serviceCard.notAccepting')}</span>
       ) : isProduct ? (
         <div
-          class="service-card__buy"
           data-card-buy
           data-id={productSlug}
           data-title={title}
@@ -101,84 +86,105 @@ const buyNowLabel = locale === 'es' ? 'Comprar' : 'Buy now';
           data-grams={defaultGrams}
           data-price={defaultPrice}
         >
-          <button type="button" class="usa-button usa-button--outline service-card__btn" data-card-add>
-            {addToCartLabel}
-          </button>
-          <button type="button" class="usa-button service-card__btn" data-card-buy-now>
-            {buyNowLabel}
-          </button>
+          <button type="button" class="product-card__add" data-card-add>{addToCartLabel}</button>
         </div>
       ) : (
-        <a href={resolvedHref} class="usa-button">{resolvedCta}</a>
+        <a href={resolvedHref} class="product-card__add">{resolvedCta}</a>
       )}
     </div>
   </div>
 </li>
 
 <style>
-  .service-card {
-    max-width: 22rem;
+  .product-card {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    text-align: center;
+    margin: 0;
+    padding: 0;
   }
 
-  .service-card__media :global(img) {
-    aspect-ratio: 4 / 3;
-    object-fit: cover;
-  }
-
-  .service-card__header,
-  .service-card__body {
-    padding-top: 1rem;
-    padding-bottom: 0;
-  }
-
-  .service-card__heading {
-    font-size: 1.15rem;
-    line-height: 1.3;
-  }
-
-  .service-card__summary {
-    font-size: 0.9rem;
-    line-height: 1.5;
-    color: #444;
-    margin: 0.35rem 0 0;
-    display: -webkit-box;
-    -webkit-line-clamp: 3;
-    -webkit-box-orient: vertical;
+  .product-card__media {
+    display: block;
+    aspect-ratio: 4 / 5;
+    background: var(--c-tile);
     overflow: hidden;
   }
 
-  .service-card__price {
-    font-size: 1rem;
-    color: #1b1b1b;
-    margin: 0.6rem 0 0;
+  .product-card__media img,
+  .product-card__placeholder {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.6s cubic-bezier(0.2, 0.7, 0.2, 1);
   }
 
-  .service-card__price-unit {
-    font-size: 0.8rem;
-    color: #666;
-  }
+  .product-card:hover .product-card__media img { transform: scale(1.04); }
 
-  .service-card__footer {
-    padding-top: 0.9rem;
-  }
-
-  .service-card__buy {
-    display: flex;
-    gap: 0.5rem;
-  }
-
-  .service-card__btn {
+  /* Every card shares one rhythm: fixed-ratio image, a two-line title slot,
+     price, and the action pinned to the bottom — so a row of cards lines up
+     no matter how long each product name is. */
+  .product-card__body {
     flex: 1;
-    min-width: 0;
-    font-size: 0.85rem;
-    padding: 0.6rem 0.5rem;
-    margin: 0;
-    text-align: center;
+    display: flex;
+    flex-direction: column;
+    padding: 1.1rem 0.5rem 0;
   }
 
-  .service-card__btn[data-added="true"] {
-    background-color: #2e6e37;
-    color: #fff;
+  .product-card__title {
+    font-size: 0.95rem;
+    line-height: 1.4;
+    margin: 0;
+    min-height: 2.8em; /* always reserve two lines */
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .product-card__title a,
+  .product-card__title a:visited { color: var(--c-ink); text-decoration: none; }
+  .product-card__title a:hover { text-decoration: underline; }
+
+  .product-card__price,
+  .product-card__summary {
+    margin: 0.35rem 0 0;
+    font-size: 0.875rem;
+    color: var(--c-text);
+  }
+  .product-card__price span { color: var(--c-muted); }
+
+  .product-card__actions { margin-top: auto; padding-top: 0.85rem; }
+
+  .product-card__add {
+    font-family: var(--f-body);
+    font-size: 0.8rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--c-ink);
+    background: none;
+    border: 0;
+    border-bottom: 1px solid var(--c-ink);
+    padding: 0.15rem 0;
+    cursor: pointer;
+    text-decoration: none;
+    transition: opacity 0.2s;
+  }
+  .product-card__add:hover { opacity: 0.6; }
+  .product-card__add[data-added='true'] { border-bottom-color: transparent; }
+
+  .product-card__soldout {
+    font-size: 0.8rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--c-muted);
+  }
+
+  @media (hover: hover) and (min-width: 52rem) {
+    .product-card__actions { opacity: 0; transform: translateY(4px); transition: opacity 0.25s, transform 0.25s; }
+    .product-card:hover .product-card__actions,
+    .product-card:focus-within .product-card__actions { opacity: 1; transform: none; }
   }
 </style>
 
@@ -193,8 +199,7 @@ const buyNowLabel = locale === 'es' ? 'Comprar' : 'Buy now';
     const grams = Number(wrap.dataset.grams ?? 0);
     const price = Number(wrap.dataset.price ?? 0);
     const addBtn = wrap.querySelector<HTMLButtonElement>('[data-card-add]');
-    const buyBtn = wrap.querySelector<HTMLButtonElement>('[data-card-buy-now]');
-    if (!id || !title || !grams || !addBtn || !buyBtn) return;
+    if (!id || !title || !grams || !addBtn) return;
 
     function addSelectedToCart() {
       addToCart({
@@ -217,11 +222,6 @@ const buyNowLabel = locale === 'es' ? 'Comprar' : 'Buy now';
         addBtn.dataset.added = 'false';
         addBtn.textContent = original ?? '';
       }, 1500);
-    });
-
-    buyBtn.addEventListener('click', () => {
-      addSelectedToCart();
-      window.location.href = '/cart/';
     });
   });
 </script>

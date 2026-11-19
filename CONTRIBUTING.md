@@ -24,18 +24,15 @@ from `node_modules` to `public/uswds/`. You don't need to run anything extra.
 Run all checks before opening a PR:
 
 ```bash
-bash scripts/check.sh          # TypeScript + build + plain-language + compliance + HTML validate
-bash scripts/check.sh --verbose # same, with per-file output
+bash scripts/check.sh          # TypeScript + build + HTML validate
 ```
 
 Individual checks:
 
 ```bash
-pnpm check                              # TypeScript only
-pnpm build                              # full build
-npx html-validate 'dist/**/*.html'      # HTML validation
-node scripts/plain-language.mjs         # readability (avg FK grade ≤ 8)
-node scripts/compliance-check.mjs       # USWDS banner/identifier/skip-nav
+bun run check                           # TypeScript only
+bun run build                           # full build
+bunx html-validate 'dist/client/**/*.html'  # HTML validation
 ```
 
 Accessibility and Lighthouse are run only in CI (they need a browser).
