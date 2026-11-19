@@ -11,6 +11,7 @@ import { siteConfig } from '../../config/site';
 import type { Locale } from '../../i18n/utils';
 import { localeStaticPaths, useTranslations, withBase } from '../../i18n/utils';
 import { idToSlug } from '../../utils/content';
+import { graph, organizationSchema } from '../../utils/seo';
 
 export function getStaticPaths() {
   return localeStaticPaths();
@@ -92,6 +93,7 @@ const activeAnnouncements = await getCollection('announcements', ({ data }) => {
   title={locale === 'es' ? t('site.name') : siteConfig.name}
   description={siteConfig.description}
   locale={locale}
+  jsonLd={graph(organizationSchema())}
 >
   {activeAnnouncements.map((ann) => (
     <SiteAlert
@@ -169,4 +171,9 @@ const activeAnnouncements = await getCollection('announcements', ({ data }) => {
 <style>
   .home-shop { padding: clamp(4rem, 8vw, 6rem) 0; }
   .home-shop__more { text-align: center; margin: 3.5rem 0 0; }
+  /* 8 featured items fill 4- and 2-column rows; in the 3-column range show 6
+     so the last row isn't left half-empty. */
+  @media (min-width: 48.01rem) and (max-width: 64rem) {
+    .home-shop :global(li.product-card:nth-of-type(n + 7)) { display: none; }
+  }
 </style>

@@ -1,7 +1,7 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { STATES_CITIES, toSlug } from '../../utils/geo';
-import { siteConfig } from '../../config/site';
+import { breadcrumbSchema, graph } from '../../utils/seo';
 
 export function getStaticPaths() {
   return STATES_CITIES.map(entry => ({
@@ -15,10 +15,14 @@ const { state, top_cities } = entry;
 
 const title = `Roasted Specialty Coffee in ${state}`;
 const description = `Specialty-grade Indian coffee roasted to order and delivered to ${state}. Single-origin beans from Coorg, Wayanad, Haflong, and Arunachal Pradesh — traceable, fresh, and ship-ready within 3–5 days.`;
-const canonicalUrl = `https://${siteConfig.domain}/${toSlug(state)}/roasted-specialty-coffee`;
+const jsonLd = graph(breadcrumbSchema([
+  { name: 'Home', path: '/' },
+  { name: state, path: `/${toSlug(state)}/roasted-indian-coffee/` },
+  { name: 'Specialty coffee', path: `/${toSlug(state)}/roasted-specialty-coffee/` },
+]));
 ---
 
-<BaseLayout {title} {description} {canonicalUrl}>
+<BaseLayout {title} {description} {jsonLd}>
   <section class="grid-container usa-section">
     <div class="grid-row grid-gap">
       <div class="grid-col-12 tablet:grid-col-8">
@@ -87,11 +91,11 @@ const canonicalUrl = `https://${siteConfig.domain}/${toSlug(state)}/roasted-spec
             <p class="geo-box__label">Also in {state}</p>
             <ul class="geo-list">
               <li>
-                <a href={`/${toSlug(state)}/roasted-indian-coffee`} class="usa-link">Roasted Indian Coffee in {state}</a>
+                <a href={`/${toSlug(state)}/roasted-indian-coffee/`} class="usa-link">Roasted Indian Coffee in {state}</a>
               </li>
               {top_cities.map(city => (
                 <li>
-                  <a href={`/${toSlug(state)}/${toSlug(city)}/roasted-indian-coffee`} class="usa-link">{city}</a>
+                  <a href={`/${toSlug(state)}/${toSlug(city)}/roasted-indian-coffee/`} class="usa-link">{city}</a>
                 </li>
               ))}
             </ul>

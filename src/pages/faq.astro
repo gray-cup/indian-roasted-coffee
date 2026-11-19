@@ -1,0 +1,85 @@
+---
+import { getCollection, render } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Breadcrumb from '../components/uswds/Breadcrumb.astro';
+import { breadcrumbSchema, faqPageSchema, graph } from '../utils/seo';
+import { withBase } from '../i18n/utils';
+
+const faqs = (await getCollection('faqs', ({ data }) => !data.draft))
+  .sort((a, b) => a.data.order - b.data.order);
+
+const items = await Promise.all(
+  faqs.map(async (faq) => ({ id: faq.id, question: faq.data.question, Content: (await render(faq)).Content })),
+);
+
+const jsonLd = graph(
+  faqPageSchema(faqs.map((faq) => ({ question: faq.data.question, answerHtml: faq.rendered?.html ?? '' }))),
+  breadcrumbSchema([{ name: 'Home', path: '/' }, { name: 'FAQ', path: '/faq/' }]),
+);
+---
+
+<BaseLayout
+  title="Frequently asked questions"
+  description="Answers to common questions about delivery, freshness, roast levels, grinding, returns and sourcing."
+  jsonLd={jsonLd}
+>
+  <div class="faq">
+    <Breadcrumb items={[{ label: 'Home', href: '/' }, { label: 'FAQ', href: '/faq/' }]} />
+    <h1>Frequently asked questions</h1>
+
+    <nav class="faq__toc" aria-label="Questions">
+      <ul>
+        {items.map((item) => <li><a href={`#${item.id}`}>{item.question}</a></li>)}
+      </ul>
+    </nav>
+
+    {items.map(({ id, question, Content }) => (
+      <section class="faq__item" id={id} aria-labelledby={`${id}-q`}>
+        <h2 id={`${id}-q`}>{question}</h2>
+        <div class="usa-prose"><Content /></div>
+      </section>
+    ))}
+
+    <p class="faq__more">
+      Still have a question? <a href={withBase('/contact/')}>Contact us</a>.
+    </p>
+  </div>
+</BaseLayout>
+
+<style>
+  .faq {
+    max-width: 46rem;
+    margin: 0 auto;
+    padding: 1.5rem var(--gutter) 2rem;
+  }
+
+  .faq h1 { margin: 0 0 2rem; font-weight: 300; }
+
+  .faq__toc ul {
+    list-style: none;
+    margin: 0 0 3rem;
+    padding: 0;
+    border-top: 1px solid var(--c-line);
+  }
+  .faq__toc li { border-bottom: 1px solid var(--c-line); }
+  .faq__toc a {
+    display: block;
+    padding: 0.8rem 0;
+    text-decoration: none;
+    font-size: 0.95rem;
+  }
+  .faq__toc a:hover { text-decoration: underline; }
+
+  .faq__item {
+    padding: 2.5rem 0 0;
+    scroll-margin-top: 5rem;
+  }
+  .faq__item h2 { font-size: 1.25rem; margin: 0 0 1rem; }
+
+  .faq__more {
+    margin-top: 3.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--c-line);
+    color: var(--c-muted);
+  }
+</style>

@@ -137,8 +137,9 @@ textarea:not([disabled]):focus-visible { outline: var(--focus-outline); outline-
   transition: background-color 0.2s, color 0.2s, border-color 0.2s;
 }
 
-.btn:hover, .usa-button:hover,
-.btn:visited, .usa-button:visited { color: #fff; background: #000; text-decoration: none; }
+/* Visited links keep their normal look — only hover changes the fill. */
+.btn:visited, .usa-button:visited { color: #fff; }
+.btn:hover, .usa-button:hover { color: #fff; background: #000; text-decoration: none; }
 
 .btn--ghost,
 .usa-button--outline,
@@ -147,9 +148,9 @@ textarea:not([disabled]):focus-visible { outline: var(--focus-outline); outline-
   color: var(--c-ink);
   box-shadow: none;
 }
+.btn--ghost:visited, .usa-button--outline:visited { background: transparent; color: var(--c-ink); }
 
 .btn--ghost:hover, .usa-button--outline:hover { background: var(--c-ink); color: #fff; box-shadow: none; }
-.btn--ghost:visited { color: var(--c-ink); }
 
 .usa-button--outline.usa-button--inverse { color: #fff; border-color: #fff; box-shadow: none; }
 .usa-button--outline.usa-button--inverse:hover { background: #fff; color: var(--c-ink); }
@@ -232,7 +233,7 @@ textarea:not([disabled]):focus-visible { outline: var(--focus-outline); outline-
 
 /* Print styles */
 @media print {
-  .site-header nav, .site-header__actions, .whatsapp-widget { display: none; }
+  .site-header nav, .site-header__actions { display: none; }
 }
 
 /* ─── Product grid ──────────────────────────────────────────────────────── */

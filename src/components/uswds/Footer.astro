@@ -91,6 +91,7 @@ const defaultColumns: FooterColumn[] =
           heading: 'Learn',
           links: [
             { label: 'Coffee Glossary', href: '/glossary/' },
+            { label: 'FAQ', href: '/faq/' },
             { label: 'About us', href: '/about/' },
           ],
         },
@@ -132,7 +133,7 @@ const year = new Date().getFullYear();
   </div>
 
   <div class="site-footer__bottom">
-    <p>© {year} {siteConfig.name}. Operated by <a href="https://graycup.com" target="_blank" rel="noopener">Gray Cup</a>.</p>
+    <p>© {year} {siteConfig.name}. Maintained by <a href="https://graycup.com" target="_blank" rel="noopener">Gray Cup</a>.</p>
     <a href="#">{t('footer.returnToTop')} ↑</a>
   </div>
 </footer>

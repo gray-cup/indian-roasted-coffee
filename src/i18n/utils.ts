@@ -3,7 +3,7 @@ import es from './es.json';
 
 export type Locale = 'en' | 'es';
 
-/** All locales served by the site. Keep in sync with LOCALES in astro.config.mjs. */
+/** All locales served by the site. Keep in sync with LOCALE_TAGS in ./locales.ts. */
 export const locales: Locale[] = ['en', 'es'];
 
 /** URL path segment for a locale: undefined for the default (unprefixed) locale. */

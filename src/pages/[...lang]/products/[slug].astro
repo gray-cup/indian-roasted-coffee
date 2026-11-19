@@ -5,6 +5,7 @@ import BuyWidget from '../../../components/BuyWidget.astro';
 import { idToSlug } from '../../../utils/content';
 import type { Locale } from '../../../i18n/utils';
 import { locales, localeParam, withBase } from '../../../i18n/utils';
+import { breadcrumbSchema, graph, productSchema } from '../../../utils/seo';
 
 export async function getStaticPaths() {
   const services = await getCollection('services', ({ data }) => !data.draft);
@@ -34,6 +35,23 @@ const copy = {
     related: 'Productos relacionados',
   },
 }[locale as Locale];
+
+const jsonLd = graph(
+  productSchema({
+    path: `${prefix}/products/${slug}/`,
+    name: service.data.title,
+    description: service.data.description,
+    image: service.data.image,
+    inStock: service.data.acceptingApplications,
+    priceMultiplier: service.data.priceMultiplier,
+    packPricing: service.data.packPricing,
+  }),
+  breadcrumbSchema([
+    { name: locale === 'es' ? 'Inicio' : 'Home', path: `${prefix}/` },
+    { name: locale === 'es' ? 'Productos' : 'Products', path: `${prefix}/products/` },
+    { name: service.data.title, path: `${prefix}/products/${slug}/` },
+  ]),
+);
 ---
 
 <ServiceLayout
@@ -46,6 +64,7 @@ const copy = {
   imageSrc={service.data.image}
   imageAlt={service.data.imageAlt}
   summary={service.data.summary}
+  jsonLd={jsonLd}
 >
   <Content />
 

@@ -1,18 +1,16 @@
 import { defineConfig, envField, sessionDrivers } from 'astro/config';
 import mdx from '@astrojs/mdx';
 import sitemap from '@astrojs/sitemap';
-import astroLLMsGenerator from 'astro-llms-generate';
 import tailwindcss from '@tailwindcss/vite';
 import cloudflare from '@astrojs/cloudflare';
 import { fileURLToPath } from 'url';
 import { resolve } from 'path';
+import { LOCALE_TAGS, DEFAULT_LOCALE } from './src/i18n/locales.ts';
 
 const __dirname = fileURLToPath(new URL('.', import.meta.url));
 
-// Single source of truth for the locale set. Add new locales here, then see
-// "Adding a new language" in README.md for the remaining steps.
-const LOCALES = { en: 'en-US', es: 'es-US' };
-const DEFAULT_LOCALE = 'en';
+// Locale set lives in src/i18n/locales.ts. See "Adding a new language" in README.md.
+const LOCALES = LOCALE_TAGS;
 
 export default defineConfig({
   // site + base are read from env vars so the same build config works for
@@ -25,16 +23,11 @@ export default defineConfig({
   integrations: [
     mdx(),
     sitemap({
-      filter: (page) => !page.includes('/internal/'),
+      filter: (page) => !/^\/(es\/)?(internal|admin|cart|cart-builder|checkout-details|invoice|payment-result|test-database|search|o)(\/|$)/.test(new URL(page).pathname),
       i18n: {
         defaultLocale: DEFAULT_LOCALE,
         locales: LOCALES,
       },
-    }),
-    astroLLMsGenerator({
-      title: 'Indian Roasted Coffee',
-      description: 'Single-origin Indian coffee beans from Coorg, Chikmagalur, Wayanad, and the Nilgiris — roasted to order and shipped within 48 hours. A brand of Gray Cup Enterprises Private Limited.',
-      excludePatterns: ['**/internal/**', '**/cart*'],
     }),
   ],
 

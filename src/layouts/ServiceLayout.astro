@@ -20,6 +20,7 @@ interface Props {
   imageAlt?: string;
   /** Short lede shown under the title */
   summary?: string;
+  jsonLd?: object;
 }
 
 const {
@@ -32,6 +33,7 @@ const {
   imageSrc,
   imageAlt = '',
   summary,
+  jsonLd,
 } = Astro.props;
 
 const allCrumbs = [
@@ -41,7 +43,14 @@ const allCrumbs = [
 ];
 ---
 
-<BaseLayout title={title} description={description} locale={locale}>
+<BaseLayout
+  title={title}
+  description={description}
+  locale={locale}
+  jsonLd={jsonLd}
+  ogType="product"
+  ogImage={imageSrc}
+>
   <div class="pdp">
     <Breadcrumb items={allCrumbs} wrap />
 

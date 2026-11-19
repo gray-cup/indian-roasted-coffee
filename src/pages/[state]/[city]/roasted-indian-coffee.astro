@@ -1,7 +1,7 @@
 ---
 import BaseLayout from '../../../layouts/BaseLayout.astro';
 import { STATES_CITIES, toSlug } from '../../../utils/geo';
-import { siteConfig } from '../../../config/site';
+import { breadcrumbSchema, graph } from '../../../utils/seo';
 
 export function getStaticPaths() {
   return STATES_CITIES.flatMap(entry =>
@@ -19,10 +19,14 @@ const otherCities = top_cities.filter(c => c !== cityName);
 
 const title = `Roasted Indian Coffee in ${cityName}, ${state}`;
 const description = `Order fresh roasted Indian coffee beans delivered to ${cityName}, ${state}. Single-origin beans from Coorg, Chikmagalur, Wayanad, and Northeast India — roasted fresh to order and shipped within 3–5 days.`;
-const canonicalUrl = `https://${siteConfig.domain}/${toSlug(state)}/${toSlug(cityName)}/roasted-indian-coffee`;
+const jsonLd = graph(breadcrumbSchema([
+  { name: 'Home', path: '/' },
+  { name: state, path: `/${toSlug(state)}/roasted-indian-coffee/` },
+  { name: cityName, path: `/${toSlug(state)}/${toSlug(cityName)}/roasted-indian-coffee/` },
+]));
 ---
 
-<BaseLayout {title} {description} {canonicalUrl}>
+<BaseLayout {title} {description} {jsonLd}>
   <section class="grid-container usa-section">
     <div class="grid-row grid-gap">
       <div class="grid-col-12 tablet:grid-col-8">
@@ -32,7 +36,7 @@ const canonicalUrl = `https://${siteConfig.domain}/${toSlug(state)}/${toSlug(cit
               <a href="/" class="usa-breadcrumb__link">Home</a>
             </li>
             <li class="usa-breadcrumb__list-item">
-              <a href={`/${toSlug(state)}/roasted-indian-coffee`} class="usa-breadcrumb__link">{state}</a>
+              <a href={`/${toSlug(state)}/roasted-indian-coffee/`} class="usa-breadcrumb__link">{state}</a>
             </li>
             <li class="usa-breadcrumb__list-item usa-current" aria-current="page">
               {cityName}
@@ -94,14 +98,14 @@ const canonicalUrl = `https://${siteConfig.domain}/${toSlug(state)}/${toSlug(cit
             <p class="geo-box__label">More in {state}</p>
             <ul class="geo-list">
               <li>
-                <a href={`/${toSlug(state)}/roasted-indian-coffee`} class="usa-link">All of {state}</a>
+                <a href={`/${toSlug(state)}/roasted-indian-coffee/`} class="usa-link">All of {state}</a>
               </li>
               <li>
-                <a href={`/${toSlug(state)}/roasted-specialty-coffee`} class="usa-link">Specialty Coffee in {state}</a>
+                <a href={`/${toSlug(state)}/roasted-specialty-coffee/`} class="usa-link">Specialty Coffee in {state}</a>
               </li>
               {otherCities.map(city => (
                 <li>
-                  <a href={`/${toSlug(state)}/${toSlug(city)}/roasted-indian-coffee`} class="usa-link">{city}</a>
+                  <a href={`/${toSlug(state)}/${toSlug(city)}/roasted-indian-coffee/`} class="usa-link">{city}</a>
                 </li>
               ))}
             </ul>

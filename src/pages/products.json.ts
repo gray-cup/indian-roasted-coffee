@@ -1,12 +1,8 @@
 import { getCollection } from 'astro:content';
 import { idToSlug } from '../utils/content';
 import { getProductPackOptions } from '../utils/pricing';
+import { absUrl } from '../utils/seo';
 
-const BASE_URL = 'https://indianroastedcoffee.com';
-
-function resolveUrl(path: string): string {
-  return path.startsWith('http') ? path : `${BASE_URL}${path}`;
-}
 
 export async function GET() {
   const entries = await getCollection('services', ({ data }) => !data.draft);
@@ -25,8 +21,8 @@ export async function GET() {
         shortName: entry.data.shortTitle ?? entry.data.title,
         description: entry.data.description,
         summary: entry.data.summary,
-        url: `${BASE_URL}/products/${slug}`,
-        image: entry.data.image ? resolveUrl(entry.data.image) : null,
+        url: absUrl(`/products/${slug}/`),
+        image: entry.data.image ? absUrl(entry.data.image) : null,
         imageAlt: entry.data.imageAlt ?? entry.data.title,
         currency: 'INR',
         priceRange: { min: Math.min(...prices), max: Math.max(...prices), unit: 'INR' },
@@ -39,7 +35,7 @@ export async function GET() {
 
   const body = {
     site: 'indianroastedcoffee.com',
-    baseUrl: BASE_URL,
+    baseUrl: absUrl('/'),
     currency: 'INR',
     generatedAt: new Date().toISOString(),
     products,
